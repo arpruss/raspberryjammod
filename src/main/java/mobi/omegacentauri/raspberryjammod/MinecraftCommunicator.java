@@ -29,29 +29,29 @@ import net.minecraft.world.chunk.Chunk;
 public class MinecraftCommunicator {
 	// world.checkpoint.save/restore, player.setting, world.setting,
 	// camera.*, events.* unsupported
-	private static final String CHAT = "chat.post(";
-	public static final String SETBLOCK = "world.setBlock(";
-	public static final String SETBLOCKS = "world.setBlocks("; 
-	private static final String GETBLOCK = "world.getBlock(";
-	private static final String GETBLOCKWITHDATA = "world.getBlockWithData(";
-	private static final String GETHEIGHT = "world.getHeight("; 
-	private static final String GETPLAYERIDS = "world.getPlayerIds("; // singleplayer
-	private static final String GETPLAYERENTITYID = "world.getPlayerEntityId("; // singleplayer, only works for main player
+	private static final String CHAT = "chat.post";
+	public static final String SETBLOCK = "world.setBlock";
+	public static final String SETBLOCKS = "world.setBlocks"; 
+	private static final String GETBLOCK = "world.getBlock";
+	private static final String GETBLOCKWITHDATA = "world.getBlockWithData";
+	private static final String GETHEIGHT = "world.getHeight"; 
+	private static final String GETPLAYERIDS = "world.getPlayerIds"; // singleplayer
+	private static final String GETPLAYERENTITYID = "world.getPlayerEntityId"; // singleplayer, only works for main player
 
-	private static final String PLAYERSETTILE = "player.setTile("; 
-	private static final String PLAYERSETPOS = "player.setPos("; 
-	private static final String PLAYERGETDIRECTION = "player.getDirection("; 
-	private static final String PLAYERGETROTATION = "player.getRotation("; 
-	private static final String PLAYERGETPITCH = "player.getPitch(";
-	private static final String PLAYERGETPOS = "player.getPos(";
-	private static final String PLAYERGETTILE = "player.getTile(";	
-	private static final String ENTITYGETDIRECTION = "entity.getDirection("; 
-	private static final String ENTITYGETROTATION = "entity.getRotation("; 
-	private static final String ENTITYGETPITCH = "entity.getPitch("; 
-	private static final String ENTITYGETPOS = "entity.getPos("; 
-	private static final String ENTITYGETTILE = "entity.getTile("; 
-	private static final String ENTITYSETTILE = "entity.setTile("; 
-	private static final String ENTITYSETPOS = "entity.setPos("; 
+	private static final String PLAYERSETTILE = "player.setTile"; 
+	private static final String PLAYERSETPOS = "player.setPos"; 
+	private static final String PLAYERGETDIRECTION = "player.getDirection"; 
+	private static final String PLAYERGETROTATION = "player.getRotation"; 
+	private static final String PLAYERGETPITCH = "player.getPitch";
+	private static final String PLAYERGETPOS = "player.getPos";
+	private static final String PLAYERGETTILE = "player.getTile";	
+	private static final String ENTITYGETDIRECTION = "entity.getDirection"; 
+	private static final String ENTITYGETROTATION = "entity.getRotation"; 
+	private static final String ENTITYGETPITCH = "entity.getPitch"; 
+	private static final String ENTITYGETPOS = "entity.getPos"; 
+	private static final String ENTITYGETTILE = "entity.getTile"; 
+	private static final String ENTITYSETTILE = "entity.setTile"; 
+	private static final String ENTITYSETPOS = "entity.setPos"; 
 
 	private static final Block UNKNOWN_BLOCK = Blocks.beacon;
 	Block[] typeMap;
@@ -59,8 +59,10 @@ public class MinecraftCommunicator {
 	private ServerSocket socket;
 	private DataOutputStream writer;
 	private World world;
+	private OnServerTick onServerTick;
 
-	public MinecraftCommunicator() throws IOException {
+	public MinecraftCommunicator(OnServerTick onTick) throws IOException {
+		this.onServerTick = onTick;
 		socket = new ServerSocket(4711);
 		initTypeMap();
 	}
@@ -118,183 +120,17 @@ public class MinecraftCommunicator {
 		Scanner scan = null;
 
 		try {	
-			int args = clientSentence.indexOf('(');
-			if (args < 0)
+			int paren = clientSentence.indexOf('(');
+			if (paren < 0)
 				return;
-			args++;
-			clientSentence = clientSentence.replaceAll("[\r\n)]+$", "");
-			scan = new Scanner(clientSentence.substring(args));
+			String cmd = clientSentence.substring(0, paren);
+			String args = clientSentence.substring(paren + 1).replaceAll("[\r\n)]+$", "");
+
+			scan = new Scanner(args);
 			scan.useDelimiter(",");
-			if (clientSentence.startsWith(GETBLOCK)) {
-				Block block = world.getBlockState(getPosition(scan)).getBlock();
-				int id = getRaspberryType(block);
-				sendLine(""+id);
-			}
-			else if (clientSentence.startsWith(GETBLOCKWITHDATA)) {
-				IBlockState state = world.getBlockState(getPosition(scan));
-				Block block = state.getBlock();
-				int id = getRaspberryType(block);
-				sendLine(""+id+","+block.getMetaFromState(state));
-			}
-			else if (clientSentence.startsWith(GETHEIGHT)) {
-				BlockPos pos = getPosition(scan.nextInt(), 0, scan.nextInt());
-				Chunk chunk = world.getChunkFromBlockCoords(pos);
-				int h = chunk.getHeight(pos);
-				int x = pos.getX();
-				int z = pos.getZ();
-				for (int y = world.getHeight() ; y >= h ; y--) {
-					Block b = chunk.getBlock(x,y,z);
-					if (b != Blocks.air) {
-						h = y;
-						break;
-					}
-				}
-
-				h -= world.getSpawnPoint().getY();
-				
-				sendLine(h);
-			}
-			else if (clientSentence.startsWith(SETBLOCK)) {
-				BlockPos pos = getPosition(scan);
-				int type = scan.nextInt();
-
-				Block b = getBlockByRaspberryType(type);
-				try {
-					int data = scan.nextInt();
-					world.setBlockState(pos, b.getStateFromMeta(data), 2); // .getStateById(data), 2);
-				}
-				catch(Exception e) {
-					world.setBlockState(pos, b.getDefaultState(), 2);
-				}
-				world.checkLight(pos);
-				//		        if (!world.isRemote)
-				//		        {
-				//		            world.markBlockForUpdate(pos);
-				//		        }
-			}
-			else if (clientSentence.startsWith(SETBLOCKS)) {
-				BlockPos pos1 = getPosition(scan);
-				BlockPos pos2 = getPosition(scan);
-				int type = scan.nextInt();
-
-				Block b = getBlockByRaspberryType(type);
-				IBlockState state;
-				try {
-					int data = scan.nextInt();
-					state = b.getStateFromMeta(data);
-				}
-				catch(Exception e) {
-					state = b.getDefaultState();
-				}
-				int x1 = pos1.getX();
-				int x2 = pos2.getX();
-				if (x2 < x1) {
-					int t = x2;
-					x2 = x1;
-					x1 = t;
-				}
-				int y1 = pos1.getY();
-				int y2 = pos2.getY();
-				if (y2 < y1) {
-					int t = y2;
-					y2 = y1;
-					y1 = t;
-				}
-				int z1 = pos1.getZ();
-				int z2 = pos2.getZ();
-				if (z2 < z1) {
-					int t = z2;
-					z2 = z1;
-					z1 = t;
-				}
-				for (int x = x1; x <= x2; x++)
-					for (int y = y1; y <= y2; y++)
-						for (int z = z1 ; z <= z2; z++) {
-							BlockPos pos = new BlockPos(x,y,z);							
-							world.setBlockState(pos, state);
-							world.checkLight(pos);
-							//		        if (!world.isRemote)
-							//		        {
-							//		            world.markBlockForUpdate(pos);
-							//		        }
-						}
-			}
-			else if (clientSentence.startsWith(PLAYERGETPOS)) {
-				entityGetPos(player);
-			}
-			else if (clientSentence.startsWith(PLAYERGETTILE)) {
-				entityGetTile(player);
-			}
-			else if (clientSentence.startsWith(CHAT)) {
-				player.sendChatMessage(clientSentence.substring(args));
-			}
-			else if (clientSentence.startsWith(GETPLAYERIDS)) {
-				sendLine(""+player.getEntityId());
-			}
-			else if (clientSentence.startsWith(GETPLAYERENTITYID)) {
-				sendLine(""+player.getEntityId());
-			}
-			else if (clientSentence.startsWith(PLAYERSETTILE)) {
-				entitySetTile(player, scan);
-			}
-			else if (clientSentence.startsWith(PLAYERSETPOS)) {
-				entitySetPos(player, scan);
-			}
-			else if (clientSentence.startsWith(PLAYERGETDIRECTION)) {
-				entityGetDirection(player);
-			}
-			else if (clientSentence.startsWith(PLAYERGETROTATION)) {
-				entityGetRotation(player);
-			}
-			else if (clientSentence.startsWith(PLAYERGETPITCH)) {
-				entityGetPitch(player);
-			}
-			else if (clientSentence.startsWith(ENTITYGETPOS)) {
-				Entity e = world.getEntityByID(scan.nextInt());
-				if (e != null)
-					entityGetPos(e);
-				else
-					sendLine("Error: No such entity");
-			}
-			else if (clientSentence.startsWith(ENTITYGETTILE)) {
-				Entity e = world.getEntityByID(scan.nextInt());
-				if (e != null)
-					entityGetTile(e);
-				else
-					sendLine("Error: No such entity");
-			}
-			else if (clientSentence.startsWith(ENTITYGETROTATION)) {
-				Entity e = world.getEntityByID(scan.nextInt());
-				if (e != null)
-					entityGetRotation(e);
-				else
-					sendLine("Error: No such entity");
-			}
-			else if (clientSentence.startsWith(ENTITYGETPITCH)) {
-				Entity e = world.getEntityByID(scan.nextInt());
-				if (e != null)
-					entityGetPitch(e);
-				else
-					sendLine("Error: No such entity");
-			}
-			else if (clientSentence.startsWith(ENTITYGETDIRECTION)) {
-				Entity e = world.getEntityByID(scan.nextInt());
-				if (e != null)
-					entityGetDirection(e);
-				else
-					sendLine("Error: No such entity");
-			}
-			else if (clientSentence.startsWith(ENTITYSETTILE)) {
-				Entity e = world.getEntityByID(scan.nextInt());
-				if (e != null)
-					entitySetTile(e, scan);
-				
-			}
-			else if (clientSentence.startsWith(ENTITYSETPOS)) {
-				Entity e = world.getEntityByID(scan.nextInt());
-				if (e != null)
-					entitySetPos(e, scan);
-			}
+			
+			runCommand(mc, player, cmd, args, scan);
+			
 			scan.close();
 			scan = null;
 		}
@@ -310,6 +146,174 @@ public class MinecraftCommunicator {
 		}
 	}
 
+
+	private void runCommand(Minecraft mc, EntityPlayerSP player,
+			String cmd, String args, Scanner scan) throws InputMismatchException, NoSuchElementException, 
+			IndexOutOfBoundsException {
+		if (cmd.equals(GETBLOCK)) {
+			Block block = world.getBlockState(getPosition(scan)).getBlock();
+			int id = getRaspberryType(block);
+			sendLine(""+id);
+		}
+		else if (cmd.equals(GETBLOCKWITHDATA)) {
+			IBlockState state = world.getBlockState(getPosition(scan));
+			Block block = state.getBlock();
+			int id = getRaspberryType(block);
+			sendLine(""+id+","+block.getMetaFromState(state));
+		}
+		else if (cmd.equals(GETHEIGHT)) {
+			BlockPos pos = getPosition(scan.nextInt(), 0, scan.nextInt());
+			Chunk chunk = world.getChunkFromBlockCoords(pos);
+			int h = chunk.getHeight(pos);
+			int x = pos.getX();
+			int z = pos.getZ();
+			for (int y = world.getHeight() ; y >= h ; y--) {
+				Block b = chunk.getBlock(x,y,z);
+				if (b != Blocks.air) {
+					h = y;
+					break;
+				}
+			}
+
+			h -= world.getSpawnPoint().getY();
+			
+			sendLine(h);
+		}
+		else if (cmd.equals(SETBLOCK)) {
+			BlockPos pos = getPosition(scan);
+			int type = scan.nextInt();
+
+			Block b = getBlockByRaspberryType(type);
+			IBlockState s = scan.hasNextInt() ? b.getStateFromMeta(scan.nextInt()) : b.getDefaultState();
+			onServerTick.queueSetBlockState(pos, s);
+//			world.setBlockState(pos, s, 2); 
+			//			mc.theWorld.markBlocksDirtyVertical(pos.getX(), pos.getZ(), pos.getX(), pos.getZ());
+		
+			//world.checkLight(pos);
+
+			//		        if (!world.isRemote)
+			//		        {
+			//		            world.markBlockForUpdate(pos);
+			//		        }
+		}
+		else if (cmd.equals(SETBLOCKS)) {
+			BlockPos pos1 = getPosition(scan);
+			BlockPos pos2 = getPosition(scan);
+			int type = scan.nextInt();
+
+			Block b = getBlockByRaspberryType(type);
+			IBlockState state;
+			
+			if (scan.hasNextInt()) {
+				state = b.getStateFromMeta(scan.nextInt());
+			}
+			else {
+				state = b.getDefaultState();
+			}
+			int x1 = pos1.getX();
+			int x2 = pos2.getX();
+			if (x2 < x1) {
+				int t = x2;
+				x2 = x1;
+				x1 = t;
+			}
+			int y1 = pos1.getY();
+			int y2 = pos2.getY();
+			if (y2 < y1) {
+				int t = y2;
+				y2 = y1;
+				y1 = t;
+			}
+			int z1 = pos1.getZ();
+			int z2 = pos2.getZ();
+			if (z2 < z1) {
+				int t = z2;
+				z2 = z1;
+				z1 = t;
+			}
+			for (int x = x1; x <= x2; x++)
+				for (int y = y1; y <= y2; y++)
+					for (int z = z1 ; z <= z2; z++) {
+						onServerTick.queueSetBlockState(new BlockPos(x,y,z), state);
+					}
+		}
+		else if (cmd.equals(PLAYERGETPOS)) {
+			entityGetPos(player);
+		}
+		else if (cmd.equals(PLAYERGETTILE)) {
+			entityGetTile(player);
+		}
+		else if (cmd.equals(CHAT)) {
+			player.sendChatMessage(args);
+		}
+		else if (cmd.equals(GETPLAYERIDS)) {
+			sendLine(""+player.getEntityId());
+		}
+		else if (cmd.equals(GETPLAYERENTITYID)) {
+			sendLine(""+player.getEntityId());
+		}
+		else if (cmd.equals(PLAYERSETTILE)) {
+			entitySetTile(player, scan);
+		}
+		else if (cmd.equals(PLAYERSETPOS)) {
+			entitySetPos(player, scan);
+		}
+		else if (cmd.equals(PLAYERGETDIRECTION)) {
+			entityGetDirection(player);
+		}
+		else if (cmd.equals(PLAYERGETROTATION)) {
+			entityGetRotation(player);
+		}
+		else if (cmd.equals(PLAYERGETPITCH)) {
+			entityGetPitch(player);
+		}
+		else if (cmd.equals(ENTITYGETPOS)) {
+			Entity e = world.getEntityByID(scan.nextInt());
+			if (e != null)
+				entityGetPos(e);
+			else
+				sendLine("Error: No such entity");
+		}
+		else if (cmd.equals(ENTITYGETTILE)) {
+			Entity e = world.getEntityByID(scan.nextInt());
+			if (e != null)
+				entityGetTile(e);
+			else
+				sendLine("Error: No such entity");
+		}
+		else if (cmd.equals(ENTITYGETROTATION)) {
+			Entity e = world.getEntityByID(scan.nextInt());
+			if (e != null)
+				entityGetRotation(e);
+			else
+				sendLine("Error: No such entity");
+		}
+		else if (cmd.equals(ENTITYGETPITCH)) {
+			Entity e = world.getEntityByID(scan.nextInt());
+			if (e != null)
+				entityGetPitch(e);
+			else
+				sendLine("Error: No such entity");
+		}
+		else if (cmd.equals(ENTITYGETDIRECTION)) {
+			Entity e = world.getEntityByID(scan.nextInt());
+			if (e != null)
+				entityGetDirection(e);
+			else
+				sendLine("Error: No such entity");
+		}
+		else if (cmd.equals(ENTITYSETTILE)) {
+			Entity e = world.getEntityByID(scan.nextInt());
+			if (e != null)
+				entitySetTile(e, scan);
+			
+		}
+		else if (cmd.equals(ENTITYSETPOS)) {
+			Entity e = world.getEntityByID(scan.nextInt());
+			if (e != null)
+				entitySetPos(e, scan);
+		}
+	}
 
 	private void entityGetPitch(Entity e) {
 		Vec3 look = e.getLookVec();

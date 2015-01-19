@@ -19,6 +19,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -35,6 +36,9 @@ public class RaspberryJamMod
 	{
 		// some example code
 		System.out.println("Raspberry Jam Mod started");
+		
+		final OnServerTick onServerTick = new OnServerTick();
+		FMLCommonHandler.instance().bus().register(onServerTick);
 
 		new Thread(new Runnable() {
 
@@ -42,7 +46,7 @@ public class RaspberryJamMod
 			public void run() {
 				MinecraftCommunicator mcc = null;
 				try {
-					mcc = new MinecraftCommunicator();
+					mcc = new MinecraftCommunicator(onServerTick);
 					mcc.communicate();
 				} catch(IOException e) {
 					System.out.println("RaspberryJamMod error "+e);
