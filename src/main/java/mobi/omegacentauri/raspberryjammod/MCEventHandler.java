@@ -6,6 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
@@ -23,29 +26,45 @@ public class MCEventHandler {
 	List<HitDescription> hits = new LinkedList<HitDescription>();
 	static final int MAX_HITS = 512;
 	private boolean stopChanges = false;
-	
+	private boolean restrictToSword = true;
+
 	public void setStopChanges(boolean stopChanges) {
 		this.stopChanges = stopChanges;
 	}
-	
+
 	@SubscribeEvent
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
 		if (event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK) {
-			// TODO: check for sword?
-			synchronized(hits) {
-				if (hits.size() >= MAX_HITS)
-					hits.remove(0);
-				hits.add(new HitDescription(event));
+			if (! restrictToSword || holdingSword()) {
+				synchronized(hits) {
+					if (hits.size() >= MAX_HITS)
+						hits.remove(0);
+					hits.add(new HitDescription(event));
+				}
 			}
 		}
 		if (stopChanges) {
 			event.setCanceled(true);
 		}
 	}
+
+	private boolean holdingSword() {
+		ItemStack item = Minecraft.getMinecraft().thePlayer.getHeldItem();
+		if (item != null) {
+			String name = item.getUnlocalizedName();
+			if (name != null)
+				return name.contains("item.sword");
+		}
+		return false;
+	}
 	
+	public void setRestrictToSword(boolean value) {
+		restrictToSword = value;
+	}
+
 	public String getHitsAndClear() {
 		String out = "";
-		
+
 		synchronized(hits) {
 			int count = hits.size();
 			for (HitDescription e : hits) {
@@ -55,7 +74,7 @@ public class MCEventHandler {
 			}
 			hits.clear();
 		}
-		
+
 		return out;
 	}
 
@@ -106,7 +125,7 @@ public class MCEventHandler {
 			BlockPos pos = event.pos.subtract(MinecraftServer.getServer().getEntityWorld().getSpawnPoint());
 			description = ""+pos.getX()+","+pos.getY()+","+pos.getZ()+","+event.face+","+event.entity.getEntityId();
 		}
-		
+
 		public String getDescription() {
 			return description;
 		}

@@ -25,6 +25,10 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 
 @Mod(modid = RaspberryJamMod.MODID, version = RaspberryJamMod.VERSION, name = RaspberryJamMod.NAME)
 public class RaspberryJamMod
@@ -32,9 +36,17 @@ public class RaspberryJamMod
 	public static final String MODID = "raspberryjammod";
 	public static final String VERSION = "0.03";
 	public static final String NAME = "Raspberry Jam Mod";
+	private MinecraftCommunicator mcc;
 
 	@EventHandler
-	public void init(FMLInitializationEvent event)
+	public void onServerStopping(FMLServerStoppingEvent event) {
+		if (mcc != null) {
+			mcc.close();
+		}
+	}
+	
+	@EventHandler
+	public void onServerStarted(FMLServerStartedEvent event) // FMLInitializationEvent event)
 	{
 		// some example code
 		System.out.println("Raspberry Jam Mod started");
@@ -42,25 +54,29 @@ public class RaspberryJamMod
 		final MCEventHandler eventHandler = new MCEventHandler();
 		FMLCommonHandler.instance().bus().register(eventHandler);
 		MinecraftForge.EVENT_BUS.register(eventHandler);
+		try {
+			mcc = new MinecraftCommunicator(eventHandler);
 
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				MinecraftCommunicator mcc = null;
-				try {
-					mcc = new MinecraftCommunicator(eventHandler);
-					mcc.communicate();
-				} catch(IOException e) {
-					System.out.println("RaspberryJamMod error "+e);
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						mcc.communicate();
+					} catch(IOException e) {
+						System.out.println("RaspberryJamMod error "+e);
+					}
+					finally {
+						System.out.println("Closing RaspberryJamMod");
+						if (mcc != null)
+							mcc.close();
+					}
 				}
-				finally {
-					if (mcc != null)
-						mcc.close();
-				}
-			}
 
-		}).start();
+			}).start();
+		} catch (IOException e1) {
+			System.out.println("Threw "+e1);
+		}
+
 	}
 
 }

@@ -56,6 +56,7 @@ public class MinecraftCommunicator {
 
 	private static final String EVENTSBLOCKHITS = "events.block.hits";
 	private static final String EVENTSCLEAR = "events.clear";
+	private static final String EVENTSSETTING = "events.setting";
 	
 	private static final Block UNKNOWN_BLOCK = Blocks.beacon;
 	Block[] typeMap;
@@ -64,6 +65,7 @@ public class MinecraftCommunicator {
 	private DataOutputStream writer;
 	private World world;
 	private MCEventHandler eventHandler;
+	private boolean listening = true;
 
 	public MinecraftCommunicator(MCEventHandler eventHandler) throws IOException {
 		this.eventHandler = eventHandler;
@@ -74,8 +76,7 @@ public class MinecraftCommunicator {
 	void communicate() throws IOException {
 		String clientSentence;
 
-		while(true)
-		{
+		while(listening) {
 			Socket connectionSocket = null;
 
 			try {
@@ -328,6 +329,10 @@ public class MinecraftCommunicator {
 				eventHandler.setStopChanges(scan.nextInt() != 0);
 			// name_tags not supported
 		}
+		else if (cmd.equals(EVENTSSETTING)) {
+			if (scan.next().equals("restrict_to_sword"))
+				eventHandler.setRestrictToSword(scan.nextInt() != 0);
+		}
 	}
 
 	private void entityGetPitch(Entity e) {
@@ -418,6 +423,7 @@ public class MinecraftCommunicator {
 	}
 
 	public void close() {
+		listening = false;
 		try {
 			if (socket != null)
 				socket.close();
