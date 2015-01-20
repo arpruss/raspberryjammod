@@ -482,7 +482,7 @@ public class MinecraftCommunicator {
 		typeMap[60] = Blocks.farmland;
 		typeMap[61] = Blocks.furnace;
 		typeMap[62] = Blocks.lit_furnace; 
-		typeMap[63] = UNKNOWN_BLOCK; // sign_post
+		typeMap[63] = Blocks.standing_sign; 
 		typeMap[64] = Blocks.oak_door;
 		typeMap[65] = Blocks.ladder;
 		typeMap[66] = Blocks.rail;
@@ -535,7 +535,7 @@ public class MinecraftCommunicator {
 		typeMap[142] = Blocks.potatoes;
 		typeMap[155] = Blocks.quartz_block;
 		typeMap[156] = Blocks.quartz_stairs;
-		typeMap[157] = UNKNOWN_BLOCK; // double wooden slab
+		typeMap[157] = Blocks.double_wooden_slab; 
 		typeMap[158] = Blocks.wooden_slab;
 		typeMap[159] = Blocks.stained_hardened_clay;
 		typeMap[163] = Blocks.acacia_stairs;
@@ -569,6 +569,6 @@ public class MinecraftCommunicator {
 		for (int i=0; i<typeMap.length; i++) 
 			if (typeMap[i] == b)
 				return i;
-		return 157; // UNKNOWN : double wood slab
+		return 83; // UNKNOWN : sugar cane ?!
 	}
 }
