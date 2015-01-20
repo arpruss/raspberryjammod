@@ -19,6 +19,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -28,7 +30,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.0";
+	public static final String VERSION = "0.03";
 	public static final String NAME = "Raspberry Jam Mod";
 
 	@EventHandler
@@ -37,8 +39,9 @@ public class RaspberryJamMod
 		// some example code
 		System.out.println("Raspberry Jam Mod started");
 		
-		final OnServerTick onServerTick = new OnServerTick();
-		FMLCommonHandler.instance().bus().register(onServerTick);
+		final MCEventHandler eventHandler = new MCEventHandler();
+		FMLCommonHandler.instance().bus().register(eventHandler);
+		MinecraftForge.EVENT_BUS.register(eventHandler);
 
 		new Thread(new Runnable() {
 
@@ -46,7 +49,7 @@ public class RaspberryJamMod
 			public void run() {
 				MinecraftCommunicator mcc = null;
 				try {
-					mcc = new MinecraftCommunicator(onServerTick);
+					mcc = new MinecraftCommunicator(eventHandler);
 					mcc.communicate();
 				} catch(IOException e) {
 					System.out.println("RaspberryJamMod error "+e);

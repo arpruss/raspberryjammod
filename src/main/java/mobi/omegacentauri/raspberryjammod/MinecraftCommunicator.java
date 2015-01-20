@@ -27,8 +27,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 public class MinecraftCommunicator {
-	// world.checkpoint.save/restore, player.setting, world.setting,
-	// camera.*, events.* unsupported
+	// world.checkpoint.save/restore, player.setting, world.setting(nametags_visible,*),
+	// camera.* unsupported
 	private static final String CHAT = "chat.post";
 	public static final String SETBLOCK = "world.setBlock";
 	public static final String SETBLOCKS = "world.setBlocks"; 
@@ -52,17 +52,21 @@ public class MinecraftCommunicator {
 	private static final String ENTITYGETTILE = "entity.getTile"; 
 	private static final String ENTITYSETTILE = "entity.setTile"; 
 	private static final String ENTITYSETPOS = "entity.setPos"; 
+	private static final String WORLDSETTING = "world.setting";
 
+	private static final String EVENTSBLOCKHITS = "events.block.hits";
+	private static final String EVENTSCLEAR = "events.clear";
+	
 	private static final Block UNKNOWN_BLOCK = Blocks.beacon;
 	Block[] typeMap;
 
 	private ServerSocket socket;
 	private DataOutputStream writer;
 	private World world;
-	private OnServerTick onServerTick;
+	private MCEventHandler eventHandler;
 
-	public MinecraftCommunicator(OnServerTick onTick) throws IOException {
-		this.onServerTick = onTick;
+	public MinecraftCommunicator(MCEventHandler eventHandler) throws IOException {
+		this.eventHandler = eventHandler;
 		socket = new ServerSocket(4711);
 		initTypeMap();
 	}
@@ -185,7 +189,7 @@ public class MinecraftCommunicator {
 
 			Block b = getBlockByRaspberryType(type);
 			IBlockState s = scan.hasNextInt() ? b.getStateFromMeta(scan.nextInt()) : b.getDefaultState();
-			onServerTick.queueSetBlockState(pos, s);
+			eventHandler.queueSetBlockState(pos, s);
 //			world.setBlockState(pos, s, 2); 
 			//			mc.theWorld.markBlocksDirtyVertical(pos.getX(), pos.getZ(), pos.getX(), pos.getZ());
 		
@@ -234,7 +238,7 @@ public class MinecraftCommunicator {
 			for (int x = x1; x <= x2; x++)
 				for (int y = y1; y <= y2; y++)
 					for (int z = z1 ; z <= z2; z++) {
-						onServerTick.queueSetBlockState(new BlockPos(x,y,z), state);
+						eventHandler.queueSetBlockState(new BlockPos(x,y,z), state);
 					}
 		}
 		else if (cmd.equals(PLAYERGETPOS)) {
@@ -312,6 +316,17 @@ public class MinecraftCommunicator {
 			Entity e = world.getEntityByID(scan.nextInt());
 			if (e != null)
 				entitySetPos(e, scan);
+		}
+		else if (cmd.equals(EVENTSCLEAR)) {
+			eventHandler.clearHits();
+		}
+		else if (cmd.equals(EVENTSBLOCKHITS)) {
+			sendLine(eventHandler.getHitsAndClear());
+		}
+		else if (cmd.equals(WORLDSETTING)) {
+			if (scan.next().equals("world_immutable"))
+				eventHandler.setStopChanges(scan.nextInt() != 0);
+			// name_tags not supported
 		}
 	}
 
