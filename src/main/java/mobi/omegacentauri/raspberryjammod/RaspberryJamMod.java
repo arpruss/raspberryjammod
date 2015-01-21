@@ -19,6 +19,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -34,7 +35,7 @@ import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.03";
+	public static final String VERSION = "0.04";
 	public static final String NAME = "Raspberry Jam Mod";
 	private MinecraftCommunicator mcc;
 
@@ -46,7 +47,7 @@ public class RaspberryJamMod
 	}
 	
 	@EventHandler
-	public void onServerStarted(FMLServerStartedEvent event) // FMLInitializationEvent event)
+	public void onServerStarting(FMLServerStartingEvent event) // FMLInitializationEvent event)
 	{
 		// some example code
 		System.out.println("Raspberry Jam Mod started");
@@ -77,6 +78,6 @@ public class RaspberryJamMod
 			System.out.println("Threw "+e1);
 		}
 
+		event.registerServerCommand(new PythonExternalCommand());
 	}
-
 }
