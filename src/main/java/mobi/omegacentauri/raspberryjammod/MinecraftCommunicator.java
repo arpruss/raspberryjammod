@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -17,6 +18,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
@@ -35,9 +37,8 @@ public class MinecraftCommunicator {
 	private static final String GETBLOCK = "world.getBlock";
 	private static final String GETBLOCKWITHDATA = "world.getBlockWithData";
 	private static final String GETHEIGHT = "world.getHeight"; 
-	private static final String GETPLAYERIDS = "world.getPlayerIds"; // singleplayer
-	private static final String GETPLAYERENTITYID = "world.getPlayerEntityId"; // singleplayer, only works for main player
-
+	private static final String GETPLAYERIDS = "world.getPlayerIds"; 
+	private static final String GETPLAYERENTITYID = "world.getPlayerEntityId"; 
 	private static final String PLAYERSETTILE = "player.setTile"; 
 	private static final String PLAYERSETPOS = "player.setPos"; 
 	private static final String PLAYERGETDIRECTION = "player.getDirection"; 
@@ -66,6 +67,7 @@ public class MinecraftCommunicator {
 	private World world;
 	private MCEventHandler eventHandler;
 	private boolean listening = true;
+	private boolean translateBlockId = true;
 
 	public MinecraftCommunicator(MCEventHandler eventHandler) throws IOException {
 		this.eventHandler = eventHandler;
@@ -157,13 +159,13 @@ public class MinecraftCommunicator {
 			IndexOutOfBoundsException {
 		if (cmd.equals(GETBLOCK)) {
 			Block block = world.getBlockState(getPosition(scan)).getBlock();
-			int id = getRaspberryType(block);
-			sendLine(""+id);
+			int id = getRaspberryBlockId(block);
+			sendLine(id);
 		}
 		else if (cmd.equals(GETBLOCKWITHDATA)) {
 			IBlockState state = world.getBlockState(getPosition(scan));
 			Block block = state.getBlock();
-			int id = getRaspberryType(block);
+			int id = getRaspberryBlockId(block);
 			sendLine(""+id+","+block.getMetaFromState(state));
 		}
 		else if (cmd.equals(GETHEIGHT)) {
@@ -188,7 +190,7 @@ public class MinecraftCommunicator {
 			BlockPos pos = getPosition(scan);
 			int type = scan.nextInt();
 
-			Block b = getBlockByRaspberryType(type);
+			Block b = getBlockByRaspberryId(type);
 			IBlockState s = scan.hasNextInt() ? b.getStateFromMeta(scan.nextInt()) : b.getDefaultState();
 			eventHandler.queueSetBlockState(pos, s);
 //			world.setBlockState(pos, s, 2); 
@@ -206,7 +208,7 @@ public class MinecraftCommunicator {
 			BlockPos pos2 = getPosition(scan);
 			int type = scan.nextInt();
 
-			Block b = getBlockByRaspberryType(type);
+			Block b = getBlockByRaspberryId(type);
 			IBlockState state;
 			
 			if (scan.hasNextInt()) {
@@ -252,10 +254,17 @@ public class MinecraftCommunicator {
 			player.sendChatMessage(args);
 		}
 		else if (cmd.equals(GETPLAYERIDS)) {
-			sendLine(""+player.getEntityId());
+			List<EntityPlayer> players = world.playerEntities;
+			String ids = "";
+			for (EntityPlayer p : players) {
+				if (ids.length() > 0)
+					ids += "|";
+				ids += p.getEntityId();
+			}
+			sendLine(ids);
 		}
 		else if (cmd.equals(GETPLAYERENTITYID)) {
-			sendLine(""+player.getEntityId());
+			sendLine(player.getEntityId());
 		}
 		else if (cmd.equals(PLAYERSETTILE)) {
 			entitySetTile(player, scan);
@@ -327,6 +336,8 @@ public class MinecraftCommunicator {
 		else if (cmd.equals(WORLDSETTING)) {
 			if (scan.next().equals("world_immutable"))
 				eventHandler.setStopChanges(scan.nextInt() != 0);
+			else if (scan.next().equals("translate_blocks"))
+				translateBlockId = scan.nextInt() != 0;
 			// name_tags not supported
 		}
 		else if (cmd.equals(EVENTSSETTING)) {
@@ -458,7 +469,7 @@ public class MinecraftCommunicator {
 		typeMap[22] = Blocks.lapis_block;
 		typeMap[24] = Blocks.sandstone;
 		typeMap[26] = Blocks.bed;
-		typeMap[27] = Blocks.redstone_block; // powered_rail
+		typeMap[27] = Blocks.golden_rail;
 		typeMap[30] = Blocks.web;
 		typeMap[31] = Blocks.tallgrass;
 		typeMap[32] = Blocks.deadbush;
@@ -502,7 +513,7 @@ public class MinecraftCommunicator {
 		typeMap[80] = Blocks.snow;
 		typeMap[81] = Blocks.cactus;
 		typeMap[82] = Blocks.clay;
-		typeMap[83] = UNKNOWN_BLOCK; // sugar cane
+		typeMap[83] = Blocks.reeds; // sugar cane
 		typeMap[85] = Blocks.oak_fence;
 		typeMap[86] = Blocks.pumpkin;
 		typeMap[87] = Blocks.netherrack;
@@ -560,10 +571,12 @@ public class MinecraftCommunicator {
 		typeMap[249] = UNKNOWN_BLOCK; // update game block		
 	}
 
-	public Block getBlockByRaspberryType(int type) {
+	public Block getBlockByRaspberryId(int id) {
+		if (! translateBlockId)
+			return Block.getBlockById(id);
 		Block b = null;
-		if (type < typeMap.length)
-			b = typeMap[type];
+		if (id < typeMap.length)
+			b = typeMap[id];
 
 		if (b == null)
 			return UNKNOWN_BLOCK;
@@ -571,7 +584,9 @@ public class MinecraftCommunicator {
 			return b;
 	}
 
-	public int getRaspberryType(Block b) {
+	public int getRaspberryBlockId(Block b) {
+		if (! translateBlockId)
+			return Block.getIdFromBlock(b);
 		for (int i=0; i<typeMap.length; i++) 
 			if (typeMap[i] == b)
 				return i;
