@@ -58,8 +58,11 @@ public class MinecraftCommunicator {
 	private static final String EVENTSBLOCKHITS = "events.block.hits";
 	private static final String EVENTSCLEAR = "events.clear";
 	private static final String EVENTSSETTING = "events.setting";
+	private static final String CAMERASETFOLLOW = "camera.setFollow"; // ideally these would take an entity ID, but that's not yet supported
+	private static final String CAMERASETNORMAL = "camera.setNormal";
 	
 	private static final Block UNKNOWN_BLOCK = Blocks.beacon;
+	
 	Block[] typeMap;
 
 	private ServerSocket socket;
@@ -67,7 +70,7 @@ public class MinecraftCommunicator {
 	private World world;
 	private MCEventHandler eventHandler;
 	private boolean listening = true;
-	private boolean translateBlockId = true;
+	private boolean translateBlockId = false; // default: do not translate blocks between Pi and Desktop
 
 	public MinecraftCommunicator(MCEventHandler eventHandler) throws IOException {
 		this.eventHandler = eventHandler;
@@ -158,15 +161,13 @@ public class MinecraftCommunicator {
 			String cmd, String args, Scanner scan) throws InputMismatchException, NoSuchElementException, 
 			IndexOutOfBoundsException {
 		if (cmd.equals(GETBLOCK)) {
-			Block block = world.getBlockState(getPosition(scan)).getBlock();
-			int id = getRaspberryBlockId(block);
-			sendLine(id);
+			DesktopBlock b = new DesktopBlock(world.getBlockState(getPosition(scan)));
+
+			sendLine(b.toAPIBlock().id);
 		}
 		else if (cmd.equals(GETBLOCKWITHDATA)) {
-			IBlockState state = world.getBlockState(getPosition(scan));
-			Block block = state.getBlock();
-			int id = getRaspberryBlockId(block);
-			sendLine(""+id+","+block.getMetaFromState(state));
+			APIBlock b = new DesktopBlock(world.getBlockState(getPosition(scan))).toAPIBlock();
+			sendLine(""+b.id+","+b.meta);
 		}
 		else if (cmd.equals(GETHEIGHT)) {
 			BlockPos pos = getPosition(scan.nextInt(), 0, scan.nextInt());
@@ -188,35 +189,18 @@ public class MinecraftCommunicator {
 		}
 		else if (cmd.equals(SETBLOCK)) {
 			BlockPos pos = getPosition(scan);
-			int type = scan.nextInt();
-
-			Block b = getBlockByRaspberryId(type);
-			IBlockState s = scan.hasNextInt() ? b.getStateFromMeta(scan.nextInt()) : b.getDefaultState();
-			eventHandler.queueSetBlockState(pos, s);
-//			world.setBlockState(pos, s, 2); 
-			//			mc.theWorld.markBlocksDirtyVertical(pos.getX(), pos.getZ(), pos.getX(), pos.getZ());
-		
-			//world.checkLight(pos);
-
-			//		        if (!world.isRemote)
-			//		        {
-			//		            world.markBlockForUpdate(pos);
-			//		        }
+			int id = scan.nextInt();
+			int meta = scan.hasNextInt() ? scan.nextInt() : 0;
+			IBlockState state = new DesktopBlock(new APIBlock(id, meta)).getBlockState();
 		}
 		else if (cmd.equals(SETBLOCKS)) {
 			BlockPos pos1 = getPosition(scan);
 			BlockPos pos2 = getPosition(scan);
-			int type = scan.nextInt();
 
-			Block b = getBlockByRaspberryId(type);
-			IBlockState state;
-			
-			if (scan.hasNextInt()) {
-				state = b.getStateFromMeta(scan.nextInt());
-			}
-			else {
-				state = b.getDefaultState();
-			}
+			int id = scan.nextInt();
+			int meta = scan.hasNextInt() ? scan.nextInt() : 0;
+			IBlockState state = new DesktopBlock(new APIBlock(id, meta)).getBlockState();
+
 			int x1 = pos1.getX();
 			int x2 = pos2.getX();
 			if (x2 < x1) {
@@ -343,6 +327,16 @@ public class MinecraftCommunicator {
 		else if (cmd.equals(EVENTSSETTING)) {
 			if (scan.next().equals("restrict_to_sword"))
 				eventHandler.setRestrictToSword(scan.nextInt() != 0);
+		}
+		else if (cmd.equals(CAMERASETFOLLOW)) {
+			// TODO: see if an entity can be specified, maybe via spectate
+			mc.gameSettings.thirdPersonView = 1;
+			mc.entityRenderer.loadEntityShader((Entity)null);
+		}
+		else if (cmd.equals(CAMERASETNORMAL)) {
+			// TODO: see if an entity can be specified, maybe via spectate
+			mc.gameSettings.thirdPersonView = 0;
+			mc.entityRenderer.loadEntityShader(mc.getRenderViewEntity());
 		}
 	}
 
@@ -571,6 +565,7 @@ public class MinecraftCommunicator {
 		typeMap[249] = UNKNOWN_BLOCK; // update game block		
 	}
 
+	/*
 	public Block getBlockByRaspberryId(int id) {
 		if (! translateBlockId)
 			return Block.getBlockById(id);
@@ -590,6 +585,67 @@ public class MinecraftCommunicator {
 		for (int i=0; i<typeMap.length; i++) 
 			if (typeMap[i] == b)
 				return i;
-		return 83; // UNKNOWN : sugar cane ?!
+		return 95; // UNKNOWN : invisible bedrock ?!
+	} */
+	
+	class APIBlock
+	{
+		private int id;
+		private int meta;
+		
+		public APIBlock(int id, int meta) {
+			this.id = id;
+			this.meta = meta;
+		}
+	}
+	
+	class DesktopBlock
+	{
+		private Block block;
+		private int meta;
+		
+		public DesktopBlock(Block block, int meta) {
+			this.block = block;
+			this.meta = meta;
+		}
+		
+		public IBlockState getBlockState() {
+			return block.getStateFromMeta(meta);
+		}
+
+		public DesktopBlock(APIBlock apiBlock) {
+			if (!MinecraftCommunicator.this.translateBlockId) {
+				this.block = Block.getBlockById(apiBlock.id);
+				if (this.block == null)
+					this.block = UNKNOWN_BLOCK;
+				this.meta = apiBlock.meta; 
+				return;
+			}
+
+			this.block = null;
+			if (apiBlock.id < typeMap.length)
+				this.block = typeMap[apiBlock.id];
+
+			if (this.block == null)
+				this.block = UNKNOWN_BLOCK;
+			
+			this.meta = apiBlock.meta; // todo: translate meta
+		}
+		
+		public DesktopBlock(IBlockState blockState) {
+			this.block = blockState.getBlock();
+			this.meta = this.block.getMetaFromState(blockState);
+		}
+
+		public APIBlock toAPIBlock() {
+			if (!MinecraftCommunicator.this.translateBlockId)
+				return new APIBlock(Block.getIdFromBlock(block), meta);
+			
+			for (int i=0; i<typeMap.length; i++) 
+				if (typeMap[i] == block)
+					return new APIBlock(i, meta); // todo: translate meta
+					
+			return new APIBlock(95, meta);
+		}
 	}
 }
