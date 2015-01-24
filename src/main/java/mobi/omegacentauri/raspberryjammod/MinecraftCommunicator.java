@@ -161,12 +161,12 @@ public class MinecraftCommunicator {
 			String cmd, String args, Scanner scan) throws InputMismatchException, NoSuchElementException, 
 			IndexOutOfBoundsException {
 		if (cmd.equals(GETBLOCK)) {
-			DesktopBlock b = new DesktopBlock(world.getBlockState(getPosition(scan)));
+			DesktopBlock b = new DesktopBlock(eventHandler.getBlockState(world, getPosition(scan)));
 
 			sendLine(b.toAPIBlock().id);
 		}
 		else if (cmd.equals(GETBLOCKWITHDATA)) {
-			APIBlock b = new DesktopBlock(world.getBlockState(getPosition(scan))).toAPIBlock();
+			APIBlock b = new DesktopBlock(eventHandler.getBlockState(world, getPosition(scan))).toAPIBlock();
 			sendLine(""+b.id+","+b.meta);
 		}
 		else if (cmd.equals(GETHEIGHT)) {
@@ -192,6 +192,7 @@ public class MinecraftCommunicator {
 			int id = scan.nextInt();
 			int meta = scan.hasNextInt() ? scan.nextInt() : 0;
 			IBlockState state = new DesktopBlock(new APIBlock(id, meta)).getBlockState();
+			eventHandler.queueSetBlockState(new BlockPos(pos), state);
 		}
 		else if (cmd.equals(SETBLOCKS)) {
 			BlockPos pos1 = getPosition(scan);

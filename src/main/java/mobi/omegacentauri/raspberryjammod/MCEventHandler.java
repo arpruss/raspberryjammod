@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -129,5 +130,23 @@ public class MCEventHandler {
 		public String getDescription() {
 			return description;
 		}
+	}
+
+	public IBlockState getBlockState(World world, BlockPos pos) {
+		int x = pos.getX();
+		int y = pos.getY();
+		int z = pos.getZ();
+	
+		synchronized(setBlockStateQueue) {
+			for (int i = setBlockStateQueue.size() - 1 ; i >= 0 ; i--) {
+				SetBlockState entry = setBlockStateQueue.get(i);
+				BlockPos qPos = entry.pos;
+				if (qPos.getX() == x && qPos.getZ() == z && qPos.getY() == y) {
+					return entry.state;
+				}
+			}
+		}
+		
+		return world.getBlockState(pos);
 	}
 }

@@ -35,7 +35,7 @@ import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.04";
+	public static final String VERSION = "0.05";
 	public static final String NAME = "Raspberry Jam Mod";
 	private MinecraftCommunicator mcc;
 
@@ -47,9 +47,7 @@ public class RaspberryJamMod
 	}
 	
 	@EventHandler
-	public void onServerStarting(FMLServerStartingEvent event) // FMLInitializationEvent event)
-	{
-		// some example code
+	public void onServerStarting(FMLServerStartingEvent event) {
 		System.out.println("Raspberry Jam Mod started");
 		
 		final MCEventHandler eventHandler = new MCEventHandler();
