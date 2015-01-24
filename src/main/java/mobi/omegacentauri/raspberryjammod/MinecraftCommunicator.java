@@ -19,6 +19,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
@@ -26,11 +27,12 @@ import net.minecraft.util.IChatComponent;
 import net.minecraft.util.Vec3;
 import net.minecraft.util.Vec3i;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
 
 public class MinecraftCommunicator {
 	// world.checkpoint.save/restore, player.setting, world.setting(nametags_visible,*),
-	// camera.* unsupported
+	// camera.setFixed() unsupported
 	private static final String CHAT = "chat.post";
 	public static final String SETBLOCK = "world.setBlock";
 	public static final String SETBLOCKS = "world.setBlocks"; 
@@ -39,6 +41,8 @@ public class MinecraftCommunicator {
 	private static final String GETHEIGHT = "world.getHeight"; 
 	private static final String GETPLAYERIDS = "world.getPlayerIds"; 
 	private static final String GETPLAYERENTITYID = "world.getPlayerEntityId"; 
+	private static final String WORLDSETTING = "world.setting";
+	
 	private static final String PLAYERSETTILE = "player.setTile"; 
 	private static final String PLAYERSETPOS = "player.setPos"; 
 	private static final String PLAYERGETDIRECTION = "player.getDirection"; 
@@ -46,6 +50,7 @@ public class MinecraftCommunicator {
 	private static final String PLAYERGETPITCH = "player.getPitch";
 	private static final String PLAYERGETPOS = "player.getPos";
 	private static final String PLAYERGETTILE = "player.getTile";	
+	
 	private static final String ENTITYGETDIRECTION = "entity.getDirection"; 
 	private static final String ENTITYGETROTATION = "entity.getRotation"; 
 	private static final String ENTITYGETPITCH = "entity.getPitch"; 
@@ -53,16 +58,17 @@ public class MinecraftCommunicator {
 	private static final String ENTITYGETTILE = "entity.getTile"; 
 	private static final String ENTITYSETTILE = "entity.setTile"; 
 	private static final String ENTITYSETPOS = "entity.setPos"; 
-	private static final String WORLDSETTING = "world.setting";
 
 	private static final String EVENTSBLOCKHITS = "events.block.hits";
 	private static final String EVENTSCLEAR = "events.clear";
 	private static final String EVENTSSETTING = "events.setting";
-	private static final String CAMERASETFOLLOW = "camera.setFollow"; // ideally these would take an entity ID, but that's not yet supported
+	
+	private static final String CAMERASETFOLLOW = "camera.setFollow";
 	private static final String CAMERASETNORMAL = "camera.setNormal";
-	
+	private static final String CAMERAGETENTITYID = "camera.getEntityId";
+
 	private static final Block UNKNOWN_BLOCK = Blocks.beacon;
-	
+
 	Block[] typeMap;
 
 	private ServerSocket socket;
@@ -138,9 +144,9 @@ public class MinecraftCommunicator {
 
 			scan = new Scanner(args);
 			scan.useDelimiter(",");
-			
+
 			runCommand(mc, player, cmd, args, scan);
-			
+
 			scan.close();
 			scan = null;
 		}
@@ -184,7 +190,7 @@ public class MinecraftCommunicator {
 			}
 
 			h -= world.getSpawnPoint().getY();
-			
+
 			sendLine(h);
 		}
 		else if (cmd.equals(SETBLOCK)) {
@@ -305,7 +311,7 @@ public class MinecraftCommunicator {
 			Entity e = world.getEntityByID(scan.nextInt());
 			if (e != null)
 				entitySetTile(e, scan);
-			
+
 		}
 		else if (cmd.equals(ENTITYSETPOS)) {
 			Entity e = world.getEntityByID(scan.nextInt());
@@ -329,15 +335,39 @@ public class MinecraftCommunicator {
 			if (scan.next().equals("restrict_to_sword"))
 				eventHandler.setRestrictToSword(scan.nextInt() != 0);
 		}
-		else if (cmd.equals(CAMERASETFOLLOW)) {
-			// TODO: see if an entity can be specified, maybe via spectate
-			mc.gameSettings.thirdPersonView = 1;
-			mc.entityRenderer.loadEntityShader((Entity)null);
+		else if (cmd.equals(CAMERAGETENTITYID)) {
+			EntityPlayerMP playerMP = getEntityPlayerMP(player);
+			if (playerMP == null) {
+				sendLine("Error: cannot find player");
+			}
+			else {
+				sendLine(playerMP.getSpectatingEntity().getEntityId());
+			}
 		}
-		else if (cmd.equals(CAMERASETNORMAL)) {
-			// TODO: see if an entity can be specified, maybe via spectate
-			mc.gameSettings.thirdPersonView = 0;
-			mc.entityRenderer.loadEntityShader(mc.getRenderViewEntity());
+		else if (cmd.equals(CAMERASETFOLLOW) || cmd.equals(CAMERASETNORMAL)) {
+			EntityPlayerMP playerMP = getEntityPlayerMP(player);
+			boolean follow = cmd.equals(CAMERASETFOLLOW);
+
+			if (playerMP != null) {
+				if (! scan.hasNext()) {
+					playerMP.setSpectatingEntity(playerMP);
+				}
+				else {
+					Entity entity = world.getEntityByID(scan.nextInt());
+					if (entity != null) {
+						playerMP.setSpectatingEntity(entity);
+					}
+				}
+			}
+
+			if (follow) {
+				mc.gameSettings.thirdPersonView = 1;
+				mc.entityRenderer.loadEntityShader((Entity)null);
+			}
+			else {
+				mc.gameSettings.thirdPersonView = 0;
+				mc.entityRenderer.loadEntityShader(mc.getRenderViewEntity());
+			}
 		}
 	}
 
@@ -588,28 +618,28 @@ public class MinecraftCommunicator {
 				return i;
 		return 95; // UNKNOWN : invisible bedrock ?!
 	} */
-	
+
 	class APIBlock
 	{
 		private int id;
 		private int meta;
-		
+
 		public APIBlock(int id, int meta) {
 			this.id = id;
 			this.meta = meta;
 		}
 	}
-	
+
 	class DesktopBlock
 	{
 		private Block block;
 		private int meta;
-		
+
 		public DesktopBlock(Block block, int meta) {
 			this.block = block;
 			this.meta = meta;
 		}
-		
+
 		public IBlockState getBlockState() {
 			return block.getStateFromMeta(meta);
 		}
@@ -629,10 +659,10 @@ public class MinecraftCommunicator {
 
 			if (this.block == null)
 				this.block = UNKNOWN_BLOCK;
-			
+
 			this.meta = apiBlock.meta; // todo: translate meta
 		}
-		
+
 		public DesktopBlock(IBlockState blockState) {
 			this.block = blockState.getBlock();
 			this.meta = this.block.getMetaFromState(blockState);
@@ -641,12 +671,22 @@ public class MinecraftCommunicator {
 		public APIBlock toAPIBlock() {
 			if (!MinecraftCommunicator.this.translateBlockId)
 				return new APIBlock(Block.getIdFromBlock(block), meta);
-			
+
 			for (int i=0; i<typeMap.length; i++) 
 				if (typeMap[i] == block)
 					return new APIBlock(i, meta); // todo: translate meta
-					
+
 			return new APIBlock(95, meta);
 		}
+	}
+
+	EntityPlayerMP getEntityPlayerMP(EntityPlayerSP playerSP) {
+		List playerEntities = MinecraftServer.getServer().getEntityWorld().playerEntities;
+		for (Object p : playerEntities) {
+			if (((EntityPlayerMP)p).getName().equals(playerSP.getName())) {
+				return (EntityPlayerMP)p;
+			}
+		}
+		return null;
 	}
 }
