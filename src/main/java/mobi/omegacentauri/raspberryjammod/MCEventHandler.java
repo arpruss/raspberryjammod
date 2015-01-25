@@ -10,6 +10,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
@@ -52,9 +53,10 @@ public class MCEventHandler {
 	private boolean holdingSword() {
 		ItemStack item = Minecraft.getMinecraft().thePlayer.getHeldItem();
 		if (item != null) {
-			String name = item.getUnlocalizedName();
-			if (name != null)
-				return name.contains("item.sword");
+			return item.getItem() instanceof ItemSword;
+//			String name = item.getUnlocalizedName();
+//			if (name != null)
+//				return name.contains("item.sword");
 		}
 		return false;
 	}

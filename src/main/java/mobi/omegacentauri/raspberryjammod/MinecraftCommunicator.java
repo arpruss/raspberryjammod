@@ -21,6 +21,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.network.play.server.S43PacketCamera;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.IChatComponent;
@@ -33,6 +34,8 @@ import net.minecraft.world.chunk.Chunk;
 public class MinecraftCommunicator {
 	// world.checkpoint.save/restore, player.setting, world.setting(nametags_visible,*),
 	// camera.setFixed() unsupported
+	// camera.setNormal(id) and camera.setFollow(id) uses spectating, and so it moves the
+	// player along with the entity that was set as camera
 	private static final String CHAT = "chat.post";
 	public static final String SETBLOCK = "world.setBlock";
 	public static final String SETBLOCKS = "world.setBlocks"; 
@@ -350,7 +353,7 @@ public class MinecraftCommunicator {
 
 			if (playerMP != null) {
 				if (! scan.hasNext()) {
-					playerMP.setSpectatingEntity(playerMP);
+					playerMP.setSpectatingEntity(null);
 				}
 				else {
 					Entity entity = world.getEntityByID(scan.nextInt());
