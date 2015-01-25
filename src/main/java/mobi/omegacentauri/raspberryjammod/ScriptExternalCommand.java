@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.command.CommandException;
@@ -13,7 +14,7 @@ import net.minecraft.util.BlockPos;
 
 public abstract class ScriptExternalCommand implements ICommand {
 	abstract protected String getScriptProcessorBase();
-	abstract protected String[] getExtensions();
+	abstract protected String getExtension();
 	abstract protected String[] getScriptPaths();
 	Process runningScript = null;
 	final String scriptProcessorPath;
@@ -22,6 +23,37 @@ public abstract class ScriptExternalCommand implements ICommand {
 		scriptProcessorPath = getScriptProcessorPath();
 	}
 
+	@Override
+	public List addTabCompletionOptions(ICommandSender sender, String[] args,
+			BlockPos pos) {
+		if (args.length == 1) {
+			List<String> scripts = getScripts();
+			for (int i = scripts.size() - 1; i>=0; i--)
+				if (! scripts.get(i).toLowerCase().startsWith(args[0].toLowerCase()))
+					scripts.remove(i);
+			return scripts;
+		}
+		return null;
+	}
+
+	protected List<String> getScripts() {
+		List<String> scripts = new ArrayList<String>();
+		String ext = getExtension();
+		
+		for (String dir : getScriptPaths()) {
+			File[] files = new File(dir).listFiles();
+			if (files != null) 
+				for (File f : files) {
+					String name = f.getName();
+					if (name.endsWith(ext) && f.isFile() && f.canRead()) 
+						scripts.add(name.substring(0, name.length()-ext.length()));
+				}
+		}
+		
+		Collections.sort(scripts);
+		
+		return scripts;
+	}
 	@Override
 	public List getAliases() {
 		List<String> aliases = new ArrayList<String>();
@@ -88,25 +120,21 @@ public abstract class ScriptExternalCommand implements ICommand {
 	
 	protected File getScript(String base) {
 		String[] paths = getScriptPaths();
-		String[] exts = getExtensions();
+
+		String ext = getExtension();		
+
+		String name = base;
 		
-		for (String ext : exts) {
-			if (ext.startsWith(".") && base.endsWith(ext)) {
-				// already have extension
-				exts = new String[]{""};
-				break;
-			}
-		}
+		if (! name.endsWith(ext))
+			name += getExtension();
 		
 		for (String path : paths) {
-			for (String ext : exts) {
-				try {
-					File f = new File(path + base + ext);
-					if (f.canRead()) 
-						return f;
-				}
-				catch(SecurityException e) {
-				}
+			try {
+				File f = new File(path + name);
+				if (f.canRead()) 
+					return f;
+			}
+			catch(SecurityException e) {
 			}
 		}
 		return null;

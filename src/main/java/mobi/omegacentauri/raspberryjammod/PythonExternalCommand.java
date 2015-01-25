@@ -33,11 +33,6 @@ public class PythonExternalCommand extends ScriptExternalCommand {
 		return true;
 	}
 
-	@Override
-	public List addTabCompletionOptions(ICommandSender sender, String[] args,
-			BlockPos pos) {
-		return null;
-	}
 
 	@Override
 	public boolean isUsernameIndex(String[] args, int index) {
@@ -55,8 +50,8 @@ public class PythonExternalCommand extends ScriptExternalCommand {
 	}
 
 	@Override
-	protected String[] getExtensions() {
-		return new String[] { ".py", ".python" };
+	protected String getExtension() {
+		return ".py";
 	}
 
 	@Override
