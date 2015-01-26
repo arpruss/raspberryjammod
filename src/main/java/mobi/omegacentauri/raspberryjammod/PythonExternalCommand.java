@@ -45,7 +45,7 @@ public class PythonExternalCommand extends ScriptExternalCommand {
 	}
 
 	@Override
-	protected String getScriptProcessorBase() {
+	protected String getScriptProcessorCommand() {
 		return "python";
 	}
 
