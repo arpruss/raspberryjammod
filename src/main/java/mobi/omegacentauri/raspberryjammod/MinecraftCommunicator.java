@@ -42,8 +42,8 @@ public class MinecraftCommunicator {
 	private static final String GETBLOCK = "world.getBlock";
 	private static final String GETBLOCKWITHDATA = "world.getBlockWithData";
 	private static final String GETHEIGHT = "world.getHeight"; 
-	private static final String GETPLAYERIDS = "world.getPlayerIds"; 
-	private static final String GETPLAYERENTITYID = "world.getPlayerEntityId"; 
+	private static final String WORLDGETPLAYERIDS = "world.getPlayerIds"; 	
+	private static final String WORLDGETPLAYERID = "world.getPlayerId"; 
 	private static final String WORLDSETTING = "world.setting";
 	
 	private static final String PLAYERSETTILE = "player.setTile"; 
@@ -103,17 +103,17 @@ public class MinecraftCommunicator {
 					Scanner scan = null;
 					Minecraft mc = Minecraft.getMinecraft();
 					if (mc == null) {
-						sendLine("Error: minecraft not available");
+						fail("Minecraft not available");
 						continue;
 					}
 					world = MinecraftServer.getServer().getEntityWorld();
 					if (world == null) {
-						sendLine("Error: world not available");
+						fail("World not available");
 						continue;
 					}
 					EntityPlayerSP player = mc.thePlayer;
 					if (player == null) {
-						sendLine("Error: player not available");
+						fail("Player not available");
 						continue;
 					}
 					process(mc, player, clientSentence);
@@ -247,7 +247,7 @@ public class MinecraftCommunicator {
 		else if (cmd.equals(CHAT)) {
 			player.sendChatMessage(args);
 		}
-		else if (cmd.equals(GETPLAYERIDS)) {
+		else if (cmd.equals(WORLDGETPLAYERIDS)) {
 			List<EntityPlayer> players = world.playerEntities;
 			String ids = "";
 			for (EntityPlayer p : players) {
@@ -257,8 +257,21 @@ public class MinecraftCommunicator {
 			}
 			sendLine(ids);
 		}
-		else if (cmd.equals(GETPLAYERENTITYID)) {
-			sendLine(player.getEntityId());
+		else if (cmd.equals(WORLDGETPLAYERID)) {
+			if (scan.hasNext()) {
+				String name = scan.next();
+				List<EntityPlayer> players = world.playerEntities;
+				for (EntityPlayer p : players) {
+					if (p.getName().equals(name)) {
+						sendLine(p.getEntityId());
+						break;
+					}
+				}
+				fail("Unknown player");
+			}
+			else {
+				sendLine(player.getEntityId());
+			}
 		}
 		else if (cmd.equals(PLAYERSETTILE)) {
 			entitySetTile(player, scan);
@@ -280,35 +293,35 @@ public class MinecraftCommunicator {
 			if (e != null)
 				entityGetPos(e);
 			else
-				sendLine("Error: No such entity");
+				fail("No such entity");
 		}
 		else if (cmd.equals(ENTITYGETTILE)) {
 			Entity e = world.getEntityByID(scan.nextInt());
 			if (e != null)
 				entityGetTile(e);
 			else
-				sendLine("Error: No such entity");
+				fail("No such entity");
 		}
 		else if (cmd.equals(ENTITYGETROTATION)) {
 			Entity e = world.getEntityByID(scan.nextInt());
 			if (e != null)
 				entityGetRotation(e);
 			else
-				sendLine("Error: No such entity");
+				fail("No such entity");
 		}
 		else if (cmd.equals(ENTITYGETPITCH)) {
 			Entity e = world.getEntityByID(scan.nextInt());
 			if (e != null)
 				entityGetPitch(e);
 			else
-				sendLine("Error: No such entity");
+				fail("No such entity");
 		}
 		else if (cmd.equals(ENTITYGETDIRECTION)) {
 			Entity e = world.getEntityByID(scan.nextInt());
 			if (e != null)
 				entityGetDirection(e);
 			else
-				sendLine("Error: No such entity");
+				fail("No such entity");
 		}
 		else if (cmd.equals(ENTITYSETTILE)) {
 			Entity e = world.getEntityByID(scan.nextInt());
@@ -341,7 +354,7 @@ public class MinecraftCommunicator {
 		else if (cmd.equals(CAMERAGETENTITYID)) {
 			EntityPlayerMP playerMP = getEntityPlayerMP(player);
 			if (playerMP == null) {
-				sendLine("Error: cannot find player");
+				fail("Cannot find player");
 			}
 			else {
 				sendLine(playerMP.getSpectatingEntity().getEntityId());
@@ -372,6 +385,11 @@ public class MinecraftCommunicator {
 				mc.entityRenderer.loadEntityShader(mc.getRenderViewEntity());
 			}
 		}
+	}
+
+	private void fail(String string) {
+		System.err.println("Error: "+string);
+		sendLine("Fail");
 	}
 
 	private void entityGetPitch(Entity e) {
