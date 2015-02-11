@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -48,15 +49,22 @@ public class MinecraftCommunicator {
 	
 	private static final String PLAYERSETTILE = "player.setTile"; 
 	private static final String PLAYERSETPOS = "player.setPos"; 
+	private static final String PLAYERSETROTATION = "player.setRotation";   	
+	private static final Object PLAYERSETPITCH = "player.setPitch"; 
+	private static final Object PLAYERSETDIRECTION = "player.setDirection"; 
 	private static final String PLAYERGETDIRECTION = "player.getDirection"; 
 	private static final String PLAYERGETROTATION = "player.getRotation"; 
 	private static final String PLAYERGETPITCH = "player.getPitch";
 	private static final String PLAYERGETPOS = "player.getPos";
 	private static final String PLAYERGETTILE = "player.getTile";	
 	
+	// TODO: entity setRotation/Direction/Pitch needs to propage to client from server
 	private static final String ENTITYGETDIRECTION = "entity.getDirection"; 
 	private static final String ENTITYGETROTATION = "entity.getRotation"; 
 	private static final String ENTITYGETPITCH = "entity.getPitch"; 
+	private static final String ENTITYSETDIRECTION = "entity.setDirection"; 
+	private static final String ENTITYSETROTATION = "entity.setRotation"; 
+	private static final String ENTITYSETPITCH = "entity.setPitch"; 
 	private static final String ENTITYGETPOS = "entity.getPos"; 
 	private static final String ENTITYGETTILE = "entity.getTile"; 
 	private static final String ENTITYSETTILE = "entity.setTile"; 
@@ -71,6 +79,8 @@ public class MinecraftCommunicator {
 	private static final String CAMERAGETENTITYID = "camera.getEntityId";
 
 	private static final Block UNKNOWN_BLOCK = Blocks.beacon;
+	
+	private static final float TOO_SMALL = (float) 1e-9;
 
 	Block[] typeMap;
 
@@ -285,6 +295,15 @@ public class MinecraftCommunicator {
 		else if (cmd.equals(PLAYERGETROTATION)) {
 			entityGetRotation(player);
 		}
+		else if (cmd.equals(PLAYERSETROTATION)) {
+			entitySetRotation(player, scan);
+		}
+		else if (cmd.equals(PLAYERSETPITCH)) {
+			entitySetPitch(player, scan);
+		}
+		else if (cmd.equals(PLAYERSETDIRECTION)) {
+			entitySetDirection(player, scan);
+		}
 		else if (cmd.equals(PLAYERGETPITCH)) {
 			entityGetPitch(player);
 		}
@@ -309,6 +328,13 @@ public class MinecraftCommunicator {
 			else
 				fail("No such entity");
 		}
+		else if (cmd.equals(ENTITYSETROTATION)) {
+			Entity e = world.getEntityByID(scan.nextInt());
+			if (e != null)
+				entitySetRotation(e, scan);
+			else
+				fail("No such entity");
+		}
 		else if (cmd.equals(ENTITYGETPITCH)) {
 			Entity e = world.getEntityByID(scan.nextInt());
 			if (e != null)
@@ -316,10 +342,24 @@ public class MinecraftCommunicator {
 			else
 				fail("No such entity");
 		}
+		else if (cmd.equals(ENTITYSETPITCH)) {
+			Entity e = world.getEntityByID(scan.nextInt());
+			if (e != null)
+				entitySetPitch(e, scan);
+			else
+				fail("No such entity");
+		}
 		else if (cmd.equals(ENTITYGETDIRECTION)) {
 			Entity e = world.getEntityByID(scan.nextInt());
 			if (e != null)
 				entityGetDirection(e);
+			else
+				fail("No such entity");
+		}
+		else if (cmd.equals(ENTITYSETDIRECTION)) {
+			Entity e = world.getEntityByID(scan.nextInt());
+			if (e != null)
+				entitySetDirection(e, scan);
 			else
 				fail("No such entity");
 		}
@@ -387,30 +427,65 @@ public class MinecraftCommunicator {
 		}
 	}
 
+	private void entitySetRotation(Entity e, Scanner scan) {
+		e.rotationYaw = scan.nextFloat();
+	}
+
+	private void entitySetPitch(Entity e, Scanner scan) {
+		e.rotationPitch = scan.nextFloat();
+	}
+
+	private void entitySetDirection(Entity e, Scanner scan) {
+		double x = scan.nextFloat();
+		double y = scan.nextFloat();
+		double z = scan.nextFloat();
+		
+		float yaw = e.rotationYaw;
+		
+		double xz = Math.sqrt(x * x + z * z);
+		
+		if (xz >= TOO_SMALL) 
+			e.rotationYaw = (float) (Math.atan2(-x, z) * 180 / Math.PI);
+		
+		float pitch = e.rotationPitch;
+		
+		if (x * x + y * y + z * z >= TOO_SMALL * TOO_SMALL)
+			e.rotationPitch = (float) (Math.atan2(-y, xz) * 180 / Math.PI);
+	}
+
 	private void fail(String string) {
 		System.err.println("Error: "+string);
 		sendLine("Fail");
 	}
 
-	private void entityGetPitch(Entity e) {
-		Vec3 look = e.getLookVec();
-		Double xz = Math.sqrt(look.xCoord * look.xCoord + look.zCoord * look.zCoord);
-		sendLine(Math.atan2(look.yCoord, xz) * 180. / Math.PI);
+	private void entityGetRotation(Entity e) {
+		sendLine(normalizeAngle(e.rotationYaw));
 	}
 
-	private void entityGetRotation(Entity e) {
-		Vec3 look = e.getLookVec();
-		if (Math.abs(look.xCoord) < 1e-10 && Math.abs(look.yCoord) < 1e-10) {
-			sendLine(0);
-		}
-		else {
-			Double angle = (Math.atan2(look.zCoord, look.xCoord) + Math.PI) * 180. / Math.PI;
-			sendLine(angle);
-		}
+	private float normalizeAngle(float angle) {
+		angle = angle % 360;
+		if (angle <= -180)
+			angle += 360;
+		if (angle > 180)
+			angle -= 360;
+		return angle;
+	}
+
+	private void entityGetPitch(Entity e) {
+		sendLine(normalizeAngle(e.rotationPitch));
 	}
 
 	private void entityGetDirection(Entity e) {
-		sendLine(e.getLookVec());
+		//sendLine(e.getLookVec());
+		Method m;
+		try {
+			m = Entity.class.getDeclaredMethod("getVectorForRotation", float.class, float.class);
+			m.setAccessible(true);
+			sendLine((Vec3)m.invoke(e, e.rotationPitch, e.rotationYaw));
+		} catch (Exception err) {
+			System.out.println("error: "+err);
+			fail("error getting direction");
+		}
 	}
 
 	private void entitySetPos(Entity e, Scanner scan) {
