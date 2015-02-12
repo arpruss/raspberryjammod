@@ -157,7 +157,7 @@ public class MinecraftCommunicator {
 			scan = new Scanner(args);
 			scan.useDelimiter(",");
 
-			runCommand(mc, clientPlayer, cmd, args, scan);
+			runCommand(clientPlayer, cmd, args, scan);
 
 			scan.close();
 			scan = null;
@@ -175,9 +175,10 @@ public class MinecraftCommunicator {
 	}
 
 
-	private void runCommand(Minecraft mc, EntityPlayerSP player,
+	private void runCommand(EntityPlayerSP clientPlayer,
 			String cmd, String args, Scanner scan) throws InputMismatchException, NoSuchElementException, 
 			IndexOutOfBoundsException {
+		
 		if (cmd.equals(GETBLOCK)) {
 			DesktopBlock b = new DesktopBlock(eventHandler.getBlockState(serverWorld, getPosition(scan)));
 
@@ -248,13 +249,13 @@ public class MinecraftCommunicator {
 					}
 		}
 		else if (cmd.equals(PLAYERGETPOS)) {
-			entityGetPos(player);
+			entityGetPos(clientPlayer);
 		}
 		else if (cmd.equals(PLAYERGETTILE)) {
-			entityGetTile(player);
+			entityGetTile(clientPlayer);
 		}
 		else if (cmd.equals(CHAT)) {
-			player.sendChatMessage(args);
+			clientPlayer.sendChatMessage(args);
 		}
 		else if (cmd.equals(WORLDGETPLAYERIDS)) {
 			List<EntityPlayer> players = serverWorld.playerEntities;
@@ -279,35 +280,35 @@ public class MinecraftCommunicator {
 				fail("Unknown player");
 			}
 			else {
-				sendLine(player.getEntityId());
+				sendLine(clientPlayer.getEntityId());
 			}
 		}
 		else if (cmd.equals(PLAYERSETTILE)) {
-			entitySetTile(player, scan);
+			entitySetTile(clientPlayer, scan);
 		}
 		else if (cmd.equals(PLAYERSETPOS)) {
-			entitySetPos(player, scan);
+			entitySetPos(clientPlayer, scan);
 		}
 		else if (cmd.equals(PLAYERGETDIRECTION)) {
-			entityGetDirection(player);
+			entityGetDirection(clientPlayer);
 		}
 		else if (cmd.equals(PLAYERGETROTATION)) {
-			entityGetRotation(player);
+			entityGetRotation(clientPlayer);
 		}
 		else if (cmd.equals(PLAYERSETROTATION)) {
-			player.rotationYaw = scan.nextFloat();
+			clientPlayer.rotationYaw = scan.nextFloat();
 		}
 		else if (cmd.equals(PLAYERSETPITCH)) {
-			player.rotationPitch = scan.nextFloat();
+			clientPlayer.rotationPitch = scan.nextFloat();
 		}
 		else if (cmd.equals(PLAYERSETDIRECTION)) {
 			double x = scan.nextDouble();
 			double y = scan.nextDouble();
 			double z = scan.nextDouble();
-			entitySetDirection(player, x, y, z);
+			entitySetDirection(clientPlayer, x, y, z);
 		}
 		else if (cmd.equals(PLAYERGETPITCH)) {
-			entityGetPitch(player);
+			entityGetPitch(clientPlayer);
 		}
 		else if (cmd.equals(ENTITYGETPOS)) {
 			Entity e = serverWorld.getEntityByID(scan.nextInt());
@@ -411,7 +412,7 @@ public class MinecraftCommunicator {
 				eventHandler.setRestrictToSword(scan.nextInt() != 0);
 		}
 		else if (cmd.equals(CAMERAGETENTITYID)) {
-			EntityPlayerMP playerMP = getServerPlayer(player);
+			EntityPlayerMP playerMP = getServerPlayer(clientPlayer);
 			if (playerMP == null) {
 				fail("Cannot find player");
 			}
@@ -420,7 +421,7 @@ public class MinecraftCommunicator {
 			}
 		}
 		else if (cmd.equals(CAMERASETFOLLOW) || cmd.equals(CAMERASETNORMAL)) {
-			EntityPlayerMP playerMP = getServerPlayer(player);
+			EntityPlayerMP playerMP = getServerPlayer(clientPlayer);
 			boolean follow = cmd.equals(CAMERASETFOLLOW);
 
 			if (playerMP != null) {
