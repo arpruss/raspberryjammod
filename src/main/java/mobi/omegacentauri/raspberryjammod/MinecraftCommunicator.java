@@ -57,8 +57,6 @@ public class MinecraftCommunicator {
 	private static final String PLAYERGETPITCH = "player.getPitch";
 	private static final String PLAYERGETPOS = "player.getPos";
 	private static final String PLAYERGETTILE = "player.getTile";	
-	
-	// TODO: entity setRotation/Direction/Pitch needs to propage to client from server
 	private static final String ENTITYGETDIRECTION = "entity.getDirection"; 
 	private static final String ENTITYGETROTATION = "entity.getRotation"; 
 	private static final String ENTITYGETPITCH = "entity.getPitch"; 
@@ -296,13 +294,16 @@ public class MinecraftCommunicator {
 			entityGetRotation(player);
 		}
 		else if (cmd.equals(PLAYERSETROTATION)) {
-			entitySetRotation(player, scan);
+			player.rotationYaw = scan.nextFloat();
 		}
 		else if (cmd.equals(PLAYERSETPITCH)) {
-			entitySetPitch(player, scan);
+			player.rotationPitch = scan.nextFloat();
 		}
 		else if (cmd.equals(PLAYERSETDIRECTION)) {
-			entitySetDirection(player, scan);
+			double x = scan.nextDouble();
+			double y = scan.nextDouble();
+			double z = scan.nextDouble();
+			entitySetDirection(player, x, y, z);
 		}
 		else if (cmd.equals(PLAYERGETPITCH)) {
 			entityGetPitch(player);
@@ -329,11 +330,16 @@ public class MinecraftCommunicator {
 				fail("No such entity");
 		}
 		else if (cmd.equals(ENTITYSETROTATION)) {
-			Entity e = world.getEntityByID(scan.nextInt());
+			int id = scan.nextInt();
+			float angle = scan.nextFloat();
+			Entity e = world.getEntityByID(id);
 			if (e != null)
-				entitySetRotation(e, scan);
+				e.rotationYaw = angle;
 			else
 				fail("No such entity");
+			e = mc.theWorld.getEntityByID(id);
+			if (e != null)
+				e.rotationYaw = angle;
 		}
 		else if (cmd.equals(ENTITYGETPITCH)) {
 			Entity e = world.getEntityByID(scan.nextInt());
@@ -343,11 +349,16 @@ public class MinecraftCommunicator {
 				fail("No such entity");
 		}
 		else if (cmd.equals(ENTITYSETPITCH)) {
-			Entity e = world.getEntityByID(scan.nextInt());
+			int id = scan.nextInt();
+			float angle = scan.nextFloat();
+			Entity e = world.getEntityByID(id);
 			if (e != null)
-				entitySetPitch(e, scan);
+				e.rotationPitch = angle;
 			else
 				fail("No such entity");
+			e = mc.theWorld.getEntityByID(id);
+			if (e != null)
+				e.rotationPitch = angle;
 		}
 		else if (cmd.equals(ENTITYGETDIRECTION)) {
 			Entity e = world.getEntityByID(scan.nextInt());
@@ -357,11 +368,18 @@ public class MinecraftCommunicator {
 				fail("No such entity");
 		}
 		else if (cmd.equals(ENTITYSETDIRECTION)) {
-			Entity e = world.getEntityByID(scan.nextInt());
+			int id = scan.nextInt();
+			double x  = scan.nextDouble();
+			double y = scan.nextDouble();
+			double z = scan.nextDouble();
+			Entity e = world.getEntityByID(id);
 			if (e != null)
-				entitySetDirection(e, scan);
+				entitySetDirection(e, x, y, z);
 			else
 				fail("No such entity");
+			e = mc.theWorld.getEntityByID(id);
+			if (e != null)
+				entitySetDirection(e, x, y, z);
 		}
 		else if (cmd.equals(ENTITYSETTILE)) {
 			Entity e = world.getEntityByID(scan.nextInt());
@@ -427,27 +445,11 @@ public class MinecraftCommunicator {
 		}
 	}
 
-	private void entitySetRotation(Entity e, Scanner scan) {
-		e.rotationYaw = scan.nextFloat();
-	}
-
-	private void entitySetPitch(Entity e, Scanner scan) {
-		e.rotationPitch = scan.nextFloat();
-	}
-
-	private void entitySetDirection(Entity e, Scanner scan) {
-		double x = scan.nextFloat();
-		double y = scan.nextFloat();
-		double z = scan.nextFloat();
-		
-		float yaw = e.rotationYaw;
-		
+	private void entitySetDirection(Entity e, double x, double y, double z) {
 		double xz = Math.sqrt(x * x + z * z);
 		
 		if (xz >= TOO_SMALL) 
 			e.rotationYaw = (float) (Math.atan2(-x, z) * 180 / Math.PI);
-		
-		float pitch = e.rotationPitch;
 		
 		if (x * x + y * y + z * z >= TOO_SMALL * TOO_SMALL)
 			e.rotationPitch = (float) (Math.atan2(-y, xz) * 180 / Math.PI);
