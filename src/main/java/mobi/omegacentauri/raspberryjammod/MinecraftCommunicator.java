@@ -43,6 +43,7 @@ public class MinecraftCommunicator {
 	private static final String GETBLOCK = "world.getBlock";
 	private static final String GETBLOCKWITHDATA = "world.getBlockWithData";
 	private static final String GETHEIGHT = "world.getHeight"; 
+
 	private static final String WORLDGETPLAYERIDS = "world.getPlayerIds"; 	
 	private static final String WORLDGETPLAYERID = "world.getPlayerId"; 
 	private static final String WORLDSETTING = "world.setting";
@@ -84,10 +85,11 @@ public class MinecraftCommunicator {
 
 	private ServerSocket socket;
 	private DataOutputStream writer;
-	private World world;
+	private World serverWorld;
 	private MCEventHandler eventHandler;
 	private boolean listening = true;
 	private boolean translateBlockId = false; // default: do not translate blocks between Pi and Desktop
+	private Minecraft mc;
 
 	public MinecraftCommunicator(MCEventHandler eventHandler) throws IOException {
 		this.eventHandler = eventHandler;
@@ -109,22 +111,22 @@ public class MinecraftCommunicator {
 
 				while(null != (clientSentence = reader.readLine())) {
 					Scanner scan = null;
-					Minecraft mc = Minecraft.getMinecraft();
+					mc = Minecraft.getMinecraft();
 					if (mc == null) {
 						fail("Minecraft not available");
 						continue;
 					}
-					world = MinecraftServer.getServer().getEntityWorld();
-					if (world == null) {
+					serverWorld = MinecraftServer.getServer().getEntityWorld();
+					if (serverWorld == null) {
 						fail("World not available");
 						continue;
 					}
-					EntityPlayerSP player = mc.thePlayer;
-					if (player == null) {
+					EntityPlayerSP clientPlayer = mc.thePlayer;
+					if (clientPlayer == null) {
 						fail("Player not available");
 						continue;
 					}
-					process(mc, player, clientSentence);
+					process(clientPlayer, clientSentence);
 				}
 			}
 			catch (Exception e) {
@@ -142,8 +144,7 @@ public class MinecraftCommunicator {
 		}
 	}
 
-	private void process(Minecraft mc, EntityPlayerSP player,
-			String clientSentence) {
+	private void process(EntityPlayerSP clientPlayer, String clientSentence) {
 		Scanner scan = null;
 
 		try {	
@@ -156,7 +157,7 @@ public class MinecraftCommunicator {
 			scan = new Scanner(args);
 			scan.useDelimiter(",");
 
-			runCommand(mc, player, cmd, args, scan);
+			runCommand(mc, clientPlayer, cmd, args, scan);
 
 			scan.close();
 			scan = null;
@@ -178,21 +179,21 @@ public class MinecraftCommunicator {
 			String cmd, String args, Scanner scan) throws InputMismatchException, NoSuchElementException, 
 			IndexOutOfBoundsException {
 		if (cmd.equals(GETBLOCK)) {
-			DesktopBlock b = new DesktopBlock(eventHandler.getBlockState(world, getPosition(scan)));
+			DesktopBlock b = new DesktopBlock(eventHandler.getBlockState(serverWorld, getPosition(scan)));
 
 			sendLine(b.toAPIBlock().id);
 		}
 		else if (cmd.equals(GETBLOCKWITHDATA)) {
-			APIBlock b = new DesktopBlock(eventHandler.getBlockState(world, getPosition(scan))).toAPIBlock();
+			APIBlock b = new DesktopBlock(eventHandler.getBlockState(serverWorld, getPosition(scan))).toAPIBlock();
 			sendLine(""+b.id+","+b.meta);
 		}
 		else if (cmd.equals(GETHEIGHT)) {
 			BlockPos pos = getPosition(scan.nextInt(), 0, scan.nextInt());
-			Chunk chunk = world.getChunkFromBlockCoords(pos);
+			Chunk chunk = serverWorld.getChunkFromBlockCoords(pos);
 			int h = chunk.getHeight(pos);
 			int x = pos.getX();
 			int z = pos.getZ();
-			for (int y = world.getHeight() ; y >= h ; y--) {
+			for (int y = serverWorld.getHeight() ; y >= h ; y--) {
 				Block b = chunk.getBlock(x,y,z);
 				if (b != Blocks.air) {
 					h = y;
@@ -200,7 +201,7 @@ public class MinecraftCommunicator {
 				}
 			}
 
-			h -= world.getSpawnPoint().getY();
+			h -= serverWorld.getSpawnPoint().getY();
 
 			sendLine(h);
 		}
@@ -256,7 +257,7 @@ public class MinecraftCommunicator {
 			player.sendChatMessage(args);
 		}
 		else if (cmd.equals(WORLDGETPLAYERIDS)) {
-			List<EntityPlayer> players = world.playerEntities;
+			List<EntityPlayer> players = serverWorld.playerEntities;
 			String ids = "";
 			for (EntityPlayer p : players) {
 				if (ids.length() > 0)
@@ -268,7 +269,7 @@ public class MinecraftCommunicator {
 		else if (cmd.equals(WORLDGETPLAYERID)) {
 			if (scan.hasNext()) {
 				String name = scan.next();
-				List<EntityPlayer> players = world.playerEntities;
+				List<EntityPlayer> players = serverWorld.playerEntities;
 				for (EntityPlayer p : players) {
 					if (p.getName().equals(name)) {
 						sendLine(p.getEntityId());
@@ -309,21 +310,21 @@ public class MinecraftCommunicator {
 			entityGetPitch(player);
 		}
 		else if (cmd.equals(ENTITYGETPOS)) {
-			Entity e = world.getEntityByID(scan.nextInt());
+			Entity e = serverWorld.getEntityByID(scan.nextInt());
 			if (e != null)
 				entityGetPos(e);
 			else
 				fail("No such entity");
 		}
 		else if (cmd.equals(ENTITYGETTILE)) {
-			Entity e = world.getEntityByID(scan.nextInt());
+			Entity e = serverWorld.getEntityByID(scan.nextInt());
 			if (e != null)
 				entityGetTile(e);
 			else
 				fail("No such entity");
 		}
 		else if (cmd.equals(ENTITYGETROTATION)) {
-			Entity e = world.getEntityByID(scan.nextInt());
+			Entity e = serverWorld.getEntityByID(scan.nextInt());
 			if (e != null)
 				entityGetRotation(e);
 			else
@@ -332,7 +333,7 @@ public class MinecraftCommunicator {
 		else if (cmd.equals(ENTITYSETROTATION)) {
 			int id = scan.nextInt();
 			float angle = scan.nextFloat();
-			Entity e = world.getEntityByID(id);
+			Entity e = serverWorld.getEntityByID(id);
 			if (e != null)
 				e.rotationYaw = angle;
 			else
@@ -342,7 +343,7 @@ public class MinecraftCommunicator {
 				e.rotationYaw = angle;
 		}
 		else if (cmd.equals(ENTITYGETPITCH)) {
-			Entity e = world.getEntityByID(scan.nextInt());
+			Entity e = serverWorld.getEntityByID(scan.nextInt());
 			if (e != null)
 				entityGetPitch(e);
 			else
@@ -351,7 +352,7 @@ public class MinecraftCommunicator {
 		else if (cmd.equals(ENTITYSETPITCH)) {
 			int id = scan.nextInt();
 			float angle = scan.nextFloat();
-			Entity e = world.getEntityByID(id);
+			Entity e = serverWorld.getEntityByID(id);
 			if (e != null)
 				e.rotationPitch = angle;
 			else
@@ -361,7 +362,7 @@ public class MinecraftCommunicator {
 				e.rotationPitch = angle;
 		}
 		else if (cmd.equals(ENTITYGETDIRECTION)) {
-			Entity e = world.getEntityByID(scan.nextInt());
+			Entity e = serverWorld.getEntityByID(scan.nextInt());
 			if (e != null)
 				entityGetDirection(e);
 			else
@@ -372,7 +373,7 @@ public class MinecraftCommunicator {
 			double x  = scan.nextDouble();
 			double y = scan.nextDouble();
 			double z = scan.nextDouble();
-			Entity e = world.getEntityByID(id);
+			Entity e = serverWorld.getEntityByID(id);
 			if (e != null)
 				entitySetDirection(e, x, y, z);
 			else
@@ -382,13 +383,13 @@ public class MinecraftCommunicator {
 				entitySetDirection(e, x, y, z);
 		}
 		else if (cmd.equals(ENTITYSETTILE)) {
-			Entity e = world.getEntityByID(scan.nextInt());
+			Entity e = serverWorld.getEntityByID(scan.nextInt());
 			if (e != null)
 				entitySetTile(e, scan);
 
 		}
 		else if (cmd.equals(ENTITYSETPOS)) {
-			Entity e = world.getEntityByID(scan.nextInt());
+			Entity e = serverWorld.getEntityByID(scan.nextInt());
 			if (e != null)
 				entitySetPos(e, scan);
 		}
@@ -410,7 +411,7 @@ public class MinecraftCommunicator {
 				eventHandler.setRestrictToSword(scan.nextInt() != 0);
 		}
 		else if (cmd.equals(CAMERAGETENTITYID)) {
-			EntityPlayerMP playerMP = getEntityPlayerMP(player);
+			EntityPlayerMP playerMP = getServerPlayer(player);
 			if (playerMP == null) {
 				fail("Cannot find player");
 			}
@@ -419,7 +420,7 @@ public class MinecraftCommunicator {
 			}
 		}
 		else if (cmd.equals(CAMERASETFOLLOW) || cmd.equals(CAMERASETNORMAL)) {
-			EntityPlayerMP playerMP = getEntityPlayerMP(player);
+			EntityPlayerMP playerMP = getServerPlayer(player);
 			boolean follow = cmd.equals(CAMERASETFOLLOW);
 
 			if (playerMP != null) {
@@ -427,7 +428,7 @@ public class MinecraftCommunicator {
 					playerMP.setSpectatingEntity(null);
 				}
 				else {
-					Entity entity = world.getEntityByID(scan.nextInt());
+					Entity entity = serverWorld.getEntityByID(scan.nextInt());
 					if (entity != null) {
 						playerMP.setSpectatingEntity(entity);
 					}
@@ -494,7 +495,7 @@ public class MinecraftCommunicator {
 		double x = scan.nextDouble();
 		double y = scan.nextDouble();
 		double z = scan.nextDouble();
-		BlockPos spawnPos = world.getSpawnPoint();
+		BlockPos spawnPos = serverWorld.getSpawnPoint();
 		e.setPositionAndUpdate(x + spawnPos.getX(), 
 				y + spawnPos.getY(),
 				z + spawnPos.getZ());
@@ -506,7 +507,7 @@ public class MinecraftCommunicator {
 	}
 
 	private void entityGetTile(Entity e) {
-		BlockPos spawn = world.getSpawnPoint();
+		BlockPos spawn = serverWorld.getSpawnPoint();
 		Vec3i spawnPoint = new Vec3i(spawn.getX(), spawn.getY(), spawn.getZ());
 		BlockPos pos = e.getPosition().subtract(spawnPoint);
 
@@ -518,7 +519,7 @@ public class MinecraftCommunicator {
 	}
 
 	private void entityGetPos(Entity e) {
-		BlockPos spawn = world.getSpawnPoint();
+		BlockPos spawn = serverWorld.getSpawnPoint();
 		Vec3 spawnPoint = new Vec3(spawn.getX(), spawn.getY(), spawn.getZ());
 		Vec3 pos = e.getPositionVector().subtract(spawnPoint);
 		sendLine(pos);
@@ -553,7 +554,7 @@ public class MinecraftCommunicator {
 	}
 
 	private BlockPos getPosition(int x, int y, int z) {
-		return world.getSpawnPoint().add(x,y,z);
+		return serverWorld.getSpawnPoint().add(x,y,z);
 	}
 
 	public void close() {
@@ -778,13 +779,7 @@ public class MinecraftCommunicator {
 		}
 	}
 
-	EntityPlayerMP getEntityPlayerMP(EntityPlayerSP playerSP) {
-		List playerEntities = MinecraftServer.getServer().getEntityWorld().playerEntities;
-		for (Object p : playerEntities) {
-			if (((EntityPlayerMP)p).getName().equals(playerSP.getName())) {
-				return (EntityPlayerMP)p;
-			}
-		}
-		return null;
+	EntityPlayerMP getServerPlayer(EntityPlayerSP playerSP) {
+		return (EntityPlayerMP)serverWorld.getEntityByID(playerSP.getEntityId());
 	}
 }
