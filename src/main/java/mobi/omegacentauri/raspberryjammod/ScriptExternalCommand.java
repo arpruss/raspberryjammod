@@ -1,7 +1,11 @@
 package mobi.omegacentauri.raspberryjammod;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +16,8 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.IChatComponent;
 
 public abstract class ScriptExternalCommand implements ICommand {
 	abstract protected String getScriptProcessorCommand();
@@ -148,16 +154,46 @@ public abstract class ScriptExternalCommand implements ICommand {
 			cmd.add(args[i]);
 		
 		ProcessBuilder pb = new ProcessBuilder(cmd);
-		pb.redirectErrorStream(true);
+//		pb.redirectErrorStream(true);
 		pb.directory(script.getParentFile());
-		pb.inheritIO();
+//		pb.inheritIO();
 		pb.command(cmd);
 		try {
 			System.out.println("Running "+script);
 			runningScript = pb.start();
+			gobble(runningScript.getInputStream(), "");
+			gobble(runningScript.getErrorStream(), "[ERR] ");
 		} catch (IOException e) {
 			throw new CommandException("Error "+e);
 		}
+	}
+	
+	private void gobble(final InputStream stream, final String label) {
+		Thread t = new Thread() {
+			
+			@Override
+			public void run() {
+				BufferedReader br;
+				
+				br = new BufferedReader(new InputStreamReader(stream));
+			
+				String line;
+				try {
+					while ( null != ( line = br.readLine()) ) {
+						line.trim();
+						Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(label + line));
+					}
+				} catch (IOException e) {
+				}
+				
+				try {
+					br.close();
+				} catch (IOException e) {
+				}
+			}
+		};
+		t.setDaemon(true);
+		t.start();
 	}
 	
 	protected File getScript(String base) {
