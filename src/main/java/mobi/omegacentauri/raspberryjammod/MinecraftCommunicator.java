@@ -401,9 +401,10 @@ public class MinecraftCommunicator {
 			sendLine(eventHandler.getHitsAndClear());
 		}
 		else if (cmd.equals(WORLDSETTING)) {
-			if (scan.next().equals("world_immutable"))
+			String setting = scan.next();
+			if (setting.equals("world_immutable"))
 				eventHandler.setStopChanges(scan.nextInt() != 0);
-			else if (scan.next().equals("translate_blocks"))
+			else if (setting.equals("translate_blocks"))
 				translateBlockId = scan.nextInt() != 0;
 			// name_tags not supported
 		}

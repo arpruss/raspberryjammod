@@ -21,11 +21,14 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
@@ -39,6 +42,17 @@ public class RaspberryJamMod
 	public static final String VERSION = "0.07";
 	public static final String NAME = "Raspberry Jam Mod";
 	private MinecraftCommunicator mcc;
+	public static Configuration configFile;
+	
+	@Mod.EventHandler
+	public void preInit(FMLPreInitializationEvent event) {
+		Configuration configFile = new Configuration(event.getSuggestedConfigurationFile());
+		configFile.load();
+
+		Property test = configFile.get(Configuration.CATEGORY_GENERAL, "translatePE", false);
+		test.comment = "Translate PE block IDs";
+		configFile.save();
+	}
 
 	@EventHandler
 	public void onServerStopping(FMLServerStoppingEvent event) {
