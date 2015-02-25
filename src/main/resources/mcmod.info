@@ -5,7 +5,7 @@
   "description": "Implement most of Raspberry PI/Juice API",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "",
+  "url": "http://github.com/arpruss/raspberryjammod",
   "updateUrl": "",
   "authorList": ["arpruss"],
   "credits": "The Forge and FML guys, for the Forge",

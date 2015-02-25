@@ -35,23 +35,31 @@ import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 
-@Mod(modid = RaspberryJamMod.MODID, version = RaspberryJamMod.VERSION, name = RaspberryJamMod.NAME)
+@Mod(modid = RaspberryJamMod.MODID, version = RaspberryJamMod.VERSION, name = RaspberryJamMod.NAME,
+guiFactory = "mobi.omegacentauri.raspberryjammod.GuiFactory")
+
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.07";
+	public static final String VERSION = "0.08";
 	public static final String NAME = "Raspberry Jam Mod";
 	private MinecraftCommunicator mcc;
 	public static Configuration configFile;
+	public static int portNumber = 4711;
 	
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		Configuration configFile = new Configuration(event.getSuggestedConfigurationFile());
+		configFile = new Configuration(event.getSuggestedConfigurationFile());
 		configFile.load();
 
-		Property test = configFile.get(Configuration.CATEGORY_GENERAL, "translatePE", false);
-		test.comment = "Translate PE block IDs";
-		configFile.save();
+		synchronizeConfig();
+	}
+	
+	public static void synchronizeConfig() {
+		portNumber = configFile.getInt("Port Number", Configuration.CATEGORY_GENERAL, 4711, 1, 65535, "Port number");
+		
+		if (configFile.hasChanged()) 
+			configFile.save();
 	}
 
 	@EventHandler

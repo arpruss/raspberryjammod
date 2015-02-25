@@ -5,8 +5,8 @@ import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.config.GuiConfig;
 
-public class RaspberryJamGui extends GuiConfig {
-	public RaspberryJamGui(GuiScreen parent) {
+public class Gui extends GuiConfig {
+	public Gui(GuiScreen parent) {
 		super(parent,
 		        new ConfigElement(RaspberryJamMod.configFile.getCategory(Configuration.CATEGORY_GENERAL)).getChildElements(),
 		        "RaspberryJamMod", false, false, GuiConfig.getAbridgedConfigPath(RaspberryJamMod.configFile.toString()));

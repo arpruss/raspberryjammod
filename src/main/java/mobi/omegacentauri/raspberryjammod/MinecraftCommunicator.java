@@ -93,7 +93,7 @@ public class MinecraftCommunicator {
 
 	public MinecraftCommunicator(MCEventHandler eventHandler) throws IOException {
 		this.eventHandler = eventHandler;
-		socket = new ServerSocket(4711);
+		socket = new ServerSocket(RaspberryJamMod.portNumber);
 		initTypeMap();
 	}
 
