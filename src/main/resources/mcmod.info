@@ -1,6 +1,6 @@
 [
 {
-  "modid": "rasberryjammod",
+  "modid": "raspberryjammod",
   "name": "Raspberry Jam Mod",
   "description": "Implement most of Raspberry PI/Juice API",
   "version": "${version}",

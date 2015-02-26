@@ -37,7 +37,6 @@ import net.minecraftforge.fml.common.registry.EntityRegistry;
 
 @Mod(modid = RaspberryJamMod.MODID, version = RaspberryJamMod.VERSION, name = RaspberryJamMod.NAME,
 guiFactory = "mobi.omegacentauri.raspberryjammod.GuiFactory")
-
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
@@ -51,6 +50,7 @@ public class RaspberryJamMod
 	public void preInit(FMLPreInitializationEvent event) {
 		configFile = new Configuration(event.getSuggestedConfigurationFile());
 		configFile.load();
+		System.out.println("configFile = "+configFile.getConfigFile().getPath());
 
 		synchronizeConfig();
 	}
