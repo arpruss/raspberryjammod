@@ -73,6 +73,8 @@ public class RaspberryJamMod
 	public void onServerStarting(FMLServerStartingEvent event) {
 		System.out.println("Raspberry Jam Mod started");
 		
+		synchronizeConfig();
+		
 		final MCEventHandler eventHandler = new MCEventHandler();
 		FMLCommonHandler.instance().bus().register(eventHandler);
 		MinecraftForge.EVENT_BUS.register(eventHandler);
