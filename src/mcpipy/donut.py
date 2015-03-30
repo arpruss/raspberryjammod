@@ -3,6 +3,8 @@
 #
 # (c) 2015 Alexander R. Pruss
 #
+# Available under MIT license
+#
 
 #
 # Draw a water-filled donut

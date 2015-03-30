@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 #
 # (c) 2015 Alexander R. Pruss
+# Available under MIT license
 #
-#  Usage:
-#    klein2.py [block-id [meta]]
-
 
 import mcpi.minecraft as minecraft
 import mcpi.block as block

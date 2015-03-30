@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-#
-# Replace all non-air blocks with TNT in specified radius
-#
-# Usage:
-#    explosify.py [radius [block-id [meta]]]
-#
-
 import mcpi.minecraft as minecraft
 import mcpi.block as block
 import server

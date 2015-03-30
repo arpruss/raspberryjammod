@@ -10,9 +10,6 @@ import server
 import sys
 from math import *
 
-#  Usage:
-#    mobius.py [block-id [meta]]
-
 def draw_surface(xf,yf,zf,a0,a1,asteps,b0,b1,bsteps,ox,oy,oz,scalex,scaley,scalez,mcblock,mcmeta):
   cfx = compile(xf,'<string>','eval')
   cfy = compile(yf,'<string>','eval')
