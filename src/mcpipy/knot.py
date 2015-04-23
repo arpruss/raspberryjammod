@@ -17,7 +17,7 @@ from math import *
 
 def draw_data(x0,y0,z0,data):
   for key in data:
-     mc.setBlock(x0+key[0],y0+key[1],z0+key[2],data[x,y,z])
+     mc.setBlock(x0+key[0],y0+key[1],z0+key[2],data[key])
 
 
 knot = {}
