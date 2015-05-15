@@ -482,15 +482,12 @@ public class MinecraftCommunicator {
 
 	private void entityGetDirection(Entity e) {
 		//sendLine(e.getLookVec());
-		Method m;
-		try {
-			m = Entity.class.getDeclaredMethod("getVectorForRotation", float.class, float.class);
-			m.setAccessible(true);
-			sendLine((Vec3)m.invoke(e, e.rotationPitch, e.rotationYaw));
-		} catch (Exception err) {
-			System.out.println("error: "+err);
-			fail("error getting direction");
-		}
+		double pitch = e.rotationPitch * Math.PI / 180.;
+		double yaw = e.rotationYaw * Math.PI / 180.;
+		double x = Math.cos(-pitch) * Math.sin(-yaw);
+		double z = Math.cos(-pitch) * Math.cos(-yaw);
+		double y = Math.sin(-pitch);
+		sendLine(new Vec3(x,y,z));
 	}
 
 	private void entitySetPos(Entity e, Scanner scan) {
