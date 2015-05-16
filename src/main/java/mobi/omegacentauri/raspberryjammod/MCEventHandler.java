@@ -16,6 +16,7 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.event.CommandEvent;
+import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -26,12 +27,25 @@ import net.minecraftforge.fml.relauncher.Side;
 public class MCEventHandler {
 	List<SetBlockState> setBlockStateQueue = new ArrayList<SetBlockState>();		
 	List<HitDescription> hits = new LinkedList<HitDescription>();
+	List<ChatDescription> chats = new LinkedList<ChatDescription>();
 	static final int MAX_HITS = 512;
 	private boolean stopChanges = false;
 	private boolean restrictToSword = true;
+	ServerChatEvent chatEvents;
+	static final int MAX_CHATS = 512;
 
 	public void setStopChanges(boolean stopChanges) {
 		this.stopChanges = stopChanges;
+	}
+	
+	@SubscribeEvent
+	public void onChatEvent(ServerChatEvent event) {
+		ChatDescription cd = new ChatDescription(event.player.getEntityId(), event.message);
+		synchronized(chats) {
+			if (chats.size() >= MAX_CHATS)
+				chats.remove(0);
+			chats.add(cd);
+		}
 	}
 
 	@SubscribeEvent
@@ -81,6 +95,24 @@ public class MCEventHandler {
 		return out;
 	}
 
+	public String getChatsAndClear() {
+		StringBuilder out = new StringBuilder();
+
+		synchronized(chats) {
+			int count = hits.size();
+			for (ChatDescription c : chats) {
+				if (out.length() > 0)
+					out.append("|");
+				out.append(c.id);
+				out.append(",");
+				out.append(c.message.replace("|", "&#124;"));
+			}
+			chats.clear();
+		}
+
+		return out.toString();
+	}
+
 	public int eventCount() {
 		synchronized(hits) {
 			return hits.size();
@@ -91,6 +123,17 @@ public class MCEventHandler {
 		synchronized(hits) {
 			hits.clear();
 		}
+	}
+
+	public void clearChats() {
+		synchronized(chats) {
+			chats.clear();
+		}
+	}
+	
+	public void clearAll() {
+		hits.clear();
+		chats.clear();
 	}
 
 	@SubscribeEvent
@@ -150,5 +193,14 @@ public class MCEventHandler {
 		}
 		
 		return world.getBlockState(pos);
+	}
+
+	class ChatDescription {
+		int id;
+		String message;
+		public ChatDescription(int entityId, String message) {
+			this.id = entityId;
+			this.message = message;
+		}
 	}
 }

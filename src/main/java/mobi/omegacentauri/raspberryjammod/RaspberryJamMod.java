@@ -40,9 +40,10 @@ guiFactory = "mobi.omegacentauri.raspberryjammod.GuiFactory")
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.09";
+	public static final String VERSION = "0.10";
 	public static final String NAME = "Raspberry Jam Mod";
 	private MinecraftCommunicator mcc;
+	private PythonExternalCommand pythonExternalCommand = null;
 	public static Configuration configFile;
 	public static int portNumber = 4711;
 	
@@ -66,6 +67,10 @@ public class RaspberryJamMod
 	public void onServerStopping(FMLServerStoppingEvent event) {
 		if (mcc != null) {
 			mcc.close();
+		}
+		if (pythonExternalCommand != null) {
+			pythonExternalCommand.close();
+			pythonExternalCommand = null;
 		}
 	}
 	
@@ -101,6 +106,7 @@ public class RaspberryJamMod
 			System.out.println("Threw "+e1);
 		}
 
-		event.registerServerCommand(new PythonExternalCommand());
+		pythonExternalCommand = new PythonExternalCommand();
+		event.registerServerCommand(pythonExternalCommand);
 	}
 }

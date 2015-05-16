@@ -70,6 +70,7 @@ public class MinecraftCommunicator {
 	private static final String ENTITYSETPOS = "entity.setPos"; 
 
 	private static final String EVENTSBLOCKHITS = "events.block.hits";
+	private static final String EVENTSCHATPOSTS = "events.chat.posts";
 	private static final String EVENTSCLEAR = "events.clear";
 	private static final String EVENTSSETTING = "events.setting";
 	
@@ -395,10 +396,13 @@ public class MinecraftCommunicator {
 				entitySetPos(e, scan);
 		}
 		else if (cmd.equals(EVENTSCLEAR)) {
-			eventHandler.clearHits();
+			eventHandler.clearAll();
 		}
 		else if (cmd.equals(EVENTSBLOCKHITS)) {
 			sendLine(eventHandler.getHitsAndClear());
+		}
+		else if (cmd.equals(EVENTSCHATPOSTS)) {
+			sendLine(eventHandler.getChatsAndClear());
 		}
 		else if (cmd.equals(WORLDSETTING)) {
 			String setting = scan.next();
@@ -557,6 +561,7 @@ public class MinecraftCommunicator {
 	}
 
 	public void close() {
+		
 		listening = false;
 		try {
 			if (socket != null)

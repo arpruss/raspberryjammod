@@ -11,10 +11,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import tv.twitch.chat.IChatAPIListener;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.network.Packet;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
@@ -27,7 +30,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 	final String scriptProcessorPath;
 	
 	public ScriptExternalCommand() {
-		scriptProcessorPath = getScriptProcessorPath();
+		scriptProcessorPath = getScriptProcessorPath();		
 	}
 	
 	private boolean sandboxedScriptPath(String path) {
@@ -118,10 +121,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 		return System.getProperty("os.name").startsWith("Windows");
 	}
 	
-	
-	@Override
-	public void execute(ICommandSender sender, String[] args)
-			throws CommandException {
+	public void close() {
 		if (runningScript != null) {
 			try {
 				runningScript.exitValue();
@@ -129,9 +129,17 @@ public abstract class ScriptExternalCommand implements ICommand {
 			catch (IllegalThreadStateException e) {
 				// script was still running
 				runningScript.destroy();
-				Minecraft.getMinecraft().thePlayer.sendChatMessage("Stopped previous script.");
 			}
 			runningScript = null;
+		}
+	}
+	
+	@Override
+	public void execute(ICommandSender sender, String[] args)
+			throws CommandException {
+		if (runningScript != null) {
+			close();
+			Minecraft.getMinecraft().thePlayer.sendChatMessage("Stopped previous script.");
 		}
 		
 		if (args.length == 0) {
@@ -218,3 +226,4 @@ public abstract class ScriptExternalCommand implements ICommand {
 		return null;
 	}
 }
+
