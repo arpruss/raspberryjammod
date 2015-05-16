@@ -7,8 +7,12 @@ done
 cd ../..
 
 cd python2-scripts
+rm mcpipy/*.pyc
+rm mcpipy/*/*.pyc
 zip -9r ../python2-scripts.zip mcpipy
 cd ..
 cd python3-scripts
 rm *.bak
+rm mcpipy/*.pyc
+rm mcpipy/*/*.pyc
 zip -9r ../python3-scripts.zip mcpipy
