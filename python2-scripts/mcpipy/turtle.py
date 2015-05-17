@@ -229,7 +229,6 @@ class Turtle:
 
 if __name__ == "__main__":
     t = Turtle()
-    #t.pendelay(0.01)
     t.pendelay(0)
     t.penwidth(5)
     t.penblock(GLASS)

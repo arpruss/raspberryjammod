@@ -422,8 +422,8 @@ class MinecraftTurtle:
     def _roundVec3(position):
         return minecraft.vec3(int(position.x), int(position.y), int(position.z))
 
-    #connect to minecraftif __name__ == "__main__":
-
+if __name__ == "__main__":
+    #connect to minecraft
     mc = minecraft.Minecraft.create()
     pos = mc.player.getTilePos()
     print pos
@@ -478,5 +478,4 @@ class MinecraftTurtle:
     # walking
     steve.walk()
     steve.forward(10)
-    
     

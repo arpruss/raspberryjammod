@@ -1,6 +1,6 @@
 from .connection import Connection
 from .vec3 import Vec3
-from .event import BlockEvent
+from .event import BlockEvent,ChatEvent
 from .block import Block
 import math
 from .util import flatten
@@ -27,6 +27,30 @@ class CmdPositioner:
         self.conn = connection
         self.pkg = packagePrefix
 
+    def getBlock(self, *args):
+        """Get block (x,y,z) => id:int"""
+        return int(self.conn.sendReceive("world.getBlock", intFloor(args)))
+
+    def getPitch(self, id):
+        """Get entity direction (entityId:int) => Vec3"""
+        s = self.conn.sendReceive(self.pkg + ".getPitch", id)
+        return float(s)
+
+    def getRotation(self, id):
+        """Get entity direction (entityId:int) => Vec3"""
+        s = self.conn.sendReceive(self.pkg + ".getRotation", id)
+        return float(s)
+
+    def getDirection(self, id):
+        """Get entity direction (entityId:int) => Vec3"""
+        s = self.conn.sendReceive(self.pkg + ".getDirection", id)
+        return Vec3(*list(map(float, s.split(","))))
+
+    def getPos(self, id):
+        """Get entity position (entityId:int) => Vec3"""
+        s = self.conn.sendReceive(self.pkg + ".getPos", id)
+        return Vec3(*list(map(float, s.split(","))))
+
     def getPos(self, id):
         """Get entity position (entityId:int) => Vec3"""
         s = self.conn.sendReceive(self.pkg + ".getPos", id)
@@ -35,6 +59,18 @@ class CmdPositioner:
     def setPos(self, id, *args):
         """Set entity position (entityId:int, x,y,z)"""
         self.conn.send(self.pkg + ".setPos", id, args)
+
+    def setDirection(self, id, *args):
+        """Set entity pitch (entityId:int, x,y,z)"""
+        self.conn.send(self.pkg + ".setDirection", id, args)
+
+    def setRotation(self, id, *args):
+        """Set entity rotation (entityId:int, angle)"""
+        self.conn.send(self.pkg + ".setRotation", id, args)
+
+    def setPitch(self, id, *args):
+        """Set entity pitch (entityId:int, angle)"""
+        self.conn.send(self.pkg + ".setPitch", id, args)
 
     def getTilePos(self, id):
         """Get entity tile position (entityId:int) => Vec3"""
@@ -62,6 +98,20 @@ class CmdPlayer(CmdPositioner):
         CmdPositioner.__init__(self, connection, "player")
         self.conn = connection
 
+    def getDirection(self):
+        return CmdPositioner.getDirection(self, [])
+    def getPitch(self):
+        return CmdPositioner.getPitch(self, [])
+    def getRotation(self):
+        return CmdPositioner.getRotation(self, [])
+    def setPitch(self, *args):
+        return CmdPositioner.setPitch(self, [], args)
+    def setRotation(self, *args):
+        return CmdPositioner.setRotation(self, [], args)
+    def setDirection(self, *args):
+        return CmdPositioner.setDirection(self, [], args)
+    def getRotation(self):
+        return CmdPositioner.getRotation(self, [])
     def getPos(self):
         return CmdPositioner.getPos(self, [])
     def setPos(self, *args):
@@ -107,6 +157,11 @@ class CmdEvents:
         events = [e for e in s.split("|") if e]
         return [BlockEvent.Hit(*list(map(int, e.split(",")))) for e in events]
 
+    def pollChatPosts(self):
+        """Triggered by posts to chat => [ChatEvent]"""
+        s = self.conn.sendReceive("events.chat.posts")
+        events = [e for e in s.split("|") if e]
+        return [ChatEvent.Post(int(e[:e.find(",")]), e[e.find(",") + 1:]) for e in events]
 
 class Minecraft:
     """The main class to interact with a running instance of Minecraft Pi."""
@@ -144,6 +199,10 @@ class Minecraft:
     def getHeight(self, *args):
         """Get the height of the world (x,z) => int"""
         return int(self.conn.sendReceive("world.getHeight", intFloor(args)))
+
+    def getPlayerId(self, *args):
+        """Get the id of the current player"""
+        return int(self.conn.sendReceive("world.getPlayerId", intFloor(args)))
 
     def getPlayerEntityIds(self):
         """Get the entity ids of the connected players => [id:int]"""

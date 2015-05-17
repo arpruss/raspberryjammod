@@ -1,18 +1,16 @@
-cd src/mcpipy
-for x in *.py ; do
-  cp $x ../../python2-scripts/mcpipy/
-  cp $x ../../python3-scripts/mcpipy/
-  2to3 -w ../../python3-scripts/mcpipy/$x
+rm python2-scripts.zip
+rm python3-scripts.zip
+rm -rf python3-scripts
+mkdir python3-scripts
+rm -f python2-scripts/mcpipy/*.{bak,pyc} python2-scripts/mcpipy/*/*.{bak,pyc}
+cp -rf python2-scripts/* python3-scripts
+cd python3-scripts/mcpipy
+for x in *.py */*.py ; do
+  2to3 -w $x
 done
-cd ../..
-
-cd python2-scripts
-rm mcpipy/*.pyc
-rm mcpipy/*/*.pyc
+rm -f *.{bak,pyc} */*.{bak,pyc}
+cd ..
+zip -9r ../python3-scripts.zip mcpipy
+cd ../python2-scripts
 zip -9r ../python2-scripts.zip mcpipy
 cd ..
-cd python3-scripts
-rm *.bak
-rm mcpipy/*.pyc
-rm mcpipy/*/*.pyc
-zip -9r ../python3-scripts.zip mcpipy

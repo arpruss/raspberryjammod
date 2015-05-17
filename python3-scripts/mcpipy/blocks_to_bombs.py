@@ -2,9 +2,9 @@
 #Raspberry Pi, Minecraft Bombs - Turn any block into a bomb!
 
 #import the minecraft.py module from the minecraft directory
-import minecraft.minecraft as minecraft
+import mcpi.minecraft as minecraft
 #import minecraft block module
-import minecraft.block as block
+import mcpi.block as block
 #import time, so delays can be used
 import time
 #import threading, so threads can be used

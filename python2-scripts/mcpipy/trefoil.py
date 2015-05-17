@@ -19,12 +19,12 @@ def draw_data(x0,y0,z0,data):
   for key in data:
      mc.setBlock(x0+key[0],y0+key[1],z0+key[2],data[key])
 
-def ball(x0,y0,z0,r,block,data):
+def ball(x0,y0,z0,r,block_type,data):
   for x in range(-r,r):
     for y in range(-r,r):
       for z in range(-r,r):
          if (x**2 + y**2 + z**2 <= r**2):
-            data[x0+x,y0+y,z0+z] = block
+            data[x0+x,y0+y,z0+z] = block_type
 
 
 knot = {}

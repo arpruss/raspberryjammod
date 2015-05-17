@@ -7,7 +7,7 @@
 #
 
 #
-# Draw a water-filled donut
+# Draw a knot
 #
 
 import mcpi.minecraft as minecraft

@@ -46,4 +46,4 @@ if (len(sys.argv)>1):
       m = int(sys.argv[2])
 
 draw_surface(xformula,yformula,zformula,0,2*pi,150*scale,0,2*pi,150*scale,playerPos.x,playerPos.y+16*scale,playerPos.z,scale,scale,scale,b, m)
-mc.postToChat("Formula done")
+#mc.postToChat("Formula done")
