@@ -1,6 +1,7 @@
 import mcpi.minecraft as minecraft
 #import mcpi.block as block
 from mcpi.block import *
+from mcpi.entity import *
 import time
 from math import *
 import server
@@ -17,9 +18,33 @@ class Turtle:
         self.directionIn()
         self.pitch = 0
         self.positionIn()
-        self.follow = True
         self.delayTime = 0.05
         self.nib = []
+        self.turtleType = PLAYER
+        self.playerId = self.mc.getPlayerId()
+        self.turtleId = self.playerId
+
+    def turtle(self,turtleType):
+        if self.turtleType == turtleType:
+            return
+        if self.turtleType and self.turtleType != PLAYER:
+            self.mc.removeEntity(self.turtleId)
+        self.turtleType = turtleType
+        if turtleType == PLAYER:
+            self.turtleId = self.playerId
+        elif turtleType:
+            self.turtleId = self.mc.spawnEntity(turtleType,
+                                                self.position.x,self.position.y,self.position.z,
+                                                "{NoAI:1}")
+        self.positionOut()
+        self.directionOut()
+        
+    def follow(self): # deprecated
+        self.turtle(PLAYER)
+        
+    def nofollow(self): # deprecated
+        if self.turtleType == PLAYER:
+            self.turtle(None)
 
     def penwidth(self,w):
         self.nib = []
@@ -38,6 +63,7 @@ class Turtle:
         self.position.y = y
         self.position.z = z
         self.positionOut()
+        self.delay()
 
     def verticalangle(self,angle):
         self.pitch = -angle
@@ -47,12 +73,6 @@ class Turtle:
         self.rotation = -angle
         self.directionOut()
         
-    def follow(self):
-        self.follow = True
-
-    def nofollow(self):
-        self.follow = False
-
     def penup(self):
         self.pen = False
 
@@ -66,8 +86,10 @@ class Turtle:
         self.position = self.mc.player.getPos()
 
     def positionOut(self):
-        if self.follow:
-            self.mc.player.setPos(self.position)
+        if self.turtleType:
+            self.mc.entity.setPos(self.turtleId,self.position)
+
+    def delay(self):
         if self.delayTime > 0:
             time.sleep(self.delayTime)
 
@@ -79,7 +101,7 @@ class Turtle:
         self.pitch %= 360.
         self.rotation %= 360
 
-        if self.follow:
+        if self.turtleType:
             pitch = self.pitch
             rotation = self.rotation
 
@@ -89,11 +111,8 @@ class Turtle:
                 pitch = 180. - pitch
                 rotation = (rotation + 180.) % 360.
 
-            self.mc.player.setRotation(rotation)
-            self.mc.player.setPitch(pitch)
-
-        if self.delayTime > 0:
-            time.sleep(self.delayTime)
+            self.mc.entity.setRotation(self.turtleId, rotation)
+            self.mc.entity.setPitch(self.turtleId, pitch)
 
     def pendelay(self, t):
         self.delayTime = t
@@ -104,10 +123,12 @@ class Turtle:
     def right(self, angle):
         self.rotation += angle
         self.directionOut()
+        self.delay()
 
     def up(self, angle):
         self.pitch -= angle
         self.directionOut()
+        self.delay()
 
     def down(self, angle):
         self.up(-angle)
@@ -127,6 +148,7 @@ class Turtle:
         self.position.y = newY
         self.position.z = newZ
         self.positionOut()
+        self.delay()
 
     def back(self, distance):
         pitch = self.pitch * pi/180.
@@ -143,6 +165,7 @@ class Turtle:
         self.position.y = newY
         self.position.z = newZ
         self.positionOut()
+        self.delay()
 
     def drawPoint(self, x, y, z):
         if self.pen and self.width > 0:
@@ -158,6 +181,7 @@ class Turtle:
             self.position.y = y
             self.position.z = z
             self.positionOut()
+            self.delay()
 
     def drawLine(self, x1, y1, z1, x2, y2, z2):
         if not self.pen and self.delayTime == 0:
@@ -229,13 +253,13 @@ class Turtle:
 
 if __name__ == "__main__":
     t = Turtle()
-    t.pendelay(0)
-    t.penwidth(5)
+    t.pendelay(0.01)
+    t.penwidth(1)
     t.penblock(GLASS)
+    t.turtle(HORSE)
     for i in range(7):
         print i
         t.go(100)
         t.right(180.0-180./7)
     t.penup()
-    t.back(10) # exit star
-
+    t.turtle(None)

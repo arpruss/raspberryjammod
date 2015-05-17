@@ -19,9 +19,14 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.S43PacketCamera;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
@@ -43,7 +48,9 @@ public class MinecraftCommunicator {
 	private static final String GETBLOCK = "world.getBlock";
 	private static final String GETBLOCKWITHDATA = "world.getBlockWithData";
 	private static final String GETHEIGHT = "world.getHeight"; 
-
+	
+	private static final String WORLDSPAWNENTITY = "world.spawnEntity";
+	private static final String WORLDDELETEENTITY = "world.removeEntity";
 	private static final String WORLDGETPLAYERIDS = "world.getPlayerIds"; 	
 	private static final String WORLDGETPLAYERID = "world.getPlayerId"; 
 	private static final String WORLDSETTING = "world.setting";
@@ -302,6 +309,41 @@ public class MinecraftCommunicator {
 		else if (cmd.equals(PLAYERSETPITCH)) {
 			clientPlayer.rotationPitch = scan.nextFloat();
 		}
+		else if (cmd.equals(WORLDDELETEENTITY)) {
+			serverWorld.removeEntity(serverWorld.getEntityByID(scan.nextInt()));
+		}
+		else if (cmd.equals(WORLDSPAWNENTITY)) {
+			String entityId = scan.next();
+			BlockPos spawnPos = serverWorld.getSpawnPoint();
+			double x = scan.nextDouble() + spawnPos.getX();
+			double y = scan.nextDouble() + spawnPos.getY();
+			double z = scan.nextDouble() + spawnPos.getZ();
+			String tagString = getRest(scan);
+			Entity entity;
+			if (tagString.length() > 0) {
+				NBTTagCompound tags;
+				try {
+					tags = JsonToNBT.func_180713_a(tagString);
+				} catch (NBTException e) {
+					fail("Cannot parse tags");
+					return;
+				}
+				tags.setString("id", entityId);
+				entity = EntityList.createEntityFromNBT(tags, serverWorld);
+			}
+			else {
+				entity = EntityList.createEntityByName(entityId, serverWorld);
+			}
+			
+			if (entity == null) {
+				fail("Cannot create entity");
+			}
+			else {
+				entity.setPositionAndUpdate(x, y, z);
+				serverWorld.spawnEntityInWorld(entity);
+				sendLine(entity.getEntityId());
+			}
+		}
 		else if (cmd.equals(PLAYERSETDIRECTION)) {
 			double x = scan.nextDouble();
 			double y = scan.nextDouble();
@@ -336,13 +378,21 @@ public class MinecraftCommunicator {
 			int id = scan.nextInt();
 			float angle = scan.nextFloat();
 			Entity e = serverWorld.getEntityByID(id);
-			if (e != null)
+			if (e != null) {
+//				System.out.println("server "+e.rotationYaw);
 				e.rotationYaw = angle;
+				e.setRotationYawHead(angle);
+//				e.setLocationAndAngles(e.getPosition().getX(), e.getPosition().getY(), e.getPosition().getZ(), angle, e.rotationPitch);
+			}
 			else
 				fail("No such entity");
 			e = mc.theWorld.getEntityByID(id);
-			if (e != null)
+			if (e != null) {
+//				System.out.println("client "+e.rotationYaw);
 				e.rotationYaw = angle;
+				e.setRotationYawHead(angle);
+//				e.setLocationAndAngles(e.getPosition().getX(), e.getPosition().getY(), e.getPosition().getZ(), angle, e.rotationPitch);
+			}
 		}
 		else if (cmd.equals(ENTITYGETPITCH)) {
 			Entity e = serverWorld.getEntityByID(scan.nextInt());
@@ -450,6 +500,17 @@ public class MinecraftCommunicator {
 				mc.entityRenderer.loadEntityShader(mc.getRenderViewEntity());
 			}
 		}
+	}
+	
+	static private String getRest(Scanner scan) {
+		StringBuilder out = new StringBuilder();
+		
+		while (scan.hasNext()) {
+			if (out.length() > 0)
+				out.append(",");
+			out.append(scan.next());
+		}
+		return out.toString();
 	}
 
 	private void entitySetDirection(Entity e, double x, double y, double z) {
