@@ -12,12 +12,26 @@ class Turtle:
         else:
              self.mc = minecraft.Minecraft.create(server.address)
         self.block = BEDROCK
+        self.width = 1
         self.pen = True
         self.directionIn()
         self.pitch = 0
         self.positionIn()
         self.follow = True
         self.delayTime = 0.05
+        self.nib = []
+
+    def penwidth(self,w):
+        self.nib = []
+        self.width = int(w)
+        if self.width >= 0 and self.width <= 2:
+            return
+        r2 = self.width * self.width / 4.
+        for x in range(-self.width//2 - 1,self.width//2 + 1):
+            for y in range(-self.width//2 - 1, self.width//2 + 1):
+                for z in range(-self.width//2 -1, self.width//2 + 1):
+                    if x*x + y*y + z*z <= r2:
+                        self.nib.append(minecraft.Vec3(x,y,z))
         
     def goto(self,x,y,z):
         self.position.x = x
@@ -131,8 +145,14 @@ class Turtle:
         self.positionOut()
 
     def drawPoint(self, x, y, z):
-        if self.pen:
-            self.mc.setBlock(x,y,z,self.block)
+        if self.pen and self.width > 0:
+            if self.width == 1:
+                self.mc.setBlock(x,y,z,self.block)
+            elif self.width == 2:
+                self.mc.setBlocks(x-1,y,z-1,x,y+1,z,self.block)
+            else:
+                for point in self.nib:
+                    self.mc.setBlock(x+point.x,y+point.y,z+point.z,self.block)
         if self.delayTime > 0:
             self.position.x = x
             self.position.y = y
@@ -209,9 +229,14 @@ class Turtle:
 
 if __name__ == "__main__":
     t = Turtle()
-    t.pendelay(0.01)
+    #t.pendelay(0.01)
+    t.pendelay(0)
+    t.penwidth(5)
+    t.penblock(GLASS)
     for i in range(7):
         print i
         t.go(100)
         t.right(180.0-180./7)
+    t.penup()
+    t.back(10) # exit star
 
