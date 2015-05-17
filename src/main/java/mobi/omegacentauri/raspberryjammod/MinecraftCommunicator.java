@@ -170,10 +170,7 @@ public class MinecraftCommunicator {
 			scan.close();
 			scan = null;
 		}
-		catch(InputMismatchException e) {
-			System.out.println(""+e);
-		}
-		catch (NoSuchElementException e) {
+		catch(Exception e) {
 			System.out.println(""+e);
 		}
 		finally {
