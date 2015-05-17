@@ -513,8 +513,11 @@ public class MinecraftCommunicator {
 	private void entitySetDirection(Entity e, double x, double y, double z) {
 		double xz = Math.sqrt(x * x + z * z);
 		
-		if (xz >= TOO_SMALL) 
-			e.rotationYaw = (float) (Math.atan2(-x, z) * 180 / Math.PI);
+		if (xz >= TOO_SMALL) {
+			float yaw = (float) (Math.atan2(-x, z) * 180 / Math.PI);
+			e.setRotationYawHead(yaw);
+			e.rotationYaw = yaw;
+		}
 		
 		if (x * x + y * y + z * z >= TOO_SMALL * TOO_SMALL)
 			e.rotationPitch = (float) (Math.atan2(-y, xz) * 180 / Math.PI);
