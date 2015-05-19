@@ -1,5 +1,5 @@
 import mcpi.minecraft as minecraft
-#import mcpi.block as block
+import mcpi.block as block
 from mcpi.block import *
 from mcpi.entity import *
 import time
@@ -7,6 +7,9 @@ from math import *
 import server
 
 class Turtle:
+    TO_RADIANS = pi / 180.
+    TO_DEGREES = 180. / pi
+
     def __init__(self,mc=None):
         if mc:
              self.mc = mc
@@ -16,7 +19,6 @@ class Turtle:
         self.width = 1
         self.pen = True
         self.directionIn()
-        self.pitch = 0
         self.positionIn()
         self.delayTime = 0.05
         self.nib = []
@@ -66,11 +68,13 @@ class Turtle:
         self.delay()
 
     def verticalangle(self,angle):
-        self.pitch = -angle
+        angles = self.getMinecraftAngles();
+        self.matrix = Turtle.matrixMultiply(Turtle.yawMatrix(angles[0]), Turtle.pitchMatrix(angle))
         self.directionOut()
 
     def angle(self,angle):
-        self.rotation = -angle
+        angles = self.getMinecraftAngles()
+        self.matrix = Turtle.matrixMultiply(Turtle.yawMatrix(angle), Turtle.pitchMatrix(angles[1]))
         self.directionOut()
         
     def penup(self):
@@ -94,25 +98,76 @@ class Turtle:
             time.sleep(self.delayTime)
 
     def directionIn(self):
-        self.rotation = self.mc.player.getRotation()
-        self.pitch = self.mc.player.getPitch()
+        rotation = self.mc.player.getRotation()
+        pitch = 0 #self.mc.player.getPitch()
+        self.matrix = Turtle.matrixMultiply(Turtle.yawMatrix(rotation), Turtle.pitchMatrix(-pitch))
+
+    @staticmethod
+    def matrixMultiply(a,b):
+        c = [[0,0,0],[0,0,0],[0,0,0]]
+        for i in range(3):
+            for j in range(3):
+                c[i][j] = a[i][0]*b[0][j] + a[i][1]*b[1][j] + a[i][2]*b[2][j]
+        return c
+
+    @staticmethod
+    def yawMatrix(angleDegrees):
+        theta = angleDegrees * Turtle.TO_RADIANS
+        return [[cos(theta), 0, -sin(theta)],
+                [0,          1, 0],
+                [sin(theta), 0, cos(theta)]]
+
+    @staticmethod
+    def rollMatrix(angleDegrees):
+        theta = angleDegrees * Turtle.TO_RADIANS
+        return [[cos(theta), -sin(theta), 0.],
+                [sin(theta), cos(theta),0.],
+                [0.,          0.,          1.]]
+
+    @staticmethod
+    def pitchMatrix(angleDegrees):
+        theta = angleDegrees * Turtle.TO_RADIANS
+        return [[1,          0,          0],
+                [0, cos(theta),sin(theta)],
+                [0, -sin(theta),cos(theta)]]
+
+    def yaw(self,angleDegrees):
+        self.matrix = Turtle.matrixMultiply(self.matrix, Turtle.yawMatrix(angleDegrees))
+        self.directionOut()
+        self.delay()
+
+    def roll(self,angleDegrees):
+        self.matrix = Turtle.matrixMultiply(self.matrix, Turtle.rollMatrix(angleDegrees))
+        self.directionOut()
+        self.delay()
+
+    def pitch(self,angleDegrees):
+        self.matrix = Turtle.matrixMultiply(self.matrix, Turtle.pitchMatrix(angleDegrees))
+        self.directionOut()
+        self.delay()
+
+    def getHeading(self):
+        return [self.matrix[0][2],self.matrix[1][2],self.matrix[2][2]]
+
+    def getMinecraftAngles(self):
+        heading = self.getHeading()
+        xz = sqrt(heading[0]*heading[0] + heading[2]*heading[2])
+        if xz >= 1e-9:
+            rotation = atan2(-heading[0], heading[2]) * Turtle.TO_DEGREES
+        else:
+            rotation = 0
+        pitch = atan2(-heading[1], xz) * Turtle.TO_DEGREES
+        return [rotation,pitch]
 
     def directionOut(self):
-        self.pitch %= 360.
-        self.rotation %= 360
-
         if self.turtleType:
-            pitch = self.pitch
-            rotation = self.rotation
-
-            if pitch >= 270:
-                pitch = pitch - 360.
-            elif pitch >= 90:
-                pitch = 180. - pitch
-                rotation = (rotation + 180.) % 360.
-
-            self.mc.entity.setRotation(self.turtleId, rotation)
-            self.mc.entity.setPitch(self.turtleId, pitch)
+            heading = self.getHeading()
+            xz = sqrt(heading[0]*heading[0] + heading[2]*heading[2])
+            if xz >= 1e-9:
+                rotation = atan2(-heading[0], heading[2]) * Turtle.TO_DEGREES
+                self.mc.entity.setRotation(self.turtleId,rotation)
+            pitch = atan2(-heading[1], xz) * Turtle.TO_DEGREES
+            self.mc.entity.setPitch(self.turtleId,pitch)
 
     def pendelay(self, t):
         self.delayTime = t
@@ -121,24 +176,24 @@ class Turtle:
         self.right(-angle)
 
     def right(self, angle):
-        self.rotation += angle
+        self.matrix = Turtle.matrixMultiply(Turtle.yawMatrix(angle), self.matrix)
         self.directionOut()
         self.delay()
 
     def up(self, angle):
-        self.pitch -= angle
-        self.directionOut()
-        self.delay()
+        self.pitch(angle)
 
     def down(self, angle):
         self.up(-angle)
 
     def go(self, distance):
-        pitch = self.pitch * pi/180.
-        rot = self.rotation * pi/180.
-        dx = cos(-pitch) * sin(-rot)
-        dy = sin(-pitch)
-        dz = cos(-pitch) * cos(-rot)
+#        pitch = self.pitch * pi/180.
+#        rot = self.rotation * pi/180.
+        # at pitch=0: rot=0 -> [0,0,1], rot=90 -> [-1,0,0]
+#        dx = cos(-pitch) * sin(-rot)
+#        dy = sin(-pitch)
+#        dz = cos(-pitch) * cos(-rot)
+        [dx,dy,dz] = self.getHeading()
         newX = self.position.x + dx * distance
         newY = self.position.y + dy * distance
         newZ = self.position.z + dz * distance
@@ -151,14 +206,15 @@ class Turtle:
         self.delay()
 
     def back(self, distance):
-        pitch = self.pitch * pi/180.
-        rot = self.rotation * pi/180.
-        dx = - cos(-pitch) * sin(-rot)
-        dy = - sin(-pitch)
-        dz = - cos(-pitch) * cos(-rot)
-        newX = self.position.x + dx * distance
-        newY = self.position.y + dy * distance
-        newZ = self.position.z + dz * distance
+#        pitch = self.pitch * pi/180.
+#        rot = self.rotation * pi/180.
+#        dx = - cos(-pitch) * sin(-rot)
+#        dy = - sin(-pitch)
+#        dz = - cos(-pitch) * cos(-rot)
+        [dx,dy,dz] = self.getHeading()
+        newX = self.position.x - dx * distance
+        newY = self.position.y - dy * distance
+        newZ = self.position.z - dz * distance
         self.drawLine(self.position.x, self.position.y, self.position.z,
                         newX, newY, newZ)
         self.position.x = newX
@@ -253,13 +309,10 @@ class Turtle:
 
 if __name__ == "__main__":
     t = Turtle()
-    t.pendelay(0.01)
-    t.penwidth(1)
-    t.penblock(GLASS)
+    t.pendelay(0.05)
+    t.penblock(GOLD_BLOCK)
     t.turtle(HORSE)
     for i in range(7):
-        print i
-        t.go(100)
-        t.right(180.0-180./7)
-    t.penup()
+        t.go(60)
+        t.up(180-180/7)
     t.turtle(None)
