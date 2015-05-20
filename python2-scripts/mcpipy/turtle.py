@@ -223,25 +223,35 @@ class Turtle:
         self.positionOut()
         self.delay()
 
-    def drawPoint(self, x, y, z):
-        if self.pen and self.width > 0:
-            if self.width == 1:
-                self.mc.setBlock(x,y,z,self.block)
-            elif self.width == 2:
-                self.mc.setBlocks(x-1,y,z-1,x,y+1,z,self.block)
-            else:
-                for point in self.nib:
-                    self.mc.setBlock(x+point.x,y+point.y,z+point.z,self.block)
-        if self.delayTime > 0:
-            self.position.x = x
-            self.position.y = y
-            self.position.z = z
-            self.positionOut()
-            self.delay()
-
     def drawLine(self, x1, y1, z1, x2, y2, z2):
+        def drawPoint(x, y, z):
+            if self.pen and self.width > 0:
+                if self.width == 1:
+                    self.mc.setBlock(x,y,z,self.block)
+                elif self.width == 2:
+                    self.mc.setBlocks(x-1,y,z-1,x,y+1,z,self.block)
+                else:
+                    for point in self.nib:
+                        x0 = x+point.x
+                        y0 = y+point.y
+                        z0 = z+point.z
+                        if not (x0,y0,z0) in did:
+                            self.mc.setBlock(x0,y0,z0,self.block)
+                            did[x0,y0,z0] = True
+
+            if self.delayTime > 0:
+                self.position.x = x
+                self.position.y = y
+                self.position.z = z
+                self.positionOut()
+                self.delay()
+
         if not self.pen and self.delayTime == 0:
             return
+
+        if self.penwidth > 2:
+            did = {}
+
         x1 = int(x1)
         y1 = int(y1)
         z1 = int(z1)
@@ -266,7 +276,7 @@ class Turtle:
             err_1 = dy2 - l
             err_2 = dz2 - l
             for i in range(0,l-1):
-                self.drawPoint(point[0], point[1], point[2])
+                drawPoint(point[0], point[1], point[2])
                 if err_1 > 0:
                     point[1] += y_inc
                     err_1 -= dx2
@@ -280,7 +290,7 @@ class Turtle:
             err_1 = dx2 - m;
             err_2 = dz2 - m;
             for i in range(0,m-1):
-                self.drawPoint(point[0], point[1], point[2])
+                drawPoint(point[0], point[1], point[2])
                 if err_1 > 0:
                     point[0] += x_inc
                     err_1 -= dy2
@@ -294,7 +304,7 @@ class Turtle:
             err_1 = dy2 - n;
             err_2 = dx2 - n;
             for i in range(0, n-1):
-                self.drawPoint(point[0], point[1], point[2])
+                drawPoint(point[0], point[1], point[2])
                 if err_1 > 0:
                     point[1] += y_inc
                     err_1 -= dz2
@@ -304,15 +314,20 @@ class Turtle:
                 err_1 += dy2
                 err_2 += dx2
                 point[2] += z_inc
-        self.drawPoint(point[0], point[1], point[2])
-    
+        drawPoint(point[0], point[1], point[2])
+
 
 if __name__ == "__main__":
     t = Turtle()
-    t.pendelay(0.05)
-    t.penblock(GOLD_BLOCK)
-    t.turtle(HORSE)
-    for i in range(7):
-        t.go(60)
-        t.up(180-180/7)
+    t.pendelay(0)
     t.turtle(None)
+    t.penblock(GLOWSTONE_BLOCK)
+    t.penwidth(8)
+    for i in range(7):
+        t.go(80)
+        t.right(180-180./7)
+    t.penblock(AIR)
+    t.penwidth(3)
+    for i in range(7):
+        t.go(80)
+        t.right(180-180./7)
