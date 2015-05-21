@@ -21,10 +21,11 @@ class Turtle:
         self.directionIn()
         self.positionIn()
         self.delayTime = 0.05
-        self.nib = []
+        self.nib = [(0,0,0)]
         self.turtleType = PLAYER
         self.playerId = self.mc.getPlayerId()
         self.turtleId = self.playerId
+        self.fan = None
 
     def turtle(self,turtleType):
         if self.turtleType == turtleType:
@@ -40,7 +41,7 @@ class Turtle:
                                                 "{NoAI:1}")
         self.positionOut()
         self.directionOut()
-        
+
     def follow(self): # deprecated
         self.turtle(PLAYER)
         
@@ -49,16 +50,25 @@ class Turtle:
             self.turtle(None)
 
     def penwidth(self,w):
-        self.nib = []
         self.width = int(w)
-        if self.width >= 0 and self.width <= 2:
-            return
-        r2 = self.width * self.width / 4.
-        for x in range(-self.width//2 - 1,self.width//2 + 1):
-            for y in range(-self.width//2 - 1, self.width//2 + 1):
-                for z in range(-self.width//2 -1, self.width//2 + 1):
-                    if x*x + y*y + z*z <= r2:
-                        self.nib.append(minecraft.Vec3(x,y,z))
+        if self.width == 0:
+            self.nib = []
+        elif self.width == 1:
+            self.nib = [(0,0,0)]
+        elif self.width == 2:
+            self.nib = []
+            for x in range(-1,1):
+                for y in range(0,2):
+                    for z in range(-1,1):
+                        self.nib.append((x,y,z))
+        else:
+            self.nib = []
+            r2 = self.width * self.width / 4.
+            for x in range(-self.width//2 - 1,self.width//2 + 1):
+                for y in range(-self.width//2 - 1, self.width//2 + 1):
+                    for z in range(-self.width//2 -1, self.width//2 + 1):
+                        if x*x + y*y + z*z <= r2:
+                            self.nib.append((x,y,z))
         
     def goto(self,x,y,z):
         self.position.x = x
@@ -163,11 +173,11 @@ class Turtle:
         if self.turtleType:
             heading = self.getHeading()
             xz = sqrt(heading[0]*heading[0] + heading[2]*heading[2])
+            pitch = atan2(-heading[1], xz) * Turtle.TO_DEGREES
+            self.mc.entity.setPitch(self.turtleId,pitch)
             if xz >= 1e-9:
                 rotation = atan2(-heading[0], heading[2]) * Turtle.TO_DEGREES
                 self.mc.entity.setRotation(self.turtleId,rotation)
-            pitch = atan2(-heading[1], xz) * Turtle.TO_DEGREES
-            self.mc.entity.setPitch(self.turtleId,pitch)
 
     def pendelay(self, t):
         self.delayTime = t
@@ -223,35 +233,68 @@ class Turtle:
         self.positionOut()
         self.delay()
 
-    def drawLine(self, x1, y1, z1, x2, y2, z2):
-        def drawPoint(x, y, z):
-            if self.pen and self.width > 0:
-                if self.width == 1:
-                    self.mc.setBlock(x,y,z,self.block)
-                elif self.width == 2:
-                    self.mc.setBlocks(x-1,y,z-1,x,y+1,z,self.block)
+    def startface(self):
+        self.fan = (self.position.x,self.position.y,self.position.z)
+
+    def endface(self):
+        self.fan = None
+
+    def drawLine(self, x1,y1,z1, x2,y2,z2):
+        def drawPoint(p, fast=False):
+            if self.pen:
+                if self.width == 1 and not self.fan:
+                    self.mc.setBlock(p[0],p[1],p[2],self.block)
                 else:
                     for point in self.nib:
-                        x0 = x+point.x
-                        y0 = y+point.y
-                        z0 = z+point.z
-                        if not (x0,y0,z0) in did:
+                        x0 = p[0]+point[0]
+                        y0 = p[1]+point[1]
+                        z0 = p[2]+point[2]
+                        if not (x0,y0,z0) in done:
                             self.mc.setBlock(x0,y0,z0,self.block)
-                            did[x0,y0,z0] = True
+                            done[x0,y0,z0] = True
 
-            if self.delayTime > 0:
-                self.position.x = x
-                self.position.y = y
-                self.position.z = z
+            if not fast and self.delayTime > 0:
+                self.position.x = p[0]
+                self.position.y = p[1]
+                self.position.z = p[2]
                 self.positionOut()
                 self.delay()
 
         if not self.pen and self.delayTime == 0:
             return
 
-        if self.penwidth > 2:
-            did = {}
+        # dictinary to avoid duplicate drawing
+        done = {}
+        line = Turtle.getLine(x1,y1,z1, x2,y2,z2)
 
+        if self.pen and self.fan:
+            prev = None
+            if self.delayTime > 0:
+                for a in line:
+                    drawPoint(a)
+
+            def fan(base,line):
+                for a in line:
+                    fillLine = Turtle.getLine(a[0],a[1],a[2],
+                                              base[0],base[1],base[2])
+                    for b in fillLine:
+                        drawPoint(b, True)
+
+            # draw the main fan
+            fan(self.fan,line)
+            # now fill in some possible gaps
+            # This is faster than it seems due to the done dictionary
+            fan((x1,y1,z1),Turtle.getLine(self.fan[0],self.fan[1],self.fan[2],
+                                          x2,y2,z2))
+            fan((x2,y2,z2),Turtle.getLine(self.fan[0],self.fan[1],self.fan[2],
+                                          x1,y1,z1))
+        else:
+            for a in line:
+                drawPoint(a)
+
+    @staticmethod
+    def getLine(x1, y1, z1, x2, y2, z2):
+        line = []
         x1 = int(x1)
         y1 = int(y1)
         z1 = int(z1)
@@ -276,7 +319,7 @@ class Turtle:
             err_1 = dy2 - l
             err_2 = dz2 - l
             for i in range(0,l-1):
-                drawPoint(point[0], point[1], point[2])
+                line.append((point[0],point[1],point[2]))
                 if err_1 > 0:
                     point[1] += y_inc
                     err_1 -= dx2
@@ -290,7 +333,7 @@ class Turtle:
             err_1 = dx2 - m;
             err_2 = dz2 - m;
             for i in range(0,m-1):
-                drawPoint(point[0], point[1], point[2])
+                line.append((point[0],point[1],point[2]))
                 if err_1 > 0:
                     point[0] += x_inc
                     err_1 -= dy2
@@ -304,7 +347,7 @@ class Turtle:
             err_1 = dy2 - n;
             err_2 = dx2 - n;
             for i in range(0, n-1):
-                drawPoint(point[0], point[1], point[2])
+                line.append((point[0],point[1],point[2]))
                 if err_1 > 0:
                     point[1] += y_inc
                     err_1 -= dz2
@@ -314,20 +357,14 @@ class Turtle:
                 err_1 += dy2
                 err_2 += dx2
                 point[2] += z_inc
-        drawPoint(point[0], point[1], point[2])
+        line.append((point[0],point[1],point[2]))
+        return line
 
 
 if __name__ == "__main__":
     t = Turtle()
-    t.pendelay(0)
+    for i in range(7):
+        t.back(80)
+        t.right(180-180./7)
     t.turtle(None)
-    t.penblock(GLOWSTONE_BLOCK)
-    t.penwidth(8)
-    for i in range(7):
-        t.go(80)
-        t.right(180-180./7)
-    t.penblock(AIR)
-    t.penwidth(3)
-    for i in range(7):
-        t.go(80)
-        t.right(180-180./7)
+

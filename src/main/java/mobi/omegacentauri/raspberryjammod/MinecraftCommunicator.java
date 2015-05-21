@@ -434,25 +434,31 @@ public class MinecraftCommunicator {
 		else if (cmd.equals(ENTITYSETTILE)) {
 			int id = scan.nextInt();
 			Entity e = serverWorld.getEntityByID(id);
+			float serverYaw = 0f;
 			if (e != null) {
+				serverYaw = e.rotationYaw;
 				entitySetTile(e, scan);
-				e.setRotationYawHead(e.rotationYaw);
+				e.setRotationYawHead(serverYaw);
 			}
 			e = mc.theWorld.getEntityByID(id);
 			if (e != null) {
-				e.setRotationYawHead(e.rotationYaw);
+				e.rotationYaw = serverYaw;
+				e.setRotationYawHead(serverYaw);
 			}
 		}
 		else if (cmd.equals(ENTITYSETPOS)) {
 			int id = scan.nextInt();
 			Entity e = serverWorld.getEntityByID(id);
+			float serverYaw = 0f;
 			if (e != null) {
+				serverYaw = e.rotationYaw;
 				entitySetPos(e, scan);
-				e.setRotationYawHead(e.rotationYaw);
+				e.setRotationYawHead(serverYaw);
 			}
 			e = mc.theWorld.getEntityByID(id);
 			if (e != null) {
-				e.setRotationYawHead(e.rotationYaw);
+				e.rotationYaw = serverYaw;
+				e.setRotationYawHead(serverYaw);
 			}
 		}
 		else if (cmd.equals(EVENTSCLEAR)) {
