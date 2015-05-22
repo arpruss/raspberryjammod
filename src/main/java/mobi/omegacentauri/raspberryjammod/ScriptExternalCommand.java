@@ -121,25 +121,33 @@ public abstract class ScriptExternalCommand implements ICommand {
 		return System.getProperty("os.name").startsWith("Windows");
 	}
 	
-	public void close() {
+	// returns true if there actually was a script to close
+	public boolean close() {
+		boolean closed = false;
+		
 		if (runningScript != null) {
 			try {
 				runningScript.exitValue();
 			}
 			catch (IllegalThreadStateException e) {
 				// script was still running
+				closed = true;
 				runningScript.destroy();
 			}
 			runningScript = null;
 		}
+		
+		return closed;
 	}
 	
 	@Override
 	public void execute(ICommandSender sender, String[] args)
 			throws CommandException {
 		if (runningScript != null) {
-			close();
-			Minecraft.getMinecraft().thePlayer.sendChatMessage("Stopped previous script.");
+			if (close()) {
+				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Stopped previous script."));
+//				Minecraft.getMinecraft().thePlayer.sendChatMessage("Stopped previous script.");
+			}
 		}
 		
 		if (args.length == 0) {
