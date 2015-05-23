@@ -113,7 +113,6 @@ public abstract class ScriptExternalCommand implements ICommand {
 			if (new File(p).canExecute())
 				return p;
 		}
-		
 		return base;
 	}
 	

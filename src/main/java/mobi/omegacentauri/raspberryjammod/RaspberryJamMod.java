@@ -52,6 +52,7 @@ public class RaspberryJamMod
 		configFile = new Configuration(event.getSuggestedConfigurationFile());
 		configFile.load();
 		System.out.println("configFile = "+configFile.getConfigFile().getPath());
+//		KeyBindings.init();
 
 		synchronizeConfig();
 	}

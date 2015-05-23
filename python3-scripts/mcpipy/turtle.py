@@ -2,6 +2,7 @@ import mcpi.minecraft as minecraft
 import mcpi.block as block
 from mcpi.block import *
 from mcpi.entity import *
+import copy
 import time
 from math import *
 import server
@@ -9,6 +10,7 @@ import server
 class Turtle:
     TO_RADIANS = pi / 180.
     TO_DEGREES = 180. / pi
+    QUICK_SAVE = ( 'block', 'width', 'pen', 'matrix', 'nib', 'fan' )
 
     def __init__(self,mc=None):
         if mc:
@@ -26,8 +28,33 @@ class Turtle:
         self.playerId = self.mc.getPlayerId()
         self.turtleId = self.playerId
         self.fan = None
+        self.stack = []
+
+    def save(self):
+        dict = {}
+        for attribute in Turtle.QUICK_SAVE:
+            dict[attribute] = copy.deepcopy(getattr(self, attribute))
+        dict['position'] = (self.position.x, self.position.y, self.position.z)
+        return dict
+
+    def restore(self, dict):
+        for attribute in Turtle.QUICK_SAVE:
+            setattr(self, attribute, dict[attribute])
+        p = dict['position']
+        self.position = minecraft.Vec3(p[0], p[1], p[2])
+        self.positionOut()
+        self.directionOut()
+
+    def push(self):
+        """Save current drawing state to stack"""
+        self.stack.append(self.save())
+
+    def pop(self):
+        """Restore current drawing state from stack"""
+        self.restore(self.stack.pop())
 
     def turtle(self,turtleType):
+        """Set turtle type. Use PLAYER for moving the player as the turtle and None for none"""
         if self.turtleType == turtleType:
             return
         if self.turtleType and self.turtleType != PLAYER:
@@ -50,6 +77,7 @@ class Turtle:
             self.turtle(None)
 
     def penwidth(self,w):
+        """Set pen stroke width (width:int)"""
         self.width = int(w)
         if self.width == 0:
             self.nib = []
@@ -71,6 +99,7 @@ class Turtle:
                             self.nib.append((x,y,z))
         
     def goto(self,x,y,z):
+        """Teleport turtle to location (x:int, y:int, z:int)"""
         self.position.x = x
         self.position.y = y
         self.position.z = z
@@ -78,22 +107,27 @@ class Turtle:
         self.delay()
 
     def verticalangle(self,angle):
+        """Vertical angle of turtle (angle:float): 0=horizontal, 90=directly up, -90=directly down"""
         angles = self.getMinecraftAngles();
         self.matrix = Turtle.matrixMultiply(Turtle.yawMatrix(angles[0]), Turtle.pitchMatrix(angle))
         self.directionOut()
 
     def angle(self,angle):
+        """Compass angle of turtle (angle:float): 0=south, 90=west, 180=north, 270=west"""
         angles = self.getMinecraftAngles()
         self.matrix = Turtle.matrixMultiply(Turtle.yawMatrix(angle), Turtle.pitchMatrix(angles[1]))
         self.directionOut()
         
     def penup(self):
+        """Move without drawing"""
         self.pen = False
 
     def pendown(self):
+        """Move with drawing"""
         self.pen = True
 
     def penblock(self, block):
+        """Set material of pen block"""
         self.block = block
 
     def positionIn(self):
@@ -180,23 +214,29 @@ class Turtle:
                 self.mc.entity.setRotation(self.turtleId,rotation)
 
     def pendelay(self, t):
+        """Set pen delay in seconds (t: float)"""
         self.delayTime = t
 
     def left(self, angle):
+        """Turn counterclockwise relative to compass heading"""
         self.right(-angle)
 
     def right(self, angle):
+        """Turn clockwise relative to compass heading"""
         self.matrix = Turtle.matrixMultiply(Turtle.yawMatrix(angle), self.matrix)
         self.directionOut()
         self.delay()
 
     def up(self, angle):
+        """Turn upwards (increase pitch)"""
         self.pitch(angle)
 
     def down(self, angle):
+        """Turn downwards (decrease pitch)"""
         self.up(-angle)
 
     def go(self, distance):
+        """Advance turtle, drawing as needed (distance: float)"""
 #        pitch = self.pitch * pi/180.
 #        rot = self.rotation * pi/180.
         # at pitch=0: rot=0 -> [0,0,1], rot=90 -> [-1,0,0]
@@ -216,6 +256,7 @@ class Turtle:
         self.delay()
 
     def back(self, distance):
+        """Move turtle backwards, drawing as needed (distance: float), and keeping heading unchanged"""
 #        pitch = self.pitch * pi/180.
 #        rot = self.rotation * pi/180.
 #        dx = - cos(-pitch) * sin(-rot)
@@ -234,9 +275,11 @@ class Turtle:
         self.delay()
 
     def startface(self):
+        """Start drawing a convex polygon"""
         self.fan = (self.position.x,self.position.y,self.position.z)
 
     def endface(self):
+        """Finish polygon"""
         self.fan = None
 
     def drawLine(self, x1,y1,z1, x2,y2,z2):
@@ -268,7 +311,6 @@ class Turtle:
         line = Turtle.getLine(x1,y1,z1, x2,y2,z2)
 
         if self.pen and self.fan:
-            prev = None
             if self.delayTime > 0:
                 for a in line:
                     drawPoint(a)
@@ -367,4 +409,3 @@ if __name__ == "__main__":
         t.back(80)
         t.right(180-180./7)
     t.turtle(None)
-

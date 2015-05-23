@@ -9,10 +9,14 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.event.ClickEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.event.CommandEvent;
@@ -21,6 +25,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
@@ -37,6 +42,14 @@ public class MCEventHandler {
 	public void setStopChanges(boolean stopChanges) {
 		this.stopChanges = stopChanges;
 	}
+	
+//	@SubscribeEvent
+//    public void onKeyInput(InputEvent.KeyInputEvent event) {
+//        if(KeyBindings.superchat.isPressed()) {
+//            System.out.println("superchat");
+//            Minecraft.getMinecraft().displayGuiScreen(new MyChat());
+//        }
+//    }
 	
 	@SubscribeEvent
 	public void onChatEvent(ServerChatEvent event) {
@@ -203,4 +216,29 @@ public class MCEventHandler {
 			this.message = message;
 		}
 	}
+	
+//	class MyChat extends GuiChat {
+//		public MyChat() {
+//			super();
+//		}
+//		
+//		@Override
+//	    public void onGuiClosed() {
+//			super.onGuiClosed();
+//			System.out.println("closed");
+//		}
+//
+//		@Override
+//	    protected boolean func_175276_a(IChatComponent p_175276_1_) {
+//			System.out.println("175276");
+//			return super.func_175276_a(p_175276_1_);
+//		}
+//
+//
+//		@Override
+//	    public void sendChatMessage(String msg, boolean addToChat) {
+//			System.out.println("scm "+msg);
+//			super.sendChatMessage(msg, addToChat);
+//		}
+//	}
 }
