@@ -1,47 +1,37 @@
-import mcpi.minecraft as minecraft
-import mcpi.block as block
-import server
+from turtle import *
 import lsystem
 
-mc = minecraft.Minecraft.create(server.address)
-playerPos = mc.player.getPos()
-
-# this might be more elegantly done with the turtle library, but
-# all this floating point stuff would have roundoff issues that
-# would be very evident. So let's do it in integer arithmetic.
-
-DIRECTIONS = ((1,0),(0,1),(-1,0),(0,-1))
-
-pos = (int(playerPos.x),int(playerPos.y),int(playerPos.z))
-direction = 0
-
-def go():
-    global pos
-    dx = DIRECTIONS[direction][0]
-    dz = DIRECTIONS[direction][1]
-    # draw a wall
-    mc.setBlocks(pos,pos[0]+dx*4,pos[1]+4,pos[2]+dz*4,block.BRICK_BLOCK)
-    # draw a door in it
-    mc.setBlocks(pos[0]+dx*2,pos[1],pos[2]+dz*2,pos[0]+dx*2,pos[1]+1,pos[2]+dz*2,block.AIR)
-    pos = (pos[0]+dx*4, pos[1], pos[2]+dz*4)
-
-def left():
-    global direction
-    direction -= 1
-    if direction == -1:
-        direction = 3
-
-def right():
-    global direction
-    direction += 1
-    if direction == 4:
-        direction = 0
+t = Turtle()
+t.pendelay(0)
+t.turtle(None)
+t.penblock(BRICK_BLOCK)
+# ensure angles are always integral multiples of 90 degrees
+t.gridalign()
 
 rules = {'X':'X+YF+', 'Y':'-FX-Y'}
-dictionary = { '+': left,
-               '-': right,
-               'F': go }
 
+def go():
+# draw a wall segment with a door
+    t.pendown()
+    t.penblock(BRICK_BLOCK)
+    t.startface()
+    for i in range(4):
+        t.go(4)
+        t.pitch(90)
+    t.endface()
+    t.penup()
+    t.go(2)
+    t.pendown()
+    t.penblock(AIR)
+    t.pitch(90)
+    t.go(1)
+    t.penup()
+    t.pitch(180)
+    t.go(1)
+    t.pitch(90)
+    t.go(2)
+
+dictionary = { '+': lambda: t.yaw(90),
+               '-': lambda: t.yaw(-90),
+               'F': lambda: go() }
 lsystem.lsystem('FX', rules, dictionary, 14)
-
-#go()

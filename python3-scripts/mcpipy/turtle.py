@@ -2,6 +2,7 @@ import mcpi.minecraft as minecraft
 import mcpi.block as block
 from mcpi.block import *
 from mcpi.entity import *
+import numbers
 import copy
 import time
 from math import *
@@ -11,6 +12,8 @@ class Turtle:
     TO_RADIANS = pi / 180.
     TO_DEGREES = 180. / pi
     QUICK_SAVE = ( 'block', 'width', 'pen', 'matrix', 'nib', 'fan' )
+    ICOS = [1,0,-1,0]
+    ISIN = [0,1,0,-1]
 
     def __init__(self,mc=None):
         if mc:
@@ -97,7 +100,7 @@ class Turtle:
                     for z in range(-self.width//2 -1, self.width//2 + 1):
                         if x*x + y*y + z*z <= r2:
                             self.nib.append((x,y,z))
-        
+
     def goto(self,x,y,z):
         """Teleport turtle to location (x:int, y:int, z:int)"""
         self.position.x = x
@@ -106,18 +109,33 @@ class Turtle:
         self.positionOut()
         self.delay()
 
+    def rollangle(self,angle):
+        """Set roll angle of turtle (angle:float/int) in degrees: 0=up vector points up"""
+        angles = self.getMinecraftAngles()
+        m0 = Turtle.matrixMultiply(Turtle.yawMatrix(angles[0]), Turtle.pitchMatrix(angles[1]))
+        self.matrix = Turtle.matrixMultiply(m0, Turtle.rollMatrix(angle))
+
+    @staticmethod
+    def makeMatrix(compass,vertical,roll):
+        m0 = Turtle.matrixMultiply(Turtle.yawMatrix(compass), Turtle.pitchMatrix(vertical))
+        return Turtle.matrixMultiply(m0, Turtle.rollMatrix(roll))
+
+    def angles(self,compass=0,vertical=0,roll=0):
+        """Set roll angle of turtle (compass, vertical, roll) in degrees"""
+        self.matrix = Turtle.makeMatrix(compass,vertical,roll)
+
     def verticalangle(self,angle):
-        """Vertical angle of turtle (angle:float): 0=horizontal, 90=directly up, -90=directly down"""
+        """Vertical angle of turtle (angle:float/int) in degrees: 0=horizontal, 90=directly up, -90=directly down"""
         angles = self.getMinecraftAngles();
         self.matrix = Turtle.matrixMultiply(Turtle.yawMatrix(angles[0]), Turtle.pitchMatrix(angle))
         self.directionOut()
 
     def angle(self,angle):
-        """Compass angle of turtle (angle:float): 0=south, 90=west, 180=north, 270=west"""
+        """Compass angle of turtle (angle:float/int) in degrees: 0=south, 90=west, 180=north, 270=west"""
         angles = self.getMinecraftAngles()
         self.matrix = Turtle.matrixMultiply(Turtle.yawMatrix(angle), Turtle.pitchMatrix(angles[1]))
         self.directionOut()
-        
+
     def penup(self):
         """Move without drawing"""
         self.pen = False
@@ -131,7 +149,8 @@ class Turtle:
         self.block = block
 
     def positionIn(self):
-        self.position = self.mc.player.getPos()
+        pos = self.mc.player.getPos()
+        self.position = minecraft.Vec3(int(round(pos.x)),int(round(pos.y)),int(round(pos.z)))
 
     def positionOut(self):
         if self.turtleType:
@@ -147,6 +166,24 @@ class Turtle:
         self.matrix = Turtle.matrixMultiply(Turtle.yawMatrix(rotation), Turtle.pitchMatrix(-pitch))
 
     @staticmethod
+    def iatan2(y,x):
+        """One coordinate must be zero"""
+        if x == 0:
+            return 90 if y > 0 else -90
+        else:
+            return 0 if x > 0 else 180
+
+    @staticmethod
+    def icos(angleDegrees):
+        """Calculate a cosine of an angle that must be a multiple of 90 degrees"""
+        return Turtle.ICOS[(angleDegrees % 360) / 90]
+
+    @staticmethod
+    def isin(angleDegrees):
+        """Calculate a sine of an angle that must be a multiple of 90 degrees"""
+        return Turtle.ISIN[(angleDegrees % 360) / 90]
+
+    @staticmethod
     def matrixMultiply(a,b):
         c = [[0,0,0],[0,0,0],[0,0,0]]
         for i in range(3):
@@ -156,24 +193,39 @@ class Turtle:
 
     @staticmethod
     def yawMatrix(angleDegrees):
-        theta = angleDegrees * Turtle.TO_RADIANS
-        return [[cos(theta), 0, -sin(theta)],
-                [0,          1, 0],
-                [sin(theta), 0, cos(theta)]]
+        if isinstance(angleDegrees, numbers.Integral) and angleDegrees % 90 == 0:
+            return [[Turtle.icos(angleDegrees), 0, -Turtle.isin(angleDegrees)],
+                    [0,          1, 0],
+                    [Turtle.isin(angleDegrees), 0, Turtle.icos(angleDegrees)]]
+        else:
+            theta = angleDegrees * Turtle.TO_RADIANS
+            return [[cos(theta), 0, -sin(theta)],
+                    [0,          1, 0],
+                    [sin(theta), 0, cos(theta)]]
 
     @staticmethod
     def rollMatrix(angleDegrees):
-        theta = angleDegrees * Turtle.TO_RADIANS
-        return [[cos(theta), -sin(theta), 0.],
-                [sin(theta), cos(theta),0.],
-                [0.,          0.,          1.]]
+        if isinstance(angleDegrees, numbers.Integral) and angleDegrees % 90 == 0:
+            return [[Turtle.icos(angleDegrees), -Turtle.isin(angleDegrees), 0],
+                    [Turtle.isin(angleDegrees), Turtle.icos(angleDegrees),0],
+                    [0,          0,          1]]
+        else:
+            theta = angleDegrees * Turtle.TO_RADIANS
+            return [[cos(theta), -sin(theta), 0.],
+                    [sin(theta), cos(theta),0.],
+                    [0.,          0.,          1.]]
 
     @staticmethod
     def pitchMatrix(angleDegrees):
-        theta = angleDegrees * Turtle.TO_RADIANS
-        return [[1,          0,          0],
-                [0, cos(theta),sin(theta)],
-                [0, -sin(theta),cos(theta)]]
+        if isinstance(angleDegrees, numbers.Integral) and angleDegrees % 90 == 0:
+            return [[1,          0,          0],
+                    [0, Turtle.icos(angleDegrees),Turtle.isin(angleDegrees)],
+                    [0, -Turtle.isin(angleDegrees),Turtle.icos(angleDegrees)]]
+        else:
+            theta = angleDegrees * Turtle.TO_RADIANS
+            return [[1.,          0.,          0.],
+                    [0., cos(theta),sin(theta)],
+                    [0., -sin(theta),cos(theta)]]
 
     def yaw(self,angleDegrees):
         self.matrix = Turtle.matrixMultiply(self.matrix, Turtle.yawMatrix(angleDegrees))
@@ -195,12 +247,25 @@ class Turtle:
 
     def getMinecraftAngles(self):
         heading = self.getHeading()
-        xz = sqrt(heading[0]*heading[0] + heading[2]*heading[2])
-        if xz >= 1e-9:
-            rotation = atan2(-heading[0], heading[2]) * Turtle.TO_DEGREES
-        else:
-            rotation = 0
-        pitch = atan2(-heading[1], xz) * Turtle.TO_DEGREES
+
+        if isinstance(heading[0], numbers.Integral) and isinstance(heading[1], numbers.Integral) and isinstance(heading[2], numbers.Integral):
+            # the only way all coordinates of the heading can be integers is if we are
+            # grid aligned
+
+            # no need for square roots; could also use absolute value
+            xz = abs(heading[0]) + abs(heading[2])
+            if xz != 0:
+                rotation = Turtle.iatan2(-heading[0], heading[2])
+            else:
+                rotation = 0
+            pitch = Turtle.iatan2(-heading[1], xz)
+        else:        
+            xz = sqrt(heading[0]*heading[0] + heading[2]*heading[2])
+            if xz >= 1e-9:
+                rotation = atan2(-heading[0], heading[2]) * Turtle.TO_DEGREES
+            else:
+                rotation = 0.
+            pitch = atan2(-heading[1], xz) * Turtle.TO_DEGREES
         return [rotation,pitch]
 
     def directionOut(self):
@@ -281,6 +346,39 @@ class Turtle:
     def endface(self):
         """Finish polygon"""
         self.fan = None
+
+    @staticmethod 
+    def matrixDistanceSquared(m1,m2):
+        d2 = 0.
+        for i in range(3):
+            for j in range(3):
+                d2 += (m1[i][j]-m2[i][j])**2
+        return d2
+
+    def gridalign(self):
+        """Align positions to grid"""
+        self.position.x = int(round(self.position.x))
+        self.position.y = int(round(self.position.y))
+        self.position.z = int(round(self.position.z))
+
+        if self.fan:
+            self.fan = (int(round(self.fan[0])),int(round(self.fan[1])),int(round(self.fan[2])))
+
+        bestDist = 2*9
+        bestMatrix = Turtle.makeMatrix(0,0,0)
+
+        for compass in [0, 90, 180, 270]:
+            for pitch in [0, 90, 180, 270]:
+                for roll in [0, 90, 180, 270]:
+                    m = Turtle.makeMatrix(compass,pitch,roll)
+                    dist = Turtle.matrixDistanceSquared(self.matrix, m)
+                    if dist < bestDist:
+                        bestMatrix = m
+                        bestDist = dist
+
+        self.matrix = bestMatrix
+        self.positionOut()
+        self.directionOut()
 
     def drawLine(self, x1,y1,z1, x2,y2,z2):
         def drawPoint(p, fast=False):
@@ -400,6 +498,8 @@ class Turtle:
                 err_2 += dx2
                 point[2] += z_inc
         line.append((point[0],point[1],point[2]))
+        if point[0] != x2 or point[1] != y2 or point[2] != z2:
+            line.append((x2,y2,z2))
         return line
 
 
