@@ -1,11 +1,9 @@
-import mcpi.minecraft as minecraft
-import mcpi.block as block
-import server
-import time
+from mc import *
 import sys
+import time
 from NeuroPy.NeuroPy import NeuroPy
 
-mc = minecraft.Minecraft.create()
+mc = Minecraft()
 
 #
 # the True argument is needed for a BrainFlex unit hacked to work
@@ -14,7 +12,7 @@ mc = minecraft.Minecraft.create()
 #
 eeg = NeuroPy("COM11",57600,True)
 
-meditation = sys.argv > 1 and sys.argv[1].startswith("m")
+meditation = len(sys.argv) > 1 and sys.argv[1].startswith("m")
 
 up = 60
 down = 40
@@ -24,12 +22,12 @@ def callback(a):
     if a > up:
        pos = mc.player.getPos()
        pos.y = pos.y + 1
-       if mc.getBlock(pos.x,pos.y,pos.z) == block.AIR.id:
+       if mc.getBlock(pos.x,pos.y,pos.z) == AIR.id:
           mc.player.setPos(pos)
     elif a < down:
        pos = mc.player.getPos()
        pos.y = pos.y - 1
-       if mc.getBlock(pos.x,pos.y,pos.z) == block.AIR.id:
+       if mc.getBlock(pos.x,pos.y,pos.z) == AIR.id:
           mc.player.setPos(pos)
 
 if meditation:

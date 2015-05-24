@@ -30,6 +30,5 @@ for i in range(2):
   t.pitch(-90)
   t.yaw(90)
   t.pitch(-90)
-
   t.pendown()
 

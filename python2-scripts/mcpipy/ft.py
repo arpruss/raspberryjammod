@@ -28,7 +28,7 @@ def tree(branchSize,depth):
     t.pendown()
 
 t = Turtle()
-t.nofollow()
+t.turtle(None)
 t.verticalangle(90)
 t.pendelay(0)
 t.penblock(WOOD)

@@ -35,7 +35,7 @@ def tree(branchLen,t):
 
 
 t = Turtle()
-t.nofollow()
+t.turtle(None)
 t.verticalangle(90)
 t.pendelay(0)
 tree(20, t)

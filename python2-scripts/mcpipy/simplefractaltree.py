@@ -14,7 +14,7 @@ def tree(depth):
     t.up(30)
 
 t = Turtle()
-t.nofollow()
+t.follow()
 t.verticalangle(90)
 t.pendelay(0)
 t.go(20)

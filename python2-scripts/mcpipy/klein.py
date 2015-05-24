@@ -5,12 +5,8 @@
 #
 #
 
-
-import mcpi.minecraft as minecraft
-import mcpi.block as block
-import server
+from mc import *
 import sys
-from math import *
 
 def draw_surface(xf,yf,zf,a0,a1,asteps,b0,b1,bsteps,ox,oy,oz,scalex,scaley,scalez,mcblock,mcmeta):
   cfx = compile(xf,'<string>','eval')
@@ -26,7 +22,7 @@ def draw_surface(xf,yf,zf,a0,a1,asteps,b0,b1,bsteps,ox,oy,oz,scalex,scaley,scale
         z = eval(cfz)
         mc.setBlock(ox+x * scalex, oy+y * scaley, oz+z * scalez, mcblock, mcmeta)
 
-mc = minecraft.Minecraft.create(server.address)
+mc = Minecraft()
 playerPos = mc.player.getPos()
 
 # formula from http://paulbourke.net/geometry/klein/
