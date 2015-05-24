@@ -10,10 +10,28 @@ def playProgram(s, dictionary):
         if c in dictionary:
             dictionary[c]()
 
+#
+# if the rules are a dictionary, all substitutions are done simultaneously
+# otherwise, the substitutions are done in sequence
+#
+# I think simultaneous substitution is the proper L-system way, but the 
+# Geeky Blogger tree looks better, and more like Geeky Blogger's picture 
+# when done sequentially.
+#
 def evolve(axiom, rules, levelCount):
     for i in range(levelCount):
-        for r in rules:
-            axiom = axiom.replace(r[0], r[1])
+        if isinstance(rules, dict):
+            out = ""
+            for c in axiom:
+                if c in rules:
+                    out += rules[c]
+                else:
+                    out += c
+            axiom = out
+        else:
+            for rule in rules:
+                axiom = axiom.replace(rule[0], rule[1])
+
     return axiom
 
 
@@ -32,7 +50,7 @@ if __name__ == "__main__":
     t.penblock(WOOD)
 
 # a fairly simple example with rules from http://www.nbb.cornell.edu/neurobio/land/OldStudentProjects/cs490-94to95/hwchen/
-#    rules = [('F','F[-&<F][<++&F]||F[--&>F][+&F]')]
+#    rules = {'F':'F[-&<F][<++&F]||F[--&>F][+&F]'}
 #
 #    angle = 22.5
 #
@@ -53,11 +71,11 @@ if __name__ == "__main__":
 
 
 #
-# A more complex example with 
+# A more complex example with
 # rules from http://www.geekyblogger.com/2008/04/tree-and-l-system.html
-#     
-    rules = [('A','^fB>>>B>>>>>B'), ('B','[^^f>>>>>>A]')]
-              
+#
+    rules = (('A','^fB>>>B>>>>>B'), ('B','[^^f>>>>>>A]'))
+
     axiom = 'fA'
     angle = 15
     thickness = 8
@@ -94,4 +112,4 @@ if __name__ == "__main__":
         'f': lambda: t.go(length)
     }
 
-    lsystem(axiom, rules, dictionary, 10)
+    lsystem(axiom, rules, dictionary, 11)
