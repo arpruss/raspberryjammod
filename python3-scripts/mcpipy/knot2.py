@@ -19,17 +19,17 @@ def ball(x0,y0,z0,r,block_type,done):
          if (x**2 + y**2 + z**2 <= r**2):
             if not (x0+x,y0+y,z0+z) in done:
                 mc.setBlock(x0+x,y0+y,z0+z,block_type)
-                done[x0+x,y0+y,z0+z] = block_type
+                done.add((x0+x,y0+y,z0+z))
 
 mc = Minecraft()
 playerPos = mc.player.getPos()
 
-done = {}
 scale = 10
 x0 = int(playerPos.x)
 y0 = int(playerPos.y + 5*scale)
 z0 = int(playerPos.z)
 
+done = set()
 t = 0
 while t < 2*pi:
 # cinquefoil from http://www.maa.org/sites/default/files/images/upload_library/23/stemkoski/knots/page6.html

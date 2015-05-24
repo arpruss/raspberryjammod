@@ -166,13 +166,16 @@ class CmdEvents:
 class Minecraft:
     """The main class to interact with a running instance of Minecraft Pi."""
 
-    def __init__(self, connection):
-        self.conn = connection
+    def __init__(self, connection=None):
+        if connection:
+            self.conn = connection
+        else:
+            self.conn = Connection("localhost", 4711)
 
-        self.camera = CmdCamera(connection)
-        self.entity = CmdEntity(connection)
-        self.player = CmdPlayer(connection)
-        self.events = CmdEvents(connection)
+        self.camera = CmdCamera(self.conn)
+        self.entity = CmdEntity(self.conn)
+        self.player = CmdPlayer(self.conn)
+        self.events = CmdEvents(self.conn)
 
     def spawnEntity(self, *args):
         """Spawn entity (type,x,y,z,tags) and get its id => id:int"""

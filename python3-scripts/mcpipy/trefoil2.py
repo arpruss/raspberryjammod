@@ -7,7 +7,7 @@
 #
 
 #
-# Draw a trefoil
+# Draw a trefoil filled with lava
 #
 
 from mc import *
@@ -19,7 +19,7 @@ def ball(x0,y0,z0,r,block_type,done):
          if (x**2 + y**2 + z**2 <= r**2):
             if not (x0+x,y0+y,z0+z) in done:
                 mc.setBlock(x0+x,y0+y,z0+z,block_type)
-                done[x0+x,y0+y,z0+z] = block_type
+                done.add((x0+x,y0+y,z0+z))
 
 
 mc = Minecraft()
@@ -31,8 +31,7 @@ y0 = int(playerPos.y + 3.5 * scale)
 z0 = int(playerPos.z)
 
 t = 0
-done = {}
-
+done = set()
 while t < 2*pi:
 # trefoil from http://en.wikipedia.org/wiki/Trefoil_knot
   x = x0+int( scale * (sin(t) + 2 * sin(2*t)) )
@@ -42,10 +41,11 @@ while t < 2*pi:
   t += 2*pi / 10000
 
 t = 0
+done = set()
 while t < 2*pi:
 # trefoil from http://en.wikipedia.org/wiki/Trefoil_knot
-  x = int( scale * (sin(t) + 2 * sin(2*t)) )
-  y = int( scale * (cos(t) - 2 * cos(2*t)) )
-  z = int( scale * -sin(3*t) )
+  x = x0+int( scale * (sin(t) + 2 * sin(2*t)) )
+  y = y0+int( scale * (cos(t) - 2 * cos(2*t)) )
+  z = z0+int( scale * -sin(3*t) )
   ball(x,y,z,3,LAVA_FLOWING,done)
   t += 2*pi / 10000
