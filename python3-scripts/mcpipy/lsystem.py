@@ -3,6 +3,8 @@
 # L-system with turtle graphics
 #
 
+import collections
+import random
 from turtle import *
 
 def playProgram(s, dictionary):
@@ -10,28 +12,27 @@ def playProgram(s, dictionary):
         if c in dictionary:
             dictionary[c]()
 
-#
-# if the rules are a dictionary, all substitutions are done simultaneously
-# otherwise, the substitutions are done in sequence
-#
-# I think simultaneous substitution is the proper L-system way, but the 
-# Geeky Blogger tree looks better, and more like Geeky Blogger's picture 
-# when done sequentially.
-#
+
+def transform(c, t):
+    if isinstance(t, str):
+        return t
+    else:
+        r = random.random()
+        for p,out in t:
+            if r<p:
+                 return out
+            r -= p
+        return c
+
 def evolve(axiom, rules, levelCount):
     for i in range(levelCount):
-        if isinstance(rules, dict):
-            out = ""
-            for c in axiom:
-                if c in rules:
-                    out += rules[c]
-                else:
-                    out += c
-            axiom = out
-        else:
-            for rule in rules:
-                axiom = axiom.replace(rule[0], rule[1])
-
+        out = ""
+        for c in axiom:
+            if c in rules:
+                out += transform(c, rules[c])
+            else:
+                out += c
+        axiom = out
     return axiom
 
 
@@ -72,10 +73,9 @@ if __name__ == "__main__":
 
 #
 # A more complex example with
-# rules from http://www.geekyblogger.com/2008/04/tree-and-l-system.html
+# rules based on http://www.geekyblogger.com/2008/04/tree-and-l-system.html
 #
-    rules = (('A','^fB>>>B>>>>>B'), ('B','[^^f>>>>>>A]'))
-
+    rules = {'A': '^f[^^f>>>>>>A]>>>[^^f>>>>>>A]>>>>>[^^f>>>>>>A]'}
     axiom = 'fA'
     angle = 15
     thickness = 8
@@ -112,4 +112,5 @@ if __name__ == "__main__":
         'f': lambda: t.go(length)
     }
 
-    lsystem(axiom, rules, dictionary, 11)
+    print(evolve(axiom, rules, 11))
+#    lsystem(axiom, rules, dictionary, 11)
