@@ -76,6 +76,11 @@ if __name__ == "__main__":
 # rules based on http://www.geekyblogger.com/2008/04/tree-and-l-system.html
 #
     rules = {'A': '^f[^^f>>>>>>A]>>>[^^f>>>>>>A]>>>>>[^^f>>>>>>A]'}
+
+#randomized version:
+#    rules = {'A': [(0.75,'^f[^^f>>>>>>A]>>>[^^f>>>>>>A]>>>>>[^^f>>>>>>A]'),
+#          (0.25,'^f>>[^^f>>>>>>A]>>>[^^f>>>>>>A]')]}
+
     axiom = 'fA'
     angle = 15
     thickness = 8
@@ -112,5 +117,5 @@ if __name__ == "__main__":
         'f': lambda: t.go(length)
     }
 
-    print evolve(axiom, rules, 11)
-#    lsystem(axiom, rules, dictionary, 11)
+#    print evolve(axiom, rules, 11)
+    lsystem(axiom, rules, dictionary, 11)
