@@ -22,4 +22,3 @@ length = 3*3*3*3
 mc.setBlocks(playerPos.x,playerPos.y,playerPos.z,
              playerPos.x+length-1,playerPos.y+length-1,playerPos.z+length-1,WOOL_PURPLE)
 deleteCubes(playerPos.x,playerPos.y,playerPos.z,length)
-

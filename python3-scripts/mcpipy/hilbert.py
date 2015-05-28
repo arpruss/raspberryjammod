@@ -5,10 +5,8 @@ t.pendelay(0)
 t.turtle(None)
 t.gridalign()
 
-t.penblock(GOLD_BLOCK)
-
 # Hilbert curve axiom and production rule by Stan Wagon, Mathematica in Action (chapter 6), W. H. Freeman and Co., 1991
-rules = { 'X': '^<XF^<XFX-F^>>XFX&F+>>XFX-F>X->' }
+rules = { 'X': '^<XF^<XFX+F^>>XFX&F->>XFX+F>X+>' }
 
 count = 0
 
@@ -22,8 +20,8 @@ def go():
 
 dictionary = {
   'F': go,
-  '+': lambda: t.yaw(-90),
-  '-': lambda: t.yaw(90),
+  '+': lambda: t.yaw(90),
+  '-': lambda: t.yaw(-90),
   '^': lambda: t.pitch(90),
   '&': lambda: t.pitch(-90),
   '>': lambda: t.roll(90),

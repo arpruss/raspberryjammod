@@ -23,4 +23,4 @@ dictionary = {
   ']': lambda: t.pop()
   }
 
-lsystem.lsystem(axiom, rules, dictionary, 6)
+lsystem.lsystem(axiom, rules, dictionary, 5)

@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{ad0b690c-a698-4ce0-9b50-3069e7e8660d}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>donut.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId />
+    <InterpreterVersion />
+    <IsWindowsApplication>False</IsWindowsApplication>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+    <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="borromean.py" />
+    <Compile Include="donut.py" />
+    <Compile Include="dragoncurve.py" />
+    <Compile Include="drawing.py" />
+    <Compile Include="glasscube.py" />
+    <Compile Include="hilbert.py" />
+    <Compile Include="klein.py" />
+    <Compile Include="klein2.py" />
+    <Compile Include="knot.py" />
+    <Compile Include="knot2.py" />
+    <Compile Include="lforest.py" />
+    <Compile Include="lsystem.py" />
+    <Compile Include="ltree.py" />
+    <Compile Include="mc.py" />
+    <Compile Include="mcdragoncurve.py" />
+    <Compile Include="mcpi\block.py" />
+    <Compile Include="mcpi\connection.py" />
+    <Compile Include="mcpi\entity.py" />
+    <Compile Include="mcpi\event.py" />
+    <Compile Include="mcpi\minecraft.py" />
+    <Compile Include="mcpi\util.py" />
+    <Compile Include="mcpi\vec3.py" />
+    <Compile Include="mcpi\__init__.py" />
+    <Compile Include="mcturtle.py" />
+    <Compile Include="mengersponge.py" />
+    <Compile Include="NeuroPy\NeuroPy.py" />
+    <Compile Include="NeuroPy\__init__.py" />
+    <Compile Include="polyhedron.py" />
+    <Compile Include="pushtest.py" />
+    <Compile Include="render\ds9.py" />
+    <Compile Include="render\minecraft-renderObj.py" />
+    <Compile Include="render\minecraft-renderObjv2.py" />
+    <Compile Include="render\minecraft\block.py" />
+    <Compile Include="render\minecraft\connection.py" />
+    <Compile Include="render\minecraft\event.py" />
+    <Compile Include="render\minecraft\minecraft.py" />
+    <Compile Include="render\minecraft\util.py" />
+    <Compile Include="render\minecraft\vec3.py" />
+    <Compile Include="render\minecraft\__init__.py" />
+    <Compile Include="render\render.py" />
+    <Compile Include="server.py" />
+    <Compile Include="simpletree.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="snowflake.py" />
+    <Compile Include="spacefill.py" />
+    <Compile Include="squarecurve.py" />
+    <Compile Include="star.py" />
+    <Compile Include="turtle.py" />
+    <Compile Include="turtledonut.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="mcpi\mcpi_protocol_spec.txt" />
+    <Content Include="NeuroPy\README.txt" />
+    <Content Include="render\blockstructure_tex_0.jpg" />
+    <Content Include="render\cessna.png" />
+    <Content Include="render\NY_LIL.png" />
+    <Content Include="render\RaspberryPi.png" />
+    <Content Include="render\shuttle.png" />
+    <Content Include="render\skyscraper.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="backup" />
+    <Folder Include="mcpi" />
+    <Folder Include="NeuroPy" />
+    <Folder Include="render" />
+    <Folder Include="render\minecraft" />
+  </ItemGroup>
+  <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
+</Project>
