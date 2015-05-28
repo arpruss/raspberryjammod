@@ -1,5 +1,5 @@
 import lsystem
-from turtle import *
+from mcturtle import *
 t = Turtle()
 t.pendelay(0)
 t.penblock(GOLD_BLOCK)

@@ -1,4 +1,4 @@
-from turtle import *
+from mcturtle import *
 import random
 
 def tree(depth,thickness,branchLen):

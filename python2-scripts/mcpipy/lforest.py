@@ -5,7 +5,7 @@
 
 import lsystem
 import random
-from turtle import *
+from mcturtle import *
 
 t = Turtle()
 t.pendelay(0)

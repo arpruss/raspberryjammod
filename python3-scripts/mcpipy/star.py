@@ -1,4 +1,4 @@
-from turtle import *
+from mcturtle import *
 t = Turtle()
 t.penblock(GOLD_BLOCK)
 t.turtle(GIANT)

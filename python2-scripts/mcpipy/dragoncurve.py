@@ -1,4 +1,4 @@
-from turtle import *
+from mcturtle import *
 import lsystem
 
 t = Turtle()

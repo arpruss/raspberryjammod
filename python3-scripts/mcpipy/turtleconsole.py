@@ -3,7 +3,7 @@ import server
 import time
 from math import *
 from mcpi.block import *
-from turtle import *
+from mcturtle import *
 import code
 
 def inputLine(prompt):

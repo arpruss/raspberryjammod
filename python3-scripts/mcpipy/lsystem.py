@@ -5,7 +5,7 @@
 
 import collections
 import random
-from turtle import *
+from mcturtle import *
 
 def playProgram(s, dictionary):
     for c in s:
