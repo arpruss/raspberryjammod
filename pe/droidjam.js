@@ -65,6 +65,7 @@ function runServer() {
              new java.io.InputStreamReader(
                 socket.getInputStream()));
           writer=new java.io.PrintWriter(socket.getOutputStream(),true);
+          Level.setTime(0);
 
           while(running) {
              var str = reader.readLine();
@@ -137,6 +138,9 @@ function handleCommand(cmd) {
    if (m == "world.setBlock") {
        setBlock(args);
    }
+   else if (m == "world.setBlocks") {
+       setBlocks(args);
+   }
    else if (m == "player.getPos") {
        writer.println(""+Player.getX()+","+Player.getY()+","+Player.getZ());
    }
@@ -152,7 +156,31 @@ function handleCommand(cmd) {
 }
 
 function setBlock(args) {
+//   android.util.Log.v("droidjam", "setTile "+args[0]+"|"+args[1]+"|"+args[2]+"|"+args[3]+"|"+args[4]);
    Level.setTile(args[0], args[1], args[2], args[3], args[4]);
+}
+
+function setBlocks(args) {
+   var x0 = parseInt(args[0]);
+   var y0 = parseInt(args[1]);
+   var z0 = parseInt(args[2]);
+   var x1 = parseInt(args[3]);
+   var y1 = parseInt(args[4]);
+   var z1 = parseInt(args[5]);
+   var startx = x0 < x1 ? x0 : x1;
+   var starty = y0 < y1 ? y0 : y1;
+   var startz = z0 < z1 ? z0 : z1;
+   var endx = x0 > x1 ? x0 : x1;
+   var endy = y0 > y1 ? y0 : y1;
+   var endz = z0 > z1 ? z0 : z1;
+   android.util.Log.v("droidjam", "setBlocks: "+startx+"|"+starty+"|"+startz+"|"+endx+"|"+endy+"|"+endz+">"+args[6]+"|"+args[7]);
+   for (x = startx ; x <= endx ; x++) {
+       for (y = starty ; y <= endy ; y++) {
+           for (z = startz ; z <= endz ; z++) {
+                Level.setTile(x, y, z, args[6], args[7]);
+           }
+       }
+   }
 }
 
 function err(msg) {

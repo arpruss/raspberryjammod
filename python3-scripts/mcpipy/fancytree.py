@@ -7,7 +7,7 @@ def tree(depth,thickness,branchLen):
     if random.random() < 0.2:
         return
     if branchLen < 4:
-        t.penblock(LEAVES)
+        t.penblock(LEAVES_OAK_PERMANENT)
     else:
         t.penblock(WOOD)
     t.penwidth(thickness)

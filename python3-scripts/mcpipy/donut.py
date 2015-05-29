@@ -12,7 +12,7 @@
 
 from mc import *
 
-def draw_donut(mcx,mcy,mcz,R,r,mcblock,mcmeta):
+def draw_donut(mcx,mcy,mcz,R,r,mcblock):
   for x in range(-R-r,R+r):
      for y in range(-R-r,R+r):
         xy_dist = sqrt(x**2 + y**2)
@@ -23,13 +23,13 @@ def draw_donut(mcx,mcy,mcz,R,r,mcblock,mcmeta):
 
            for z in range(-R-r,R+r):
                if (ring_dist_sq + z**2 <= r**2):
-                  mc.setBlock(mcx+x, mcy+z, mcz+y, mcblock, mcmeta)
+                  mc.setBlock(mcx+x, mcy+z, mcz+y, mcblock)
 
 mc = Minecraft()
 
 playerPos = mc.player.getPos()
 
-draw_donut(playerPos.x, playerPos.y + 9, playerPos.z, 18, 9, GLASS, 0)
+draw_donut(playerPos.x, playerPos.y + 9, playerPos.z, 18, 9, GLASS)
 mc.postToChat("Glass donut done")
-draw_donut(playerPos.x, playerPos.y + 9, playerPos.z, 18, 6, GRASS, 0)
+draw_donut(playerPos.x, playerPos.y + 9, playerPos.z, 18, 6, WATER)
 mc.postToChat("Water donut done")

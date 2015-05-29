@@ -100,7 +100,7 @@ if __name__ == "__main__":
         if thickness < 1:
             thickness = 1
         if length <= 1:
-            t.penblock(LEAVES)
+            t.penblock(LEAVES_OAK_PERMANENT)
         t.penwidth(thickness)
 
     def pop():
