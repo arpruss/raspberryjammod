@@ -17,11 +17,13 @@ import net.minecraft.item.ItemSword;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -42,6 +44,12 @@ public class MCEventHandler {
 	public void setStopChanges(boolean stopChanges) {
 		this.stopChanges = stopChanges;
 	}
+	
+//	@SubscribeEvent
+//	public void onInitMapGenEvent(InitMapGenEvent event) {
+//		System.out.println("Init map gen");
+//		MinecraftServer.getServer().setDifficultyForAllWorlds(EnumDifficulty.PEACEFUL);
+//	}
 	
 //	@SubscribeEvent
 //    public void onKeyInput(InputEvent.KeyInputEvent event) {
