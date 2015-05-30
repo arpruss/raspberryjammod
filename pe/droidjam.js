@@ -31,10 +31,10 @@
 // chat.post, world.setBlock, world.setBlocks, world.getBlock, world.getBlockWithData,
 // player.setTile, player.setPos, player.setRotation, player.setPitch, player.getPitch,
 // player.getRotation, world.getPlayerIds, entity.setPos, entity.setTile, entity.getPos,
-// entity.getTile
+// entity.getTile, world.spawnEntity, world.removeEntity,
 
 // To do:
-// world.getHeight, world.spawnEntity, world.removeEntity,
+// world.getHeight, 
 // world.setting, player.setDirection, player.getDirection, events.block.hits, events.chat.posts,
 // events.clear, events.setting, camera.setFollow, camera.setNormal, camera.getEntityId
 
@@ -47,6 +47,7 @@ var running;
 
 var blockQueue = [];
 var playerId;
+//var noAIs = [];
 
 function newLevel() {
    running = true;
@@ -186,7 +187,13 @@ function handleCommand(cmd) {
        setRot(playerId, getYaw(playerId), args[0]);
    }
    else if (m == "player.setRotation") {
-       setRot(pitch, args[0], getPitch(playerId));
+       setRot(playerId, args[0], getPitch(playerId));
+   }
+   else if (m == "entity.setPitch") {
+       setRot(args[0], getYaw(args[0]), args[1]);
+   }
+   else if (m == "entity.setRotation") {
+       setRot(args[0], args[1], getPitch(args[0]));
    }
    else if (m == "world.getBlock") {
        writer.println(""+Level.getTile(args[0], args[1], args[2]));
@@ -202,15 +209,25 @@ function handleCommand(cmd) {
 //           writer.println(""+spawnPigZombie(args[1], args[2], args[3]));
 //       }
 //       else
+       var id;
        if (args[0] == "Cow") {
-           writer.println(""+spawnCow(args[1], args[2], args[3]));
+           id = spawnCow(args[1], args[2], args[3]);
        }
        else if (args[0] == "Chicken") {
-           writer.println(""+spawnChicken(args[1], args[2], args[3]));
+           id = spawnChicken(args[1], args[2], args[3]);
        }
        else if (! isNaN(args[0])) {
-           writer.println(""+bl_spawnMob(args[1], args[2], args[3], args[0]));
+           id = bl_spawnMob(args[1], args[2], args[3], args[0]);
        }
+       writer.println(""+id);
+//       if (args.length >= 5 && args[4]) {
+//           var e = [id, args[1], args[2], args[3], 0, 0];
+//           noAIs.push(e);
+//           android.util.Log.v("droidjam", "closing connection");
+//       }
+   }
+   else if (m == "entity.rideAnimal") { // unofficial
+       Entity.rideAnimal(args[0], args[1]);
    }
    else if (m == "world.removeEntity") {
        Entity.remove(args[0]);
@@ -237,6 +254,11 @@ function setBlock(args) {
 }
 
 function modTick() {
+//    for (i = 0 ; i < noAIs.length ; i++) {
+//        e = noAIs[i];
+//        Entity.setPosition(e[0],e[1],e[2],e[3]);
+//        setRot(e[0], e[4], e[5]);
+//    }
     if (busy) {
         return;
     }
