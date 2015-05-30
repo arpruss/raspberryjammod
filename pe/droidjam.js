@@ -36,6 +36,8 @@ var writer;
 var thread;
 var running;
 
+var blockQueue = [];
+
 function newLevel() {
    print("new Level");
    running = true;
@@ -144,8 +146,17 @@ function handleCommand(cmd) {
    else if (m == "player.getPos") {
        writer.println(""+Player.getX()+","+Player.getY()+","+Player.getZ());
    }
+   else if (m == "world.getPlayerId") {
+       writer.println(""+Player.getEntity());
+   }
    else if (m == "player.setPos") {
        Entity.setPosition(Player.getEntity(),args[0],args[1],args[2]);
+   }
+   else if (m == "player.getPitch") {
+       writer.println(""+getPitch(Player.getEntity()));
+   }
+   else if (m == "player.getRotation") {
+       writer.println(""+getYaw(Player.getEntity()));
    }
    else if (m == "chat.post") {
        clientMessage(argList);
@@ -155,9 +166,40 @@ function handleCommand(cmd) {
     }
 }
 
+var busy = 0;
+
+function pushBlockQueue(x,y,z,id,meta) {
+    var entry = [x,y,z,id,meta];
+    while(busy){
+        java.lang.Thread.sleep(77);
+    }
+    busy++;
+    blockQueue.push(entry);
+    busy--;
+}
+
 function setBlock(args) {
-//   android.util.Log.v("droidjam", "setTile "+args[0]+"|"+args[1]+"|"+args[2]+"|"+args[3]+"|"+args[4]);
-   Level.setTile(args[0], args[1], args[2], args[3], args[4]);
+    pushBlockQueue(parseInt(args[0]),parseInt(args[1]),parseInt(args[2]),parseInt(args[3]),parseInt(args[4]));
+}
+
+function modTick() {
+    if (busy) {
+        return;
+    }
+    busy++;
+    var count = blockQueue.length;
+    if (count > 0) {
+        if (count > 100) {
+            count = 100;
+        }
+        var grabbed = blockQueue.slice(0,count);
+        blockQueue = blockQueue.slice(count);
+        for (i = 0 ; i < count ; i++) {
+            var e = grabbed[i];
+            Level.setTile(e[0], e[1], e[2], e[3], e[4]);
+        }
+    }
+    busy--;
 }
 
 function setBlocks(args) {
@@ -167,17 +209,19 @@ function setBlocks(args) {
    var x1 = parseInt(args[3]);
    var y1 = parseInt(args[4]);
    var z1 = parseInt(args[5]);
+   var id = parseInt(args[6]);
+   var meta = parseInt(args[7]);
    var startx = x0 < x1 ? x0 : x1;
    var starty = y0 < y1 ? y0 : y1;
    var startz = z0 < z1 ? z0 : z1;
    var endx = x0 > x1 ? x0 : x1;
    var endy = y0 > y1 ? y0 : y1;
    var endz = z0 > z1 ? z0 : z1;
-   android.util.Log.v("droidjam", "setBlocks: "+startx+"|"+starty+"|"+startz+"|"+endx+"|"+endy+"|"+endz+">"+args[6]+"|"+args[7]);
    for (x = startx ; x <= endx ; x++) {
        for (y = starty ; y <= endy ; y++) {
            for (z = startz ; z <= endz ; z++) {
-                Level.setTile(x, y, z, args[6], args[7]);
+                //Level.setTile(x, y, z, args[6], args[7]);
+                pushBlockQueue(x,y,z,id,meta);
            }
        }
    }
