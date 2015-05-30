@@ -26,8 +26,17 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-//importPackage(java.net);
-//importPackage(java.io);
+
+// Done:
+// chat.post, world.setBlock, world.setBlocks, world.getBlock, world.getBlockWithData,
+// player.setTile, player.setPos, player.setRotation, player.setPitch, player.getPitch,
+// player.getRotation, world.getPlayerIds, entity.setPos, entity.setTile, entity.getPos,
+// entity.getTile
+
+// To do:
+// world.getHeight, world.spawnEntity, world.removeEntity,
+// world.setting, player.setDirection, player.getDirection, events.block.hits, events.chat.posts,
+// events.clear, events.setting, camera.setFollow, camera.setNormal, camera.getEntityId
 
 var serv;
 var socket;
@@ -37,12 +46,13 @@ var thread;
 var running;
 
 var blockQueue = [];
+var playerId;
 
 function newLevel() {
-   print("new Level");
    running = true;
    thread = new java.lang.Thread(runServer);
    thread.start();
+   playerId = Player.getEntity();
 }
 
 function runServer() {
@@ -59,7 +69,6 @@ function runServer() {
       socket = undefined;
 
       try {
-//          print("awaiting connection");
           if (!running)
               break;
           socket=serv.accept();
@@ -67,15 +76,13 @@ function runServer() {
              new java.io.InputStreamReader(
                 socket.getInputStream()));
           writer=new java.io.PrintWriter(socket.getOutputStream(),true);
-          Level.setTime(0);
+          Level.setTime(0); // only for debug
 
           while(running) {
              var str = reader.readLine();
              if (undefined == str)
                 break;
-//             android.util.Log.v("droidjam", str);
              handleCommand(str);
-             //writer.println("Received message "+str);
           }
       }
       catch(e) {
@@ -122,7 +129,6 @@ function leaveGame() {
    catch(e) {}
    try {
        serv.close();
-       print("closed server");
    }
    catch(e) {}
 }
@@ -146,20 +152,68 @@ function handleCommand(cmd) {
    else if (m == "player.getPos") {
        writer.println(""+Player.getX()+","+Player.getY()+","+Player.getZ());
    }
-   else if (m == "world.getPlayerId") {
-       writer.println(""+Player.getEntity());
+   else if (m == "player.getTile") {
+       writer.println(""+Math.floor(Player.getX())+","+Math.floor(Player.getY())+","+Math.floor(Player.getZ()));
    }
-   else if (m == "player.setPos") {
-       Entity.setPosition(Player.getEntity(),args[0],args[1],args[2]);
+   else if (m == "entity.getPos") {
+       writer.println(Entity.getX(args[0])+","+Entity.getY(args[0])+","+Entity.getZ(args[0]));
+   }
+   else if (m == "entity.getTile") {
+       writer.println(Math.floor(Entity.getX(args[0]))+","+Math.floor(Entity.getY(args[0]))+","+Math.floor(Entity.getZ(args[0])));
+   }
+   else if (m == "world.getPlayerId" || m == "world.getPlayerIds") {
+       writer.println(""+playerId);
+   }
+   else if (m == "entity.setPos" || m == "entity.setTile") {
+       Entity.setPosition(args[0],args[1],args[2],args[3]);
+       Entity.setVelX(args[0],0);
+       Entity.setVelY(args[0],0);
+       Entity.setVelZ(args[0],0);
+   }
+   else if (m == "player.setPos" || m == "player.setTile") {
+       Entity.setPosition(playerId,args[0],args[1],args[2]);
+       Entity.setVelX(playerId,0);
+       Entity.setVelY(playerId,0);
+       Entity.setVelZ(playerId,0);
    }
    else if (m == "player.getPitch") {
-       writer.println(""+getPitch(Player.getEntity()));
+       writer.println(""+getPitch(playerId));
    }
    else if (m == "player.getRotation") {
-       writer.println(""+getYaw(Player.getEntity()));
+       writer.println(""+getYaw(playerId));
+   }
+   else if (m == "player.setPitch") {
+       setRot(playerId, getYaw(playerId), args[0]);
+   }
+   else if (m == "player.setRotation") {
+       setRot(pitch, args[0], getPitch(playerId));
+   }
+   else if (m == "world.getBlock") {
+       writer.println(""+Level.getTile(args[0], args[1], args[2]));
+   }
+   else if (m == "world.getBlockWithData") {
+       writer.println(""+Level.getTile(args[0], args[1], args[2])+","+Level.getData(args[0], args[1], args[2]));
    }
    else if (m == "chat.post") {
        clientMessage(argList);
+   }
+   else if (m == "world.spawnEntity") {
+//       if (args[0] == "PigZombie") {
+//           writer.println(""+spawnPigZombie(args[1], args[2], args[3]));
+//       }
+//       else
+       if (args[0] == "Cow") {
+           writer.println(""+spawnCow(args[1], args[2], args[3]));
+       }
+       else if (args[0] == "Chicken") {
+           writer.println(""+spawnChicken(args[1], args[2], args[3]));
+       }
+       else if (! isNaN(args[0])) {
+           writer.println(""+bl_spawnMob(args[1], args[2], args[3], args[0]));
+       }
+   }
+   else if (m == "world.removeEntity") {
+       Entity.remove(args[0]);
    }
    else {
        err("Unknown command");
@@ -217,10 +271,9 @@ function setBlocks(args) {
    var endx = x0 > x1 ? x0 : x1;
    var endy = y0 > y1 ? y0 : y1;
    var endz = z0 > z1 ? z0 : z1;
-   for (x = startx ; x <= endx ; x++) {
+   for (z = startz ; z <= endz ; z++) {
        for (y = starty ; y <= endy ; y++) {
-           for (z = startz ; z <= endz ; z++) {
-                //Level.setTile(x, y, z, args[6], args[7]);
+           for (x = startx ; x <= endx ; x++) {
                 pushBlockQueue(x,y,z,id,meta);
            }
        }
@@ -229,5 +282,5 @@ function setBlocks(args) {
 
 function err(msg) {
    writer.println("ERR "+msg);
-   print("ERR "+msg);
+   android.util.Log.e("droidjam", "error "+msg);
 }
