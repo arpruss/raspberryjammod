@@ -1,3 +1,7 @@
+#
+# Public domain code by Alexander Pruss
+#
+
 import lsystem
 from mcturtle import *
 

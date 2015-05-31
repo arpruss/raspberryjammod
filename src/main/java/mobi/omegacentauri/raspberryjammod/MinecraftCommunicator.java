@@ -64,7 +64,7 @@ public class MinecraftCommunicator {
 	private static final String PLAYERGETROTATION = "player.getRotation"; 
 	private static final String PLAYERGETPITCH = "player.getPitch";
 	private static final String PLAYERGETPOS = "player.getPos";
-	private static final String PLAYERGETTILE = "player.getTile";	
+	private static final String PLAYERGETTILE = "player.getTile";
 	private static final String ENTITYGETDIRECTION = "entity.getDirection"; 
 	private static final String ENTITYGETROTATION = "entity.getRotation"; 
 	private static final String ENTITYGETPITCH = "entity.getPitch"; 
@@ -97,7 +97,7 @@ public class MinecraftCommunicator {
 	private MCEventHandler eventHandler;
 	private boolean listening = true;
 	private boolean translateBlockId = false; // default: do not translate blocks between Pi and Desktop
-	private Minecraft mc;
+ 	private Minecraft mc;
 
 	public MinecraftCommunicator(MCEventHandler eventHandler) throws IOException {
 		this.eventHandler = eventHandler;

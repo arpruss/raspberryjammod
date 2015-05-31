@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+#
+# Public domain code by Alexander Pruss
+#
 
 import mcpi.minecraft as minecraft
 import mcpi.block as block

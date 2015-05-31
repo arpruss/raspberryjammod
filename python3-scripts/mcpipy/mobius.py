@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-
 #
-# (c) 2015 Alexander R. Pruss
+# Public domain code by Alexander Pruss
 #
 
 from mc import *

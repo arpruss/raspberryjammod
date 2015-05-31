@@ -1,8 +1,5 @@
-#!/usr/bin/env python
 #
-# (c) 2015 Alexander R. Pruss
-# Available under MIT license
-#
+# Public domain code by Alexander Pruss
 #
 
 from mc import *
@@ -33,7 +30,7 @@ zformula = '4 * (1- cos(a)/2) * sin(b)'
 
 scale = 3
 
-b = 95
+b = STAINED_GLASS.id
 m = 5
 
 if (len(sys.argv)>1):

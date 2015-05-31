@@ -1,5 +1,6 @@
 ﻿#
-# Copyright (c) 2015 Alexander Pruss
+# Public domain code by Alexander Pruss
+#
 # L-system with turtle graphics
 #
 

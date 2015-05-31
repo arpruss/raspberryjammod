@@ -1,7 +1,5 @@
-#!/usr/bin/env python
 #
-# (c) 2015 Alexander R. Pruss
-# Available under MIT license
+# Public domain code by Alexander Pruss
 #
 
 from mc import *
@@ -26,7 +24,7 @@ playerPos = mc.player.getPos()
 
 scale = 3
 
-b = 95
+b = STAINED_GLASS.id
 m = 5
 
 arg = 1

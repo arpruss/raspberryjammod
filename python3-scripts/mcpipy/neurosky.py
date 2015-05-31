@@ -1,3 +1,7 @@
+#
+# Public domain code by Alexander Pruss
+#
+
 from mc import *
 import sys
 import time
