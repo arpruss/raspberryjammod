@@ -78,7 +78,7 @@ function runServer() {
              new java.io.InputStreamReader(
                 socket.getInputStream()));
           writer=new java.io.PrintWriter(socket.getOutputStream(),true);
-          Level.setTime(0); // only for debug
+//          Level.setTime(0); // only for debug
 
           while(running) {
              var str = reader.readLine();
@@ -206,10 +206,6 @@ function handleCommand(cmd) {
        clientMessage(argList);
    }
    else if (m == "world.spawnEntity") {
-//       if (args[0] == "PigZombie") {
-//           writer.println(""+spawnPigZombie(args[1], args[2], args[3]));
-//       }
-//       else
        var id;
        if (args[0] == "Cow") {
            id = spawnCow(args[1], args[2], args[3]);
@@ -218,7 +214,7 @@ function handleCommand(cmd) {
            id = spawnChicken(args[1], args[2], args[3]);
        }
        else if (! isNaN(args[0])) {
-           id = bl_spawnMob(args[1], args[2], args[3], args[0]);
+           id = Level.spawnMob(args[1], args[2], args[3], args[0]);
        }
        writer.println(""+id);
 //       if (args.length >= 5 && args[4]) {
