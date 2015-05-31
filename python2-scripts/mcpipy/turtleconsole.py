@@ -1,3 +1,7 @@
+#
+# Public domain code by Alexander Pruss
+#
+
 import mcpi.minecraft as minecraft
 import server
 import time

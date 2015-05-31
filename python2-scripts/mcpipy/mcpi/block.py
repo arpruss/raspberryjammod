@@ -1,3 +1,5 @@
+import settings
+
 class Block:
     """Minecraft PI block description. Can be sent to Minecraft.setBlock/s"""
     def __init__(self, id, data=0):
@@ -86,7 +88,10 @@ SUGAR_CANE          = Block(83)
 FENCE               = Block(85)
 GLOWSTONE_BLOCK     = Block(89)
 BEDROCK_INVISIBLE   = Block(95)
-STAINED_GLASS       = Block(95) # Desktop only
+if settings.isPE:
+   STAINED_GLASS = WOOL
+else:
+   STAINED_GLASS = Block(95)
 STONE_BRICK         = Block(98)
 GLASS_PANE          = Block(102)
 MELON               = Block(103)
@@ -133,8 +138,13 @@ LEAVES_OAK_PERMANENT = Block(LEAVES.id, 4)
 LEAVES_SPRUCE_PERMANENT = Block(LEAVES.id, 5)
 LEAVES_BIRCH_PERMANENT = Block(LEAVES.id, 6)
 LEAVES_JUNGLE_PERMANENT = Block(LEAVES.id, 7)
-# desktop
-LEAVES_ACACIA_DECAYABLE = Block(161,0)
-LEAVES_DARK_OAK_DECAYABLE = Block(161,1)
-LEAVES_ACACIA_PERMANENT = Block(161,2)
-LEAVES_DARK_OAK_PERMANENT = Block(161,3)
+if settings.isPE:
+    LEAVES_ACACIA_DECAYABLE = Block(161,0)
+    LEAVES_DARK_OAK_DECAYABLE = Block(161,1)
+    LEAVES_ACACIA_PERMANENT = Block(161,2)
+    LEAVES_DARK_OAK_PERMANENT = Block(161,3)
+else:
+    LEAVES_ACACIA_DECAYABLE = LEAVES_OAK_DECAYABLE
+    LEAVES_DARK_OAK_DECAYABLE = LEAVES_JUNGLE_DECAYABLE
+    LEAVES_ACACIA_PERMANENT = LEAVES_OAK_PERMANENT
+    LEAVES_DARK_OAK_PERMANENT = LEAVES_JUNGLE_PERMANENT

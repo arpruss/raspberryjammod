@@ -1,4 +1,8 @@
+#
+# Public domain code by Alexander Pruss
+#
 from mc import *
+import mcpi.settings as settings
 
 def deleteCubes(x0,y0,z0,length):
     length /= 3
@@ -18,7 +22,10 @@ def deleteCubes(x0,y0,z0,length):
 
 mc = Minecraft()
 playerPos = mc.player.getPos()
-length = 3*3*3*3
+if settings.isPE:
+    length = 3*3*3
+else:
+    length = 3*3*3*3
 mc.setBlocks(playerPos.x,playerPos.y,playerPos.z,
              playerPos.x+length-1,playerPos.y+length-1,playerPos.z+length-1,WOOL_PURPLE)
 deleteCubes(playerPos.x,playerPos.y,playerPos.z,length)

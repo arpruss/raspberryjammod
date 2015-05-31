@@ -1,9 +1,13 @@
+#
+# Public domain code by Alexander Pruss
+#
+
 import mcpi.minecraft as minecraft
 import mcpi.block as block
 import server
 import lsystem
 
-mc = minecraft.Minecraft.create(server.address)
+mc = minecraft.Minecraft()
 playerPos = mc.player.getPos()
 
 DIRECTIONS = ((1,0),(0,1),(-1,0),(0,-1))

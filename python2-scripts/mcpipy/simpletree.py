@@ -1,3 +1,7 @@
+#
+# Public domain code by Alexander Pruss
+#
+
 from mcturtle import *
 t = Turtle()
 t.pendelay(0)

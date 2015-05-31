@@ -1,3 +1,7 @@
+#
+# Public domain code by Alexander Pruss
+#
+
 from turtle import *
 
 def tree(depth):

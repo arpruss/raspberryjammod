@@ -1,9 +1,5 @@
-#!/usr/bin/env python
-
 #
-# (c) 2015 Alexander R. Pruss
-#
-# Available under MIT license
+# Public domain code by Alexander Pruss
 #
 
 #
