@@ -50,7 +50,7 @@ var playerId;
 //var noAIs = [];
 
 function newLevel() {
-   running = true;
+   running = 1;
    thread = new java.lang.Thread(runServer);
    thread.start();
    playerId = Player.getEntity();
@@ -64,6 +64,7 @@ function runServer() {
        print("Error "+e);
        return;
    }
+
    while(running) {
       reader = undefined;
       writer = undefined;
@@ -115,7 +116,7 @@ function runServer() {
 function leaveGame() {
    android.util.Log.v("droidjam", "leaveGame()");
    print("leaveGame()");
-   running = false;
+   running = 0;
    try {
        reader.close();
    }
@@ -239,19 +240,30 @@ function handleCommand(cmd) {
 
 var busy = 0;
 
-function pushBlockQueue(x,y,z,id,meta) {
+function _pushBlockQueue(x,y,z,id,meta) {
     var entry = [x,y,z,id,meta];
-    while(busy){
-        java.lang.Thread.sleep(77);
-    }
-    busy++;
     blockQueue.push(entry);
-    busy--;
 }
+
+pushBlockQueue = new Packages.org.mozilla.javascript.Synchronizer(_pushBlockQueue);
 
 function setBlock(args) {
     pushBlockQueue(parseInt(args[0]),parseInt(args[1]),parseInt(args[2]),parseInt(args[3]),parseInt(args[4]));
 }
+
+function _grab() {
+    var count = blockQueue.length;
+    if (count == 0)
+        return [];
+    if (count > 20) {
+        count = 20;
+    }
+    var grabbed = blockQueue.slice(0,count);
+    blockQueue = blockQueue.slice(count);
+    return grabbed;
+}
+
+grab = new Packages.org.mozilla.javascript.Synchronizer(_grab);
 
 function modTick() {
 //    for (i = 0 ; i < noAIs.length ; i++) {
@@ -260,20 +272,14 @@ function modTick() {
 //        setRot(e[0], e[4], e[5]);
 //    }
     if (busy) {
+        // try again next tick
         return;
     }
     busy++;
-    var count = blockQueue.length;
-    if (count > 0) {
-        if (count > 100) {
-            count = 100;
-        }
-        var grabbed = blockQueue.slice(0,count);
-        blockQueue = blockQueue.slice(count);
-        for (i = 0 ; i < count ; i++) {
-            var e = grabbed[i];
-            Level.setTile(e[0], e[1], e[2], e[3], e[4]);
-        }
+    var grabbed = grab();
+    for (i = 0 ; i < grabbed.length ; i++) {
+        var e = grabbed[i];
+        Level.setTile(e[0], e[1], e[2], e[3], e[4]);
     }
     busy--;
 }
