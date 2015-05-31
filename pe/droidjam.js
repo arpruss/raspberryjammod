@@ -48,6 +48,33 @@ var running;
 var blockQueue = [];
 var playerId;
 //var noAIs = [];
+var ENTITIES = {
+    "PrimedTnt":65,
+    "FallingSand":66,
+    "Arrow":80,
+    "Snowball":81,
+    "MinecartRideable":84,
+    "Fireball":85,
+    "Zombie":32,
+    "Creeper":33,
+    "Skeleton":34,
+    "Spider":35,
+    "PigZombie":36,
+    "Slime":37,
+    "Enderman":38, //untested from here
+    "Silverfish":39,
+    "CaveSpider":40,
+    "Ghast":41, 
+    "LavaSlime":42,
+    "Chicken":10,
+    "Cow":11,
+    "Pig":12,
+    "Sheep":13,
+    "Wolf":14,
+    "Mooshroom":16,
+    "Squid":17,
+    "Bat":19
+};
 
 function newLevel() {
    running = 1;
@@ -215,6 +242,9 @@ function handleCommand(cmd) {
        }
        else if (! isNaN(args[0])) {
            id = Level.spawnMob(args[1], args[2], args[3], args[0]);
+       }
+       else if (args[0] in ENTITIES) {
+           id = Level.spawnMob(args[1], args[2], args[3], ENTITIES[args[0]]);
        }
        writer.println(""+id);
 //       if (args.length >= 5 && args[4]) {
