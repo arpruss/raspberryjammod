@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <Spinner
+        android:id="@+id/python_version"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+         android:entries="@array/python_versions"
+        />
+    
+    <Spinner
+        android:id="@+id/overwrite_mode"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/overwrite_modes"
+        />
+    
+    <Button 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+   	    android:text="Install" 
+   	    android:onClick="onInstall"/>
+
+</LinearLayout>
