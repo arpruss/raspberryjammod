@@ -3,7 +3,6 @@
 #
 
 import mcpi.minecraft as minecraft
-import server
 import time
 from math import *
 from mcpi.block import *
@@ -19,7 +18,7 @@ def inputLine(prompt):
                 return c.message
         time.sleep(0.2)
 
-mc = minecraft.Minecraft.create(server.address)
+mc = minecraft.Minecraft()
 playerPos = mc.player.getPos()
 playerId = mc.getPlayerId()
 

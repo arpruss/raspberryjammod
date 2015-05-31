@@ -10,7 +10,6 @@ import numbers
 import copy
 import time
 from math import *
-import server
 
 class Turtle:
     TO_RADIANS = pi / 180.
@@ -23,7 +22,7 @@ class Turtle:
         if mc:
              self.mc = mc
         else:
-             self.mc = minecraft.Minecraft.create(server.address)
+             self.mc = minecraft.Minecraft()
         self.block = BEDROCK
         self.width = 1
         self.pen = True

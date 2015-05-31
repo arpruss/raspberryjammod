@@ -4,7 +4,6 @@
 
 import mcpi.minecraft as minecraft
 import mcpi.block as block
-import server
 import math
 import sys
 
@@ -15,7 +14,7 @@ def replace(mcx,mcy,mcz,R,mcblock,mcmeta):
             if (x**2 + y**2 + z**2 <= R**2 and mc.getBlock(mcx+x,mcy+y,mcz+z) != block.AIR.id):
                 mc.setBlock(mcx+x,mcy+y,mcz+z,mcblock,mcmeta)
 
-mc = minecraft.Minecraft.create(server.address)
+mc = minecraft.Minecraft()
 
 playerPos = mc.player.getPos()
 R = 20

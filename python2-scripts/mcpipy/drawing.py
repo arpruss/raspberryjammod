@@ -8,7 +8,6 @@ from mcpi.block import *
 from mcpi.entity import *
 import time
 from math import *
-import server
 
 class Drawing:
     TO_RADIANS = pi / 180.
@@ -18,7 +17,7 @@ class Drawing:
         if mc:
              self.mc = mc
         else:
-             self.mc = minecraft.Minecraft.create(server.address)
+             self.mc = minecraft.Minecraft()
         self.width = 1
         self.nib = [(0,0,0)]
         self.fan = None

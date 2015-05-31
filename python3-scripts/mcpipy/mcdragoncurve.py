@@ -4,7 +4,6 @@
 
 import mcpi.minecraft as minecraft
 import mcpi.block as block
-import server
 import lsystem
 
 mc = minecraft.Minecraft()
