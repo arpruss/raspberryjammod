@@ -36,6 +36,7 @@
 // events.clear, events.setting, camera.setFollow, camera.setNormal, camera.getEntityId
 
 var BLOCKS_PER_TICK = 20;
+var PORT = 4711;
 
 var serverSocket;
 var socket;
@@ -82,9 +83,32 @@ function newLevel() {
    playerId = Player.getEntity();
 }
 
+function closeAllButServer() {
+    android.util.Log.v("droidjam", "closing connection");
+    try {
+         reader.close();
+    } catch(e) {}
+    reader = undefined;
+    try {
+        writer.close();
+    } catch(e) {}
+    writer = undefined;
+    try {
+        socket.close();
+    } catch(e) {}
+    socket = undefined;
+}
+
+function closeServer() {
+   try {
+      serverSocket.close();
+      android.util.Log.v("droidjam", "closed socket");
+   } catch(e) {}
+}
+
 function runServer() {
    try {
-       serverSocket=new java.net.ServerSocket(4711,1);
+       serverSocket=new java.net.ServerSocket(PORT,1);
    }
    catch(e) {
        print("Error "+e);
@@ -116,47 +140,18 @@ function runServer() {
              print("Error "+e);
       }
       print("closing connection");
-      android.util.Log.v("droidjam", "closing connection");
-      try {
-           reader.close();
-      } catch(e) {}
-      reader = undefined;
-      try {
-          writer.close();
-      } catch(e) {}
-      writer = undefined;
-      try {
-          socket.close();
-      } catch(e) {}
-      socket = undefined;
-      android.util.Log.v("droidjam", "closed connection");
+      closeAllButServer();
    }
-   try {
-      serverSocket.close();
-      android.util.Log.v("droidjam", "closed socket");
-   } catch(e) {}
+
+   closeServer();
 }
 
 function leaveGame() {
    android.util.Log.v("droidjam", "leaveGame()");
    print("leaveGame()");
    running = 0;
-   try {
-       reader.close();
-   }
-   catch(e) {}
-   try {
-       writer.close();
-   }
-   catch(e) {}
-   try {
-       socket.close();
-   }
-   catch(e) {}
-   try {
-       serverSocket.close();
-   }
-   catch(e) {}
+   closeAllButServer();
+   closeServer();
 }
 
 function handleCommand(cmd) {
