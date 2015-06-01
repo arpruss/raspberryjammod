@@ -1,8 +1,5 @@
 // droidjam.js (c) 2015 by Alexander R. Pruss
 //
-// Based on : Simple finger server
-// Copyright (c) 2009 by James K. Lawless (jimbo@radiks.net http://www.radiks.net/~jimbo)
-//
 // License: MIT / X11
 //
 // Permission is hereby granted, free of charge, to any person
@@ -34,11 +31,13 @@
 // entity.getTile, world.spawnEntity, world.removeEntity,
 
 // To do:
-// world.getHeight, 
+// world.getHeight,
 // world.setting, player.setDirection, player.getDirection, events.block.hits, events.chat.posts,
 // events.clear, events.setting, camera.setFollow, camera.setNormal, camera.getEntityId
 
-var serv;
+var BLOCKS_PER_TICK = 20;
+
+var serverSocket;
 var socket;
 var reader;
 var writer;
@@ -64,7 +63,7 @@ var ENTITIES = {
     "Enderman":38, //untested from here
     "Silverfish":39,
     "CaveSpider":40,
-    "Ghast":41, 
+    "Ghast":41,
     "LavaSlime":42,
     "Chicken":10,
     "Cow":11,
@@ -85,7 +84,7 @@ function newLevel() {
 
 function runServer() {
    try {
-       serv=new java.net.ServerSocket(4711,1);
+       serverSocket=new java.net.ServerSocket(4711,1);
    }
    catch(e) {
        print("Error "+e);
@@ -100,10 +99,8 @@ function runServer() {
       try {
           if (!running)
               break;
-          socket=serv.accept();
-          reader=new java.io.BufferedReader(
-             new java.io.InputStreamReader(
-                socket.getInputStream()));
+          socket=serverSocket.accept();
+          reader=new java.io.BufferedReader(new java.io.InputStreamReader(socket.getInputStream()));
           writer=new java.io.PrintWriter(socket.getOutputStream(),true);
 //          Level.setTime(0); // only for debug
 
@@ -135,7 +132,7 @@ function runServer() {
       android.util.Log.v("droidjam", "closed connection");
    }
    try {
-      serv.close();
+      serverSocket.close();
       android.util.Log.v("droidjam", "closed socket");
    } catch(e) {}
 }
@@ -157,7 +154,7 @@ function leaveGame() {
    }
    catch(e) {}
    try {
-       serv.close();
+       serverSocket.close();
    }
    catch(e) {}
 }
@@ -281,8 +278,8 @@ function _grab() {
     var count = blockQueue.length;
     if (count == 0)
         return [];
-    if (count > 20) {
-        count = 20;
+    if (count > BLOCKS_PER_TICK) {
+        count = BLOCKS_PER_TICK;
     }
     var grabbed = blockQueue.slice(0,count);
     blockQueue = blockQueue.slice(count);
