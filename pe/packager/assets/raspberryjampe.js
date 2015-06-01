@@ -1,8 +1,5 @@
 // droidjam.js (c) 2015 by Alexander R. Pruss
 //
-// Based on : Simple finger server
-// Copyright (c) 2009 by James K. Lawless (jimbo@radiks.net http://www.radiks.net/~jimbo)
-//
 // License: MIT / X11
 //
 // Permission is hereby granted, free of charge, to any person
@@ -31,21 +28,36 @@
 // chat.post, world.setBlock, world.setBlocks, world.getBlock, world.getBlockWithData,
 // player.setTile, player.setPos, player.setRotation, player.setPitch, player.getPitch,
 // player.getRotation, world.getPlayerIds, entity.setPos, entity.setTile, entity.getPos,
-// entity.getTile, world.spawnEntity, world.removeEntity,
+// entity.getTile, world.spawnEntity, world.removeEntity, world.getHeight, events.block.hits,
+// events.clear, events.setting, events.chat.posts
 
-// To do:
-// world.getHeight, 
-// world.setting, player.setDirection, player.getDirection, events.block.hits, events.chat.posts,
-// events.clear, events.setting, camera.setFollow, camera.setNormal, camera.getEntityId
+// Not done:
+// world.setting, player.setDirection, player.getDirection,
+// camera.setFollow, camera.setNormal, camera.getEntityId
 
-var serv;
+// Divergences:
+// The positions are NOT relative to the spawn point.
+// Chat posts all return the player's ID as the callback function doesn't specify the speaker.
+
+
+// 20 is reliable
+// 80 seems OK
+var BLOCKS_PER_TICK = 100;
+var PORT = 4711;
+var EVENTS_MAX = 512;
+var PLAYER_HEIGHT = 1.61999988;
+
+var serverSocket;
 var socket;
 var reader;
 var writer;
 var thread;
 var running;
 
+var hitRestrictedToSword = 1;
 var blockQueue = [];
+var hitData = [];
+var chatData = [];
 var playerId;
 //var noAIs = [];
 var ENTITIES = {
@@ -64,7 +76,7 @@ var ENTITIES = {
     "Enderman":38, //untested from here
     "Silverfish":39,
     "CaveSpider":40,
-    "Ghast":41, 
+    "Ghast":41,
     "LavaSlime":42,
     "Chicken":10,
     "Cow":11,
@@ -76,16 +88,143 @@ var ENTITIES = {
     "Bat":19
 };
 
-function newLevel() {
+function newLevel(hasLevel) {
+   android.util.Log.v("droidjam", "newLevel "+hasLevel);
    running = 1;
    thread = new java.lang.Thread(runServer);
    thread.start();
    playerId = Player.getEntity();
 }
 
+function levelEventHook(player, eventType, x, y, z, data) {
+   android.util.Log.v("droidjam", "levelEvent "+eventType+" "+x+" "+y+" "+z+" "+data);
+}
+
+function selectLevelHook() {
+   android.util.Log.v("droidjam", "selectLevel");
+}
+
+function serverMessageReceiveHook(msg) {
+   android.util.Log.v("droidjam", "serverMessage "+msg);
+}
+
+
+function sync(f) {
+   return new Packages.org.mozilla.javascript.Synchronizer(f);
+}
+
+function _addHit(data) {
+   hitData.push(data);
+   while(hitData.length > EVENTS_MAX) {
+       hitData.shift();
+   }
+}
+
+function _addChat(data) {
+   chatData.push(data);
+   while(chatData.length > EVENTS_MAX) {
+       chatData.shift();
+   }
+}
+
+function _getAndClearHits() {
+    var out = "";
+    for (i = 0; i < hitData.length ; i++) {
+        if (i > 0) {
+            out += "|";
+        }
+        out += hitData[i];
+    }
+    hitData = [];
+    return out;
+}
+
+function _getAndClearChats() {
+    var out = "";
+    for (i = 0; i < chatData.length ; i++) {
+        if (i > 0) {
+            out += "|";
+        }
+        out += chatData[i];
+    }
+    chatData = [];
+    return out;
+}
+
+function _clearHits() {
+    hitData = [];
+}
+
+function _clearChats() {
+    chatData = [];
+}
+
+function _restrictToSword(x) {
+    hitRestrictedToSword = x;
+}
+
+eventSync = {
+          addHit: sync(_addHit),
+          addChat: sync(_addChat),
+          getAndClearHits: sync(_getAndClearHits),
+          getAndClearChats: sync(_getAndClearChats),
+          clearHits: sync(_clearHits),
+          clearChats: sync(_clearChats),
+          restrictToSword: _restrictToSword };
+
+function useItem(x,y,z,itemId,blockId,side) {
+//   android.util.Log.v("droidjam", ""+x+","+y+","+z+",item:"+itemId+",target:"+blockId+",side:"+side);
+   if (! hitRestrictedToSword || itemId == 267 || itemId == 268 || itemId == 272 || itemId == 276 || itemId == 283) {
+       eventSync.addHit([x,y,z,side,playerId]);
+   }
+}
+
+function chatHook(message) {
+//   android.util.Log.v("droidjam", "chat "+message);
+   data = [playerId, message.replace(/\|/g, '&#124;')];
+   eventSync.addChat(data);
+}
+
+// OOPS: no way to get a context, which would be needed to launch
+//function procCmd(cmdLine) {
+//    cmds = cmdLine.split(" +");
+//    if (cmds[0] == "py" || cmds[0] == "python") {
+//        android.util.Log.v("droidjam", "launching "+cmds[1]);
+//        componentName = android.content.ComponentName("com.googlecode.android_scripting",
+//            "com.googlecode.android_scripting.activity.ScriptingLayerServiceLauncher");
+//        intent = new android.content.Intent();
+//        intent.setComponent(componentName);
+//        intent.putAction("com.googlecode.android_scripting.action.LAUNCH_BACKGROUND_SCRIPT");
+//        intent.putExtra("com.googlecode.android_scripting.extra.SCRIPT_PATH", "/sdcard/com.hipipal.qpyplus/projects/mcpipy/"+cmds[1]);
+//    }
+//}
+
+function closeAllButServer() {
+    android.util.Log.v("droidjam", "closing connection");
+    try {
+         reader.close();
+    } catch(e) {}
+    reader = undefined;
+    try {
+        writer.close();
+    } catch(e) {}
+    writer = undefined;
+    try {
+        socket.close();
+    } catch(e) {}
+    socket = undefined;
+}
+
+function closeServer() {
+   try {
+      serverSocket.close();
+      android.util.Log.v("droidjam", "closed socket");
+   } catch(e) {}
+}
+
 function runServer() {
    try {
-       serv=new java.net.ServerSocket(4711,1);
+       serverSocket=new java.net.ServerSocket(PORT,1);
    }
    catch(e) {
        print("Error "+e);
@@ -100,10 +239,9 @@ function runServer() {
       try {
           if (!running)
               break;
-          socket=serv.accept();
-          reader=new java.io.BufferedReader(
-             new java.io.InputStreamReader(
-                socket.getInputStream()));
+          socket=serverSocket.accept();
+          android.util.Log.v("droidjam", "opening connection");
+          reader=new java.io.BufferedReader(new java.io.InputStreamReader(socket.getInputStream()));
           writer=new java.io.PrintWriter(socket.getOutputStream(),true);
 //          Level.setTime(0); // only for debug
 
@@ -119,47 +257,18 @@ function runServer() {
              print("Error "+e);
       }
       print("closing connection");
-      android.util.Log.v("droidjam", "closing connection");
-      try {
-           reader.close();
-      } catch(e) {}
-      reader = undefined;
-      try {
-          writer.close();
-      } catch(e) {}
-      writer = undefined;
-      try {
-          socket.close();
-      } catch(e) {}
-      socket = undefined;
-      android.util.Log.v("droidjam", "closed connection");
+      closeAllButServer();
    }
-   try {
-      serv.close();
-      android.util.Log.v("droidjam", "closed socket");
-   } catch(e) {}
+
+   closeServer();
 }
 
 function leaveGame() {
    android.util.Log.v("droidjam", "leaveGame()");
    print("leaveGame()");
    running = 0;
-   try {
-       reader.close();
-   }
-   catch(e) {}
-   try {
-       writer.close();
-   }
-   catch(e) {}
-   try {
-       socket.close();
-   }
-   catch(e) {}
-   try {
-       serv.close();
-   }
-   catch(e) {}
+   closeAllButServer();
+   closeServer();
 }
 
 function handleCommand(cmd) {
@@ -179,28 +288,43 @@ function handleCommand(cmd) {
        setBlocks(args);
    }
    else if (m == "player.getPos") {
-       writer.println(""+Player.getX()+","+Player.getY()+","+Player.getZ());
+       writer.println(""+Player.getX()+","+(Player.getY()-PLAYER_HEIGHT)+","+Player.getZ());
    }
    else if (m == "player.getTile") {
-       writer.println(""+Math.floor(Player.getX())+","+Math.floor(Player.getY())+","+Math.floor(Player.getZ()));
+       writer.println(""+Math.floor(Player.getX())+","+Math.round(Player.getY()-PLAYER_HEIGHT)+","+Math.floor(Player.getZ()));
    }
    else if (m == "entity.getPos") {
-       writer.println(Entity.getX(args[0])+","+Entity.getY(args[0])+","+Entity.getZ(args[0]));
+       y = Entity.getY(args[0]);
+       if (args[0] == playerId) {
+           y -= PLAYER_HEIGHT;
+       }
+       writer.println(Entity.getX(args[0])+","+y+","+Entity.getZ(args[0]));
    }
    else if (m == "entity.getTile") {
-       writer.println(Math.floor(Entity.getX(args[0]))+","+Math.floor(Entity.getY(args[0]))+","+Math.floor(Entity.getZ(args[0])));
+       y = Entity.getY(args[0]);
+       if (args[0] == playerId) {
+           y -= PLAYER_HEIGHT;
+       }
+       writer.println(Math.floor(Entity.getX(args[0]))+","+Math.round(y)+","+Math.floor(Entity.getZ(args[0])));
    }
    else if (m == "world.getPlayerId" || m == "world.getPlayerIds") {
        writer.println(""+playerId);
    }
    else if (m == "entity.setPos" || m == "entity.setTile") {
-       Entity.setPosition(args[0],args[1],args[2],args[3]);
+       var y;
+       if (args[0] == playerId) {
+           y = PLAYER_HEIGHT+parseFloat(args[2]);
+       }
+       else {
+           y = args[2];
+       }
+       Entity.setPosition(args[0],args[1],y,args[3]);
        Entity.setVelX(args[0],0);
        Entity.setVelY(args[0],0);
        Entity.setVelZ(args[0],0);
    }
    else if (m == "player.setPos" || m == "player.setTile") {
-       Entity.setPosition(playerId,args[0],args[1],args[2]);
+       Entity.setPosition(playerId,args[0],PLAYER_HEIGHT+parseFloat(args[1]),args[2]);
        Entity.setVelX(playerId,0);
        Entity.setVelY(playerId,0);
        Entity.setVelZ(playerId,0);
@@ -231,6 +355,32 @@ function handleCommand(cmd) {
    }
    else if (m == "chat.post") {
        clientMessage(argList);
+   }
+   else if (m == "events.block.hits") {
+       writer.println(eventSync.getAndClearHits());
+   }
+   else if (m == "events.chat.posts") {
+       writer.println(eventSync.getAndClearChats());
+   }
+   else if (m == "events.clear") {
+       eventSync.clearHits();
+       eventSync.clearChats();
+   }
+   else if (m == "events.setting") {
+       if(args[0] == "restrict_to_sword") {
+            eventSync.restrictToSword(parseInt(args[1]));
+       }
+   }
+   else if (m == "world.getHeight") {
+       var x = parseInt(args[0]);
+       var z = parseInt(args[2]);
+       var y;
+       for (y = 127 ; y > 0 ; y--) {
+           if (Level.getTile(x,y,z)) {
+               break;
+           }
+       }
+       writer.println(""+y);
    }
    else if (m == "world.spawnEntity") {
        var id;
@@ -274,15 +424,17 @@ function _pushBlockQueue(x,y,z,id,meta) {
 pushBlockQueue = new Packages.org.mozilla.javascript.Synchronizer(_pushBlockQueue);
 
 function setBlock(args) {
-    pushBlockQueue(parseInt(args[0]),parseInt(args[1]),parseInt(args[2]),parseInt(args[3]),parseInt(args[4]));
+    pushBlockQueue(parseInt(Math.round(args[0])),
+       parseInt(Math.round(args[1])),parseInt(Math.round(args[2])),
+       parseInt(Math.round(args[3])),parseInt(Math.round(args[4])));
 }
 
 function _grab() {
     var count = blockQueue.length;
     if (count == 0)
         return [];
-    if (count > 20) {
-        count = 20;
+    if (count > BLOCKS_PER_TICK) {
+        count = BLOCKS_PER_TICK;
     }
     var grabbed = blockQueue.slice(0,count);
     blockQueue = blockQueue.slice(count);
@@ -311,12 +463,12 @@ function modTick() {
 }
 
 function setBlocks(args) {
-   var x0 = parseInt(args[0]);
-   var y0 = parseInt(args[1]);
-   var z0 = parseInt(args[2]);
-   var x1 = parseInt(args[3]);
-   var y1 = parseInt(args[4]);
-   var z1 = parseInt(args[5]);
+   var x0 = parseInt(Math.round(args[0]));
+   var y0 = parseInt(Math.round(args[1]));
+   var z0 = parseInt(Math.round(args[2]));
+   var x1 = parseInt(Math.round(args[3]));
+   var y1 = parseInt(Math.round(args[4]));
+   var z1 = parseInt(Math.round(args[5]));
    var id = parseInt(args[6]);
    var meta = parseInt(args[7]);
    var startx = x0 < x1 ? x0 : x1;

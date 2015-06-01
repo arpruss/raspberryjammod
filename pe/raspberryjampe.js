@@ -39,9 +39,13 @@
 // The positions are NOT relative to the spawn point.
 // Chat posts all return the player's ID as the callback function doesn't specify the speaker.
 
-var BLOCKS_PER_TICK = 20;
+
+// 20 is reliable
+// 80 seems OK
+var BLOCKS_PER_TICK = 100;
 var PORT = 4711;
 var EVENTS_MAX = 512;
+var PLAYER_HEIGHT = 1.61999988;
 
 var serverSocket;
 var socket;
@@ -91,6 +95,19 @@ function newLevel(hasLevel) {
    thread.start();
    playerId = Player.getEntity();
 }
+
+function levelEventHook(player, eventType, x, y, z, data) {
+   android.util.Log.v("droidjam", "levelEvent "+eventType+" "+x+" "+y+" "+z+" "+data);
+}
+
+function selectLevelHook() {
+   android.util.Log.v("droidjam", "selectLevel");
+}
+
+function serverMessageReceiveHook(msg) {
+   android.util.Log.v("droidjam", "serverMessage "+msg);
+}
+
 
 function sync(f) {
    return new Packages.org.mozilla.javascript.Synchronizer(f);
@@ -271,28 +288,43 @@ function handleCommand(cmd) {
        setBlocks(args);
    }
    else if (m == "player.getPos") {
-       writer.println(""+Player.getX()+","+Player.getY()+","+Player.getZ());
+       writer.println(""+Player.getX()+","+(Player.getY()-PLAYER_HEIGHT)+","+Player.getZ());
    }
    else if (m == "player.getTile") {
-       writer.println(""+Math.floor(Player.getX())+","+Math.floor(Player.getY())+","+Math.floor(Player.getZ()));
+       writer.println(""+Math.floor(Player.getX())+","+Math.round(Player.getY()-PLAYER_HEIGHT)+","+Math.floor(Player.getZ()));
    }
    else if (m == "entity.getPos") {
-       writer.println(Entity.getX(args[0])+","+Entity.getY(args[0])+","+Entity.getZ(args[0]));
+       y = Entity.getY(args[0]);
+       if (args[0] == playerId) {
+           y -= PLAYER_HEIGHT;
+       }
+       writer.println(Entity.getX(args[0])+","+y+","+Entity.getZ(args[0]));
    }
    else if (m == "entity.getTile") {
-       writer.println(Math.floor(Entity.getX(args[0]))+","+Math.floor(Entity.getY(args[0]))+","+Math.floor(Entity.getZ(args[0])));
+       y = Entity.getY(args[0]);
+       if (args[0] == playerId) {
+           y -= PLAYER_HEIGHT;
+       }
+       writer.println(Math.floor(Entity.getX(args[0]))+","+Math.round(y)+","+Math.floor(Entity.getZ(args[0])));
    }
    else if (m == "world.getPlayerId" || m == "world.getPlayerIds") {
        writer.println(""+playerId);
    }
    else if (m == "entity.setPos" || m == "entity.setTile") {
-       Entity.setPosition(args[0],args[1],args[2],args[3]);
+       var y;
+       if (args[0] == playerId) {
+           y = PLAYER_HEIGHT+parseFloat(args[2]);
+       }
+       else {
+           y = args[2];
+       }
+       Entity.setPosition(args[0],args[1],y,args[3]);
        Entity.setVelX(args[0],0);
        Entity.setVelY(args[0],0);
        Entity.setVelZ(args[0],0);
    }
    else if (m == "player.setPos" || m == "player.setTile") {
-       Entity.setPosition(playerId,args[0],args[1],args[2]);
+       Entity.setPosition(playerId,args[0],PLAYER_HEIGHT+parseFloat(args[1]),args[2]);
        Entity.setVelX(playerId,0);
        Entity.setVelY(playerId,0);
        Entity.setVelZ(playerId,0);
@@ -392,7 +424,9 @@ function _pushBlockQueue(x,y,z,id,meta) {
 pushBlockQueue = new Packages.org.mozilla.javascript.Synchronizer(_pushBlockQueue);
 
 function setBlock(args) {
-    pushBlockQueue(parseInt(args[0]),parseInt(args[1]),parseInt(args[2]),parseInt(args[3]),parseInt(args[4]));
+    pushBlockQueue(parseInt(Math.round(args[0])),
+       parseInt(Math.round(args[1])),parseInt(Math.round(args[2])),
+       parseInt(Math.round(args[3])),parseInt(Math.round(args[4])));
 }
 
 function _grab() {
@@ -429,12 +463,12 @@ function modTick() {
 }
 
 function setBlocks(args) {
-   var x0 = parseInt(args[0]);
-   var y0 = parseInt(args[1]);
-   var z0 = parseInt(args[2]);
-   var x1 = parseInt(args[3]);
-   var y1 = parseInt(args[4]);
-   var z1 = parseInt(args[5]);
+   var x0 = parseInt(Math.round(args[0]));
+   var y0 = parseInt(Math.round(args[1]));
+   var z0 = parseInt(Math.round(args[2]));
+   var x1 = parseInt(Math.round(args[3]));
+   var y1 = parseInt(Math.round(args[4]));
+   var z1 = parseInt(Math.round(args[5]));
    var id = parseInt(args[6]);
    var meta = parseInt(args[7]);
    var startx = x0 < x1 ? x0 : x1;
