@@ -41,6 +41,7 @@
 
 var BLOCKS_PER_TICK = 20;
 var PORT = 4711;
+var EVENTS_MAX = 512;
 
 var serverSocket;
 var socket;
@@ -97,10 +98,16 @@ function sync(f) {
 
 function _addHit(data) {
    hitData.push(data);
+   while(hitData.length > EVENTS_MAX) {
+       hitData.shift();
+   }
 }
 
 function _addChat(data) {
    chatData.push(data);
+   while(chatData.length > EVENTS_MAX) {
+       chatData.shift();
+   }
 }
 
 function _getAndClearHits() {
