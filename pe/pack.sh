@@ -1,5 +1,5 @@
 mkdir packager/assets
-cp droidjam.js packager/assets/
+cp raspberryjampe.js packager/assets/
 rm -rf p2
 mkdir p2
 rm -rf p3

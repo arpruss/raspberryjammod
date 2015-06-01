@@ -4,24 +4,39 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
+    
+    <LinearLayout 
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
     <Spinner
         android:id="@+id/python_version"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
          android:entries="@array/python_versions"
         />
     
     <Spinner
         android:id="@+id/overwrite_mode"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:entries="@array/overwrite_modes"
         />
+    </LinearLayout>
     
     <Button 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-   	    android:text="Install" 
+   	    android:text="Install scripts and droidjam.js" 
    	    android:onClick="onInstall"/>
+    
+    <TextView 
+        android:id="@+id/instructions"
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:linksClickable="true"
+        android:layout_weight="1"/>
+    
+    
 
 </LinearLayout>
