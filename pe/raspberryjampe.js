@@ -28,12 +28,16 @@
 // chat.post, world.setBlock, world.setBlocks, world.getBlock, world.getBlockWithData,
 // player.setTile, player.setPos, player.setRotation, player.setPitch, player.getPitch,
 // player.getRotation, world.getPlayerIds, entity.setPos, entity.setTile, entity.getPos,
-// entity.getTile, world.spawnEntity, world.removeEntity,
+// entity.getTile, world.spawnEntity, world.removeEntity, world.getHeight, events.block.hits,
+// events.clear, events.setting, events.chat.posts
 
-// To do:
-// world.getHeight,
-// world.setting, player.setDirection, player.getDirection, events.block.hits, events.chat.posts,
-// events.clear, events.setting, camera.setFollow, camera.setNormal, camera.getEntityId
+// Not done:
+// world.setting, player.setDirection, player.getDirection,
+// camera.setFollow, camera.setNormal, camera.getEntityId
+
+// Divergences:
+// The positions are NOT relative to the spawn point.
+// Chat posts all return the player's ID as the callback function doesn't specify the speaker.
 
 var BLOCKS_PER_TICK = 20;
 var PORT = 4711;
@@ -45,7 +49,10 @@ var writer;
 var thread;
 var running;
 
+var hitRestrictedToSword = 1;
 var blockQueue = [];
+var hitData = [];
+var chatData = [];
 var playerId;
 //var noAIs = [];
 var ENTITIES = {
@@ -76,12 +83,97 @@ var ENTITIES = {
     "Bat":19
 };
 
-function newLevel() {
+function newLevel(hasLevel) {
+   android.util.Log.v("droidjam", "newLevel "+hasLevel);
    running = 1;
    thread = new java.lang.Thread(runServer);
    thread.start();
    playerId = Player.getEntity();
 }
+
+function sync(f) {
+   return new Packages.org.mozilla.javascript.Synchronizer(f);
+}
+
+function _addHit(data) {
+   hitData.push(data);
+}
+
+function _addChat(data) {
+   chatData.push(data);
+}
+
+function _getAndClearHits() {
+    var out = "";
+    for (i = 0; i < hitData.length ; i++) {
+        if (i > 0) {
+            out += "|";
+        }
+        out += hitData[i];
+    }
+    hitData = [];
+    return out;
+}
+
+function _getAndClearChats() {
+    var out = "";
+    for (i = 0; i < chatData.length ; i++) {
+        if (i > 0) {
+            out += "|";
+        }
+        out += chatData[i];
+    }
+    chatData = [];
+    return out;
+}
+
+function _clearHits() {
+    hitData = [];
+}
+
+function _clearChats() {
+    chatData = [];
+}
+
+function _restrictToSword(x) {
+    hitRestrictedToSword = x;
+}
+
+eventSync = {
+          addHit: sync(_addHit),
+          addChat: sync(_addChat),
+          getAndClearHits: sync(_getAndClearHits),
+          getAndClearChats: sync(_getAndClearChats),
+          clearHits: sync(_clearHits),
+          clearChats: sync(_clearChats),
+          restrictToSword: _restrictToSword };
+
+function useItem(x,y,z,itemId,blockId,side) {
+//   android.util.Log.v("droidjam", ""+x+","+y+","+z+",item:"+itemId+",target:"+blockId+",side:"+side);
+   if (! hitRestrictedToSword || itemId == 267 || itemId == 268 || itemId == 272 || itemId == 276 || itemId == 283) {
+       eventSync.addHit([x,y,z,side,playerId]);
+   }
+}
+
+function chatHook(message) {
+//   android.util.Log.v("droidjam", "chat "+message);
+   data = [playerId, message.replace(/\|/g, '&#124;')];
+   eventSync.addChat(data);
+}
+
+// OOPS: no way to get a context, which would be needed to launch
+//function procCmd(cmdLine) {
+//    cmds = cmdLine.split(" +");
+//    if (cmds[0] == "py" || cmds[0] == "python") {
+//        android.util.Log.v("droidjam", "launching "+cmds[1]);
+//        componentName = android.content.ComponentName("com.googlecode.android_scripting",
+//            "com.googlecode.android_scripting.activity.ScriptingLayerServiceLauncher");
+//        intent = new android.content.Intent();
+//        intent.setComponent(componentName);
+//        intent.putAction("com.googlecode.android_scripting.action.LAUNCH_BACKGROUND_SCRIPT");
+//        intent.putExtra("com.googlecode.android_scripting.extra.SCRIPT_PATH", "/sdcard/com.hipipal.qpyplus/projects/mcpipy/"+cmds[1]);
+//    }
+//}
 
 function closeAllButServer() {
     android.util.Log.v("droidjam", "closing connection");
@@ -124,6 +216,7 @@ function runServer() {
           if (!running)
               break;
           socket=serverSocket.accept();
+          android.util.Log.v("droidjam", "opening connection");
           reader=new java.io.BufferedReader(new java.io.InputStreamReader(socket.getInputStream()));
           writer=new java.io.PrintWriter(socket.getOutputStream(),true);
 //          Level.setTime(0); // only for debug
@@ -223,6 +316,32 @@ function handleCommand(cmd) {
    }
    else if (m == "chat.post") {
        clientMessage(argList);
+   }
+   else if (m == "events.block.hits") {
+       writer.println(eventSync.getAndClearHits());
+   }
+   else if (m == "events.chat.posts") {
+       writer.println(eventSync.getAndClearChats());
+   }
+   else if (m == "events.clear") {
+       eventSync.clearHits();
+       eventSync.clearChats();
+   }
+   else if (m == "events.setting") {
+       if(args[0] == "restrict_to_sword") {
+            eventSync.restrictToSword(parseInt(args[1]));
+       }
+   }
+   else if (m == "world.getHeight") {
+       var x = parseInt(args[0]);
+       var z = parseInt(args[2]);
+       var y;
+       for (y = 127 ; y > 0 ; y--) {
+           if (Level.getTile(x,y,z)) {
+               break;
+           }
+       }
+       writer.println(""+y);
    }
    else if (m == "world.spawnEntity") {
        var id;
