@@ -29,15 +29,17 @@
 // player.setTile, player.setPos, player.setRotation, player.setPitch, player.getPitch,
 // player.getRotation, world.getPlayerIds, entity.setPos, entity.setTile, entity.getPos,
 // entity.getTile, world.spawnEntity, world.removeEntity, world.getHeight, events.block.hits,
-// events.clear, events.setting, events.chat.posts
+// events.clear, events.setting, events.chat.posts, entity.getPitch, entity.getRotation,
+// player.setDirection, player.getDirection
 
 // Not done:
-// world.setting, player.setDirection, player.getDirection,
+// world.setting,
 // camera.setFollow, camera.setNormal, camera.getEntityId
 
 // Divergences:
 // The positions are NOT relative to the spawn point.
 // Chat posts all return the player's ID as the callback function doesn't specify the speaker.
+// world.spawnEntity() does not support NBT tag.
 
 
 // 20 is reliable
@@ -46,6 +48,7 @@ var BLOCKS_PER_TICK = 100;
 var PORT = 4711;
 var EVENTS_MAX = 512;
 var PLAYER_HEIGHT = 1.61999988;
+var TOO_SMALL = 1e-9;
 
 var serverSocket;
 var socket;
@@ -271,6 +274,33 @@ function leaveGame() {
    closeServer();
 }
 
+function entitySetDirection(id, x, y, z) {
+
+   if (x * x + y * y + z * z >= TOO_SMALL * TOO_SMALL) {
+       var xz = Math.sqrt(x * x + z * z);
+       var yaw;
+       if (xz >= TOO_SMALL) {
+           yaw = Math.atan2(-x, z) * 180 / Math.PI;
+       }
+       else {
+           yaw = getYaw(id);
+       }
+
+       var pitch = Math.atan2(-y, xz) * 180 / Math.PI;
+
+       setRot(id, yaw, pitch);
+   }
+}
+
+function entityGetDirection(id) {
+   var pitch = getPitch(id) * Math.PI / 180.;
+   var yaw = getYaw(id) * Math.PI / 180.;
+   var x = Math.cos(-pitch) * Math.sin(-yaw);
+   var z = Math.cos(-pitch) * Math.cos(-yaw);
+   var y = Math.sin(-pitch);
+   writer.println(""+x+","+y+","+z);
+}
+
 function handleCommand(cmd) {
    cmd = cmd.trim();
    var n = cmd.indexOf("(");
@@ -335,6 +365,12 @@ function handleCommand(cmd) {
    else if (m == "player.getRotation") {
        writer.println(""+getYaw(playerId));
    }
+   else if (m == "entity.getPitch") {
+       writer.println(""+getPitch(args[0]));
+   }
+   else if (m == "entity.getRotation") {
+       writer.println(""+getYaw(args[0]));
+   }
    else if (m == "player.setPitch") {
        setRot(playerId, getYaw(playerId), args[0]);
    }
@@ -346,6 +382,18 @@ function handleCommand(cmd) {
    }
    else if (m == "entity.setRotation") {
        setRot(args[0], args[1], getPitch(args[0]));
+   }
+   else if (m == "entity.setDirection") {
+       entitySetDirection(args[0], args[1], args[2], args[3]);
+   }
+   else if (m == "player.setDirection") {
+       entitySetDirection(playerId, args[1], args[2], args[3]);
+   }
+   else if (m == "entity.getDirection") {
+       entityGetDirection(args[0]);
+   }
+   else if (m == "player.getDirection") {
+       entityGetDirection(playerId);
    }
    else if (m == "world.getBlock") {
        writer.println(""+Level.getTile(args[0], args[1], args[2]));
