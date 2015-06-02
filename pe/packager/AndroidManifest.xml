@@ -5,7 +5,8 @@
     android:versionName="1.0" >
 
     <application
-        android:label="Raspberry Jam Mod" >
+        android:label="Raspberry Jam Mod"
+        android:icon="@drawable/icon" >
         <activity
             android:name="mobi.omegacentauri.rjm.MainActivity"
             android:label="Raspberry Jam Mod" >
