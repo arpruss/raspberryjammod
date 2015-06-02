@@ -30,7 +30,7 @@
 // player.getRotation, world.getPlayerIds, entity.setPos, entity.setTile, entity.getPos,
 // entity.getTile, world.spawnEntity, world.removeEntity, world.getHeight, events.block.hits,
 // events.clear, events.setting, events.chat.posts, entity.getPitch, entity.getRotation,
-// player.setDirection, player.getDirection, 
+// player.setDirection, player.getDirection,
 
 // Not done:
 // world.setting,
@@ -191,9 +191,15 @@ function posDesc(desc,x) {
 // OOPS: no way to get a context, which would be needed to launch
 function procCmd(cmdLine) {
     cmds = cmdLine.split(/ +/);
-    if (cmds[0] == "set") {
-        if (cmds.length >= 3 && cmds[1] == "time") {
+    if (cmds[0] == "time") {
+        if (cmds.length >= 3 && cmds[1] == "set") {
             Level.setTime(cmds[2]);
+        }
+        else if (cmds.length >= 3 && cmds[1] == "add") {
+            Level.setTime(Level.getTime() + cmds[3]);
+        }
+        else if (cmds.length >= 2 && cmds[1] == "query") {
+            clientMessage("Day time "+Level.getTime());
         }
     }
     else if (cmds[0] == "tp" && cmds.length >= 4) {
