@@ -30,7 +30,7 @@
 // player.getRotation, world.getPlayerIds, entity.setPos, entity.setTile, entity.getPos,
 // entity.getTile, world.spawnEntity, world.removeEntity, world.getHeight, events.block.hits,
 // events.clear, events.setting, events.chat.posts, entity.getPitch, entity.getRotation,
-// player.setDirection, player.getDirection
+// player.setDirection, player.getDirection, 
 
 // Not done:
 // world.setting,
@@ -99,19 +99,6 @@ function newLevel(hasLevel) {
    playerId = Player.getEntity();
 }
 
-function levelEventHook(player, eventType, x, y, z, data) {
-   android.util.Log.v("droidjam", "levelEvent "+eventType+" "+x+" "+y+" "+z+" "+data);
-}
-
-function selectLevelHook() {
-   android.util.Log.v("droidjam", "selectLevel");
-}
-
-function serverMessageReceiveHook(msg) {
-   android.util.Log.v("droidjam", "serverMessage "+msg);
-}
-
-
 function sync(f) {
    return new Packages.org.mozilla.javascript.Synchronizer(f);
 }
@@ -176,31 +163,49 @@ eventSync = {
           restrictToSword: _restrictToSword };
 
 function useItem(x,y,z,itemId,blockId,side) {
-//   android.util.Log.v("droidjam", ""+x+","+y+","+z+",item:"+itemId+",target:"+blockId+",side:"+side);
    if (! hitRestrictedToSword || itemId == 267 || itemId == 268 || itemId == 272 || itemId == 276 || itemId == 283) {
        eventSync.addHit([x,y,z,side,playerId]);
    }
 }
 
 function chatHook(message) {
-//   android.util.Log.v("droidjam", "chat "+message);
    data = [playerId, message.replace(/\|/g, '&#124;')];
    eventSync.addChat(data);
 }
 
+function posDesc(desc,x) {
+    desc = desc.replace(/[A-Za-z]/, '~');
+    if (desc.charAt(0) != "~") {
+        return desc;
+    }
+    var adj = desc.substring(1);
+    if (adj.charAt(0) == "+") {
+        adj = adj.substring(1);
+    }
+    if (isNaN(parseFloat(adj))) {
+        adj = "0";
+    }
+    return x + parseFloat(adj);
+}
+
 // OOPS: no way to get a context, which would be needed to launch
-//function procCmd(cmdLine) {
-//    cmds = cmdLine.split(" +");
-//    if (cmds[0] == "py" || cmds[0] == "python") {
-//        android.util.Log.v("droidjam", "launching "+cmds[1]);
-//        componentName = android.content.ComponentName("com.googlecode.android_scripting",
-//            "com.googlecode.android_scripting.activity.ScriptingLayerServiceLauncher");
-//        intent = new android.content.Intent();
-//        intent.setComponent(componentName);
-//        intent.putAction("com.googlecode.android_scripting.action.LAUNCH_BACKGROUND_SCRIPT");
-//        intent.putExtra("com.googlecode.android_scripting.extra.SCRIPT_PATH", "/sdcard/com.hipipal.qpyplus/projects/mcpipy/"+cmds[1]);
-//    }
-//}
+function procCmd(cmdLine) {
+    cmds = cmdLine.split(/ +/);
+    if (cmds[0] == "set") {
+        if (cmds.length >= 3 && cmds[1] == "time") {
+            Level.setTime(cmds[2]);
+        }
+    }
+    else if (cmds[0] == "tp" && cmds.length >= 4) {
+        x = Player.getX();
+        y = Player.getY()-PLAYER_HEIGHT;
+        z = Player.getZ();
+        Entity.setVelX(playerId,0);
+        Entity.setVelY(playerId,0);
+        Entity.setVelZ(playerId,0);
+        Entity.setPosition(playerId,posDesc(cmds[1],x),posDesc(cmds[2],y),posDesc(cmds[3],z));
+    }
+}
 
 function closeAllButServer() {
     android.util.Log.v("droidjam", "closing connection");
@@ -287,8 +292,6 @@ function entitySetDirection(id, x, y, z) {
 
        var pitch = Math.atan2(-y, xz) * 180 / Math.PI;
 
-       android.util.Log.v("droidjam", "direction: "+yaw+" "+pitch);
-
        setRot(id, yaw, pitch);
    }
 }
@@ -349,16 +352,16 @@ function handleCommand(cmd) {
        else {
            y = args[2];
        }
-       Entity.setPosition(args[0],args[1],y,args[3]);
        Entity.setVelX(args[0],0);
        Entity.setVelY(args[0],0);
        Entity.setVelZ(args[0],0);
+       Entity.setPosition(args[0],args[1],y,args[3]);
    }
    else if (m == "player.setPos" || m == "player.setTile") {
-       Entity.setPosition(playerId,args[0],PLAYER_HEIGHT+parseFloat(args[1]),args[2]);
        Entity.setVelX(playerId,0);
        Entity.setVelY(playerId,0);
        Entity.setVelZ(playerId,0);
+       Entity.setPosition(playerId,args[0],PLAYER_HEIGHT+parseFloat(args[1]),args[2]);
    }
    else if (m == "player.getPitch") {
        writer.println(""+getPitch(playerId));
