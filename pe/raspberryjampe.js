@@ -259,24 +259,23 @@ function runServer() {
          if (running)
              print("Error "+e);
       }
-      print("closing connection");
       closeAllButServer();
    }
 
    closeServer();
+   print("Closing server");
 }
 
 function leaveGame() {
    android.util.Log.v("droidjam", "leaveGame()");
-   print("leaveGame()");
    running = 0;
    closeAllButServer();
    closeServer();
 }
 
 function entitySetDirection(id, x, y, z) {
-
    if (x * x + y * y + z * z >= TOO_SMALL * TOO_SMALL) {
+
        var xz = Math.sqrt(x * x + z * z);
        var yaw;
        if (xz >= TOO_SMALL) {
@@ -287,6 +286,8 @@ function entitySetDirection(id, x, y, z) {
        }
 
        var pitch = Math.atan2(-y, xz) * 180 / Math.PI;
+
+       android.util.Log.v("droidjam", "direction: "+yaw+" "+pitch);
 
        setRot(id, yaw, pitch);
    }
@@ -387,7 +388,7 @@ function handleCommand(cmd) {
        entitySetDirection(args[0], args[1], args[2], args[3]);
    }
    else if (m == "player.setDirection") {
-       entitySetDirection(playerId, args[1], args[2], args[3]);
+       entitySetDirection(playerId, args[0], args[1], args[2]);
    }
    else if (m == "entity.getDirection") {
        entityGetDirection(args[0]);
