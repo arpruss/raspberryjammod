@@ -679,7 +679,7 @@ def genFacesVertex(points,x0,y0,z0,size):
                 #zk1 = matrix[2][0] * xk + matrix[2][1] * yk + matrix[2][2] * zk
                 angles.append((atan2(xk1, yk1), k))
             # Sort by angle, in reverse order.
-            angles.sort(lambda a, b: a[0] < b[0] or (a[0] != b[0] and -1))
+            angles.sort(key = lambda x : -x[0])
             # Search for i and take the next thing below it. Wrap
             # round, of course: if angles[0] is i then we want
             # angles[-1]. Conveniently this will be done for us by
