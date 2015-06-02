@@ -5,7 +5,9 @@ mkdir p2
 rm -rf p3
 mkdir p3
 cp -r `grep -l Pruss ../python2-scripts/mcpipy/*.py` ../python2-scripts/mcpipy/mcpi p2
+rm p2/neurosky.py
 cp -r `grep -l Pruss ../python3-scripts/mcpipy/*.py` ../python3-scripts/mcpipy/mcpi p3
+rm p3/neurosky.py
 echo "isPE = False" > p2/mcpi/settings.py
 echo "isPE = False" > p3/mcpi/settings.py
 echo 'address = "127.0.0.1"' > p2/server.py
