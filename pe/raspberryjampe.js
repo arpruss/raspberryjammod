@@ -36,7 +36,7 @@
 // world.setting,
 // camera.setFollow, camera.setNormal, camera.getEntityId
 
-// Divergences:
+// Divergences and to dos:
 // The positions are NOT relative to the spawn point.
 // Chat posts all return the player's ID as the callback function doesn't specify the speaker.
 // world.spawnEntity() does not support NBT tag.
@@ -173,6 +173,12 @@ function chatHook(message) {
    eventSync.addChat(data);
 }
 
+// we don't know the userId on server messages, so use -1
+function serverMessageReceiveHook(message) {
+   data = [-1, message.replace(/\|/g, '&#124;')];
+   eventSync.addChat(data);
+}
+
 function posDesc(desc,x) {
     desc = desc.replace(/[A-Za-z]/, '~');
     if (desc.charAt(0) != "~") {
@@ -188,7 +194,17 @@ function posDesc(desc,x) {
     return x + parseFloat(adj);
 }
 
-// OOPS: no way to get a context, which would be needed to launch
+function quotedList(args) {
+    var out = "";
+    for (i = 0; i < args.length ; i++) {
+        if (i > 0) {
+            out += ",";
+        }
+        out += "'"+args[i].replace("\\", "\\\\").replace("'", "\\'")+"'";
+    }
+    return out;
+}
+
 function procCmd(cmdLine) {
     cmds = cmdLine.split(/ +/);
     if (cmds[0] == "time") {
@@ -213,12 +229,21 @@ function procCmd(cmdLine) {
     }
     else if ((cmds[0] == "py" || cmds[0] == "python") && cmds.length >= 2) {
         var context = com.mojang.minecraftpe.MainActivity.currentMainActivity.get();
-        var componentName = android.content.ComponentName("com.googlecode.android_scripting",
-            "com.googlecode.android_scripting.activity.ScriptingLayerServiceLauncher");
         var intent = new android.content.Intent();
-        intent.setComponent(componentName);
-        intent.setAction("com.googlecode.android_scripting.action.LAUNCH_BACKGROUND_SCRIPT");
-        intent.putExtra("com.googlecode.android_scripting.extra.SCRIPT_PATH", "/sdcard/com.hipipal.qpyplus/scripts/"+cmds[1]+".py");
+        intent.setClassName("com.hipipal.qpyplus","com.hipipal.qpyplus.MPyApi");
+        intent.setAction("com.hipipal.qpyplus.action.MPyApi");
+        var bundle = new android.os.Bundle();
+        bundle.putString("app", "myappid");
+        bundle.putString("act", "onPyApi");
+        bundle.putString("flag", "onQPyExec");
+        bundle.putString("param", "");
+        cmds.shift();
+        var script = "import sys\n" +
+             "sys.path.append('/sdcard/\com.hipipal.qpyplus/scripts')\n"+
+             "sys.argv = [" + quotedList(cmds) + "]\n"+
+             "execfile('/sdcard/com.hipipal.qpyplus/scripts/"+cmds[0]+".py')\n";
+        bundle.putString("pycode",script);
+        intent.putExtras(bundle);
         context.startActivity(intent);
     }
 }
