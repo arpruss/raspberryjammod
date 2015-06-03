@@ -30,15 +30,15 @@
 // player.getRotation, world.getPlayerIds, entity.setPos, entity.setTile, entity.getPos,
 // entity.getTile, world.spawnEntity, world.removeEntity, world.getHeight, events.block.hits,
 // events.clear, events.setting, events.chat.posts, entity.getPitch, entity.getRotation,
-// player.setDirection, player.getDirection,
+// player.setDirection, player.getDirection, camera.setFollow, camera.setNormal, camera.getEntityId
 
 // Not done:
 // world.setting,
-// camera.setFollow, camera.setNormal, camera.getEntityId
+//
 
-// Divergences:
+// Divergences and to dos:
 // The positions are NOT relative to the spawn point.
-// Chat posts all return the player's ID as the callback function doesn't specify the speaker.
+// Chat posts from server return -1 as the callback function doesn't specify the speaker.
 // world.spawnEntity() does not support NBT tag.
 
 
@@ -91,12 +91,18 @@ var ENTITIES = {
     "Bat":19
 };
 
+function setCamera(id) {
+   ModPE.setCamera(id);
+   camera = id;
+}
+
 function newLevel(hasLevel) {
    android.util.Log.v("droidjam", "newLevel "+hasLevel);
    running = 1;
    thread = new java.lang.Thread(runServer);
    thread.start();
    playerId = Player.getEntity();
+   setCamera(playerId);
 }
 
 function sync(f) {
@@ -173,6 +179,12 @@ function chatHook(message) {
    eventSync.addChat(data);
 }
 
+// we don't know the userId on server messages, so use -1
+function serverMessageReceiveHook(message) {
+   data = [-1, message.replace(/\|/g, '&#124;')];
+   eventSync.addChat(data);
+}
+
 function posDesc(desc,x) {
     desc = desc.replace(/[A-Za-z]/, '~');
     if (desc.charAt(0) != "~") {
@@ -188,7 +200,17 @@ function posDesc(desc,x) {
     return x + parseFloat(adj);
 }
 
-// OOPS: no way to get a context, which would be needed to launch
+function quotedList(args) {
+    var out = "";
+    for (i = 0; i < args.length ; i++) {
+        if (i > 0) {
+            out += ",";
+        }
+        out += "'"+args[i].replace("\\", "\\\\").replace("'", "\\'")+"'";
+    }
+    return out;
+}
+
 function procCmd(cmdLine) {
     cmds = cmdLine.split(/ +/);
     if (cmds[0] == "time") {
@@ -211,9 +233,29 @@ function procCmd(cmdLine) {
         Entity.setVelZ(playerId,0);
         Entity.setPosition(playerId,posDesc(cmds[1],x),posDesc(cmds[2],y),posDesc(cmds[3],z));
     }
+    else if ((cmds[0] == "py" || cmds[0] == "python") && cmds.length >= 2) {
+        var context = com.mojang.minecraftpe.MainActivity.currentMainActivity.get();
+        var intent = new android.content.Intent();
+        intent.setClassName("com.hipipal.qpyplus","com.hipipal.qpyplus.MPyApi");
+        intent.setAction("com.hipipal.qpyplus.action.MPyApi");
+        var bundle = new android.os.Bundle();
+        bundle.putString("app", "myappid");
+        bundle.putString("act", "onPyApi");
+        bundle.putString("flag", "onQPyExec");
+        bundle.putString("param", "");
+        dir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/com.hipipal.qpyplus/scripts";
+        cmds.shift();
+        var script = "import sys\n" +
+             "sys.path.append('" + dir + "')\n"+
+             "sys.argv = [" + quotedList(cmds) + "]\n"+
+             "execfile('" + dir + "/" + cmds[0] + ".py')\n";
+        bundle.putString("pycode",script);
+        intent.putExtras(bundle);
+        context.startActivity(intent);
+    }
 }
 
-function closeAllButServer() {
+function _closeAllButServer() {
     android.util.Log.v("droidjam", "closing connection");
     try {
          reader.close();
@@ -229,12 +271,18 @@ function closeAllButServer() {
     socket = undefined;
 }
 
-function closeServer() {
+function _closeServer() {
    try {
-      serverSocket.close();
-      android.util.Log.v("droidjam", "closed socket");
+      if (serverSocket) {
+          serverSocket.close();
+          android.util.Log.v("droidjam", "closed socket");
+          serverSocket = undefined;
+      }
    } catch(e) {}
 }
+
+serverSync = { closeAllButServer: sync(_closeAllButServer),
+   closeServer: sync(_closeServer) };
 
 function runServer() {
    try {
@@ -270,18 +318,18 @@ function runServer() {
          if (running)
              print("Error "+e);
       }
-      closeAllButServer();
+      serverSync.closeAllButServer();
    }
 
-   closeServer();
+   serverSync.closeServer();
    print("Closing server");
 }
 
 function leaveGame() {
    android.util.Log.v("droidjam", "leaveGame()");
    running = 0;
-   closeAllButServer();
-   closeServer();
+   serverSync.closeAllButServer();
+   serverSync.closeServer();
 }
 
 function entitySetDirection(id, x, y, z) {
@@ -428,6 +476,15 @@ function handleCommand(cmd) {
        if(args[0] == "restrict_to_sword") {
             eventSync.restrictToSword(parseInt(args[1]));
        }
+   }
+   else if (m == "camera.setFollow") {
+       setCamera(args[0]);
+   }
+   else if (m == "camera.setNormal") {
+       setCamera(playerId);
+   }
+   else if (m == "camera.getEntityId") {
+       writer.println(""+camera);
    }
    else if (m == "world.getHeight") {
        var x = parseInt(args[0]);

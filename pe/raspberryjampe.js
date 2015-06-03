@@ -243,18 +243,19 @@ function procCmd(cmdLine) {
         bundle.putString("act", "onPyApi");
         bundle.putString("flag", "onQPyExec");
         bundle.putString("param", "");
+        dir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/com.hipipal.qpyplus/scripts";
         cmds.shift();
         var script = "import sys\n" +
-             "sys.path.append('/sdcard/\com.hipipal.qpyplus/scripts')\n"+
+             "sys.path.append('" + dir + "')\n"+
              "sys.argv = [" + quotedList(cmds) + "]\n"+
-             "execfile('/sdcard/com.hipipal.qpyplus/scripts/"+cmds[0]+".py')\n";
+             "execfile('" + dir + "/" + cmds[0] + ".py')\n";
         bundle.putString("pycode",script);
         intent.putExtras(bundle);
         context.startActivity(intent);
     }
 }
 
-function closeAllButServer() {
+function _closeAllButServer() {
     android.util.Log.v("droidjam", "closing connection");
     try {
          reader.close();
@@ -270,12 +271,18 @@ function closeAllButServer() {
     socket = undefined;
 }
 
-function closeServer() {
+function _closeServer() {
    try {
-      serverSocket.close();
-      android.util.Log.v("droidjam", "closed socket");
+      if (serverSocket) {
+          serverSocket.close();
+          android.util.Log.v("droidjam", "closed socket");
+          serverSocket = undefined;
+      }
    } catch(e) {}
 }
+
+serverSync = { closeAllButServer: sync(_closeAllButServer),
+   closeServer: sync(_closeServer) };
 
 function runServer() {
    try {
@@ -311,18 +318,18 @@ function runServer() {
          if (running)
              print("Error "+e);
       }
-      closeAllButServer();
+      serverSync.closeAllButServer();
    }
 
-   closeServer();
+   serverSync.closeServer();
    print("Closing server");
 }
 
 function leaveGame() {
    android.util.Log.v("droidjam", "leaveGame()");
    running = 0;
-   closeAllButServer();
-   closeServer();
+   serverSync.closeAllButServer();
+   serverSync.closeServer();
 }
 
 function entitySetDirection(id, x, y, z) {
