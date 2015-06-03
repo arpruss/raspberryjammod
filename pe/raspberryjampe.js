@@ -30,15 +30,15 @@
 // player.getRotation, world.getPlayerIds, entity.setPos, entity.setTile, entity.getPos,
 // entity.getTile, world.spawnEntity, world.removeEntity, world.getHeight, events.block.hits,
 // events.clear, events.setting, events.chat.posts, entity.getPitch, entity.getRotation,
-// player.setDirection, player.getDirection,
+// player.setDirection, player.getDirection, camera.setFollow, camera.setNormal, camera.getEntityId
 
 // Not done:
 // world.setting,
-// camera.setFollow, camera.setNormal, camera.getEntityId
+//
 
 // Divergences and to dos:
 // The positions are NOT relative to the spawn point.
-// Chat posts all return the player's ID as the callback function doesn't specify the speaker.
+// Chat posts from server return -1 as the callback function doesn't specify the speaker.
 // world.spawnEntity() does not support NBT tag.
 
 
@@ -91,12 +91,18 @@ var ENTITIES = {
     "Bat":19
 };
 
+function setCamera(id) {
+   ModPE.setCamera(id);
+   camera = id;
+}
+
 function newLevel(hasLevel) {
    android.util.Log.v("droidjam", "newLevel "+hasLevel);
    running = 1;
    thread = new java.lang.Thread(runServer);
    thread.start();
    playerId = Player.getEntity();
+   setCamera(playerId);
 }
 
 function sync(f) {
@@ -463,6 +469,15 @@ function handleCommand(cmd) {
        if(args[0] == "restrict_to_sword") {
             eventSync.restrictToSword(parseInt(args[1]));
        }
+   }
+   else if (m == "camera.setFollow") {
+       setCamera(args[0]);
+   }
+   else if (m == "camera.setNormal") {
+       setCamera(playerId);
+   }
+   else if (m == "camera.getEntityId") {
+       writer.println(""+camera);
    }
    else if (m == "world.getHeight") {
        var x = parseInt(args[0]);
