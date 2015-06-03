@@ -1,5 +1,6 @@
 mkdir packager/assets
-cp raspberryjampe.js packager/assets/
+cp -f raspberryjampe.js p2/
+cp -f raspberryjampe.js p3/
 rm -rf p2
 mkdir p2
 rm -rf p3
@@ -17,4 +18,4 @@ echo 'is_pi = False' >> p3/server.py
 chmod -R u+rw p2 p3
 rm packager/assets/*.zip
 (cd p2 && zip -9r ../packager/assets/p2 *)
-(cd p3 && zip -9r ../packager/assets/p3 *)
+#(cd p3 && zip -9r ../packager/assets/p3 *)

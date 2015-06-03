@@ -6,8 +6,9 @@
         <item>Python 3.x</item>
     </string-array>
 <string-array name="overwrite_modes">
-        <item>Do not overwrite scripts</item>
+        <item>Never overwrite scripts</item>
         <item>Overwrite scripts</item>
         <item>Clean out script folder first</item>
+        <item>Only install mod, no scripts</item>
         </string-array>
 </resources>

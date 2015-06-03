@@ -24,6 +24,7 @@ import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
@@ -42,12 +43,14 @@ public class MainActivity extends Activity {
 	private SharedPreferences options;
 	private Spinner pythonVersionSpinner;
 	private Spinner overwriteModeSpinner;
-	
+
+	static final String SCRIPTS2 = "/com.hipipal.qpyplus/scripts"; 
 	static final int PYTHON2 = 0;
-	static final int PYTHON3 = 1;
+//	static final int PYTHON3 = 1;
 	static final int OVERWRITE_NO = 0;
 	static final int OVERWRITE_YES = 1;
 	static final int OVERWRITE_DELETE = 2;
+	static final int OVERWRITE_ONLY_MOD = 3;
 //	public static final String PREF_PYTHON_VERSION = "pythonVersion";
 	public static final String PREF_OVERWRITE_MODE = "overwriteMode";
 
@@ -96,7 +99,7 @@ public class MainActivity extends Activity {
     	
     	String message = "";
     	
-    	String store = "https://play.google.com/store/apps/details?id=";
+    	String store = MarketDetector.getStoreLink(this);
     	
     	boolean haveMinecraft;
 
@@ -109,7 +112,7 @@ public class MainActivity extends Activity {
     	boolean haveAll = true;    	
     	
     	if (haveMinecraft) {
-    		message += "<p>1. You already have Minecraft PE installed. Excellent!</p>";
+    		message += "<p>1. You have Minecraft PE installed. Excellent!</p>";
     	}
     	else {
 			message += "<p>1. Install <a href='"+store+"com.mojang.minecraftpe'>Minecraft PE</a>.</p>";
@@ -136,7 +139,7 @@ public class MainActivity extends Activity {
 		}
 		
 		if (haveQPython) {
-			message += "<p>2. It looks like you already have "+qpythonReadable+" installed. Excellent!</p>";
+			message += "<p>2. You have "+qpythonReadable+" installed. Excellent!</p>";
 		}
 		else {
 			message += "<p>2. Install <a href='"+store+qpythonPackage+"'>"+qpythonReadable+"</a>.</p>";
@@ -180,22 +183,21 @@ public class MainActivity extends Activity {
 			haveAll = false;
 		} 
 		else {
-			message += "<p>3. It looks like you already have "+bl+" installed. Excellent!</p>"; 	
+			message += "<p>3. You have "+bl+" installed. Excellent!</p>"; 	
 		}
 		
 		message += "<p>4. Tap on the 'Install' button and agree to install mod." + (haveAll?"":" (The button will show up once the above steps are done.)")+"</p>";
 
 		tv.setText(Html.fromHtml(message));
 		
-		Button install = (Button)findViewById(R.id.install);
+		ViewGroup install = (ViewGroup)findViewById(R.id.install);
 		install.setVisibility(haveAll ? View.VISIBLE : View.INVISIBLE);
     	tv = (TextView)findViewById(R.id.instructions2);
-		message = "";
-		
+		message = "";		
 		message += "<p>5. Go to "+bl+", make sure screen is in landcape mode (it may crash in portrait) and tap on the wrench button.</p>";
-		message += "<p>6. Choose 'Manager ModPE Scripts', then tap on 'raspberryjampe.js'.</p>";
+		message += "<p>6. Choose 'Manage ModPE Scripts', then tap on 'raspberryjampe.js'.</p>";
 		message += "<p>7. Tap on 'enable'.</p>";
-		message += "<p>8. Press back and then start Minecraft PE inside BlockLauncher with 'Play'.</p>";
+		message += "<p>8. Press BACK and then start Minecraft PE inside BlockLauncher with 'Play'.</p>";
 		message += "<p>9. Switch between Minecraft and QPython to run scripts.</p>";
 		tv.setText(Html.fromHtml(message));		
     }
@@ -219,7 +221,7 @@ public class MainActivity extends Activity {
     }
     
     static void copyStreamToFile(InputStream in, File out, int overwriteMode) throws IOException {
-    	if (overwriteMode == OVERWRITE_NO && out.exists())
+    	if (overwriteMode == OVERWRITE_ONLY_MOD || ( overwriteMode == OVERWRITE_NO && out.exists()) )
     		return;
 		byte[] buffer = new byte[16384];
 		FileOutputStream outStream = new FileOutputStream(out);
@@ -243,7 +245,7 @@ public class MainActivity extends Activity {
 		@Override
 		protected Boolean doInBackground(Void... opt) {
 			String rootDir = Environment.getExternalStorageDirectory().getPath();
-			String scriptDir = rootDir+"/com.hipipal.qpyplus/scripts";
+			String scriptDir = rootDir+SCRIPTS2;
 			String pyVer = "2";
 //			if (options.getInt(PREF_PYTHON_VERSION, PYTHON2) == PYTHON3) {
 //				scriptDir += "3";
@@ -257,24 +259,8 @@ public class MainActivity extends Activity {
 			}
 			base.mkdirs();
 			AssetManager assets = context.getAssets();
-			
-			publishProgress("Copying mod to "+rootDir);
-			InputStream in = null;
-			try {
-				in = assets.open("raspberryjampe.js");
-				copyStreamToFile(in, new File(rootDir + "/raspberryjampe.js"), OVERWRITE_YES);
-			} catch (IOException e) {
-				return false;
-			} finally {
-				if (in != null) {
-					try {
-						in.close();
-					}
-					catch (Exception e) {}
-				}
-			}
-			
-			ZipInputStream zip;
+						
+			ZipInputStream zip = null;
 			
 			try {
 				zip = new ZipInputStream(assets.open("p" + pyVer + ".zip"));
@@ -288,12 +274,17 @@ public class MainActivity extends Activity {
 					}
 					else {
 						out.getParentFile().mkdirs();
-						copyStreamToFile(zip, out, overwrite);
+						copyStreamToFile(zip, out, entry.getName().endsWith(".js") ? OVERWRITE_YES : overwrite);
 					}
 				}
 			} catch(IOException e) {
 				return false;
 			} finally {
+				if (zip != null)
+					try {
+						zip.close();
+					} catch (IOException e) {
+					}
 			}
 			
 			return true;
@@ -317,8 +308,8 @@ public class MainActivity extends Activity {
 		protected void onPostExecute(Boolean success) {
 			if (success != null && success) {
 				Intent intent = new Intent("net.zhuoweizhang.mcpelauncher.action.IMPORT_SCRIPT");
-				Uri texMPath = Uri.fromFile(new File(Environment.getExternalStorageDirectory().getPath(),"raspberryjampe.js"));
-				intent.setDataAndType(texMPath, "text/plain");			
+				String path = Environment.getExternalStorageDirectory().getPath()+"/"+SCRIPTS2+"/"+"raspberryjampe.js";
+				intent.setDataAndType(Uri.fromFile(new File(path)), "text/plain");			
 				context.startActivity(intent);
 			}
 			else {
