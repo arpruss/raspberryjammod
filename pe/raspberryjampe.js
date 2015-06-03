@@ -211,6 +211,16 @@ function procCmd(cmdLine) {
         Entity.setVelZ(playerId,0);
         Entity.setPosition(playerId,posDesc(cmds[1],x),posDesc(cmds[2],y),posDesc(cmds[3],z));
     }
+    else if ((cmds[0] == "py" || cmds[0] == "python") && cmds.length >= 2) {
+        var context = com.mojang.minecraftpe.MainActivity.currentMainActivity.get();
+        var componentName = android.content.ComponentName("com.googlecode.android_scripting",
+            "com.googlecode.android_scripting.activity.ScriptingLayerServiceLauncher");
+        var intent = new android.content.Intent();
+        intent.setComponent(componentName);
+        intent.setAction("com.googlecode.android_scripting.action.LAUNCH_BACKGROUND_SCRIPT");
+        intent.putExtra("com.googlecode.android_scripting.extra.SCRIPT_PATH", "/sdcard/com.hipipal.qpyplus/scripts/"+cmds[1]+".py");
+        context.startActivity(intent);
+    }
 }
 
 function closeAllButServer() {
