@@ -27,7 +27,7 @@
     <Button 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-   	    android:text="Install scripts and droidjam.js" 
+   	    android:text="Install scripts and raspberryjampe.js" 
    	    android:onClick="onInstall"/>
     
     <TextView 

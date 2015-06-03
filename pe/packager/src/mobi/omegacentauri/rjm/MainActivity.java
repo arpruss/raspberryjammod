@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
 	static final int OVERWRITE_NO = 0;
 	static final int OVERWRITE_YES = 1;
 	static final int OVERWRITE_DELETE = 2;
-	public static final String PREF_PYTHON_VERSION = "pythonVersion";
+//	public static final String PREF_PYTHON_VERSION = "pythonVersion";
 	public static final String PREF_OVERWRITE_MODE = "overwriteMode";
 
 	/** Called when the activity is first created. */
@@ -55,20 +55,20 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         options = PreferenceManager.getDefaultSharedPreferences(this);
         setContentView(R.layout.main);
-        pythonVersionSpinner = (Spinner)findViewById(R.id.python_version);
-        pythonVersionSpinner.setSelection(options.getInt(PREF_PYTHON_VERSION, PYTHON2));
-        pythonVersionSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View arg1,
-					int pos, long arg3) {
-				options.edit().putInt(PREF_PYTHON_VERSION, pos).commit();
-				showInstructions();
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-			}
-		});
+//        pythonVersionSpinner = (Spinner)findViewById(R.id.python_version);
+//        pythonVersionSpinner.setSelection(options.getInt(PREF_PYTHON_VERSION, PYTHON2));
+//        pythonVersionSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+//			@Override
+//			public void onItemSelected(AdapterView<?> arg0, View arg1,
+//					int pos, long arg3) {
+//				options.edit().putInt(PREF_PYTHON_VERSION, pos).commit();
+//				showInstructions();
+//			}
+//
+//			@Override
+//			public void onNothingSelected(AdapterView<?> arg0) {
+//			}
+//		});
         overwriteModeSpinner = (Spinner)findViewById(R.id.overwrite_mode);
         overwriteModeSpinner.setSelection(options.getInt(PREF_OVERWRITE_MODE, OVERWRITE_YES));
         overwriteModeSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -113,14 +113,14 @@ public class MainActivity extends Activity {
 
     	String qpythonReadable;
     	String qpythonPackage;
-    	if (options.getInt(PREF_PYTHON_VERSION, PYTHON2) == PYTHON2) {
+//    	if (options.getInt(PREF_PYTHON_VERSION, PYTHON2) == PYTHON2) {
     		qpythonReadable = "QPython";
     		qpythonPackage = "com.hipipal.qpyplus";
-    	}
-    	else {
-    		qpythonReadable = "QPython3";
-    		qpythonPackage = "com.hipipal.qpy3";
-    	}
+//    	}
+//    	else {
+//    		qpythonReadable = "QPython3";
+//    		qpythonPackage = "com.hipipal.qpy3";
+//    	}
     	
     	boolean haveQPython;
     	
@@ -231,10 +231,10 @@ public class MainActivity extends Activity {
 			String rootDir = Environment.getExternalStorageDirectory().getPath();
 			String scriptDir = rootDir+"/com.hipipal.qpyplus/scripts";
 			String pyVer = "2";
-			if (options.getInt(PREF_PYTHON_VERSION, PYTHON2) == PYTHON3) {
-				scriptDir += "3";
-				pyVer = "3";
-			}
+//			if (options.getInt(PREF_PYTHON_VERSION, PYTHON2) == PYTHON3) {
+//				scriptDir += "3";
+//				pyVer = "3";
+//			}
 			int overwrite = options.getInt(PREF_OVERWRITE_MODE, OVERWRITE_YES);
 			File base = new File(scriptDir);
 			if (overwrite == OVERWRITE_DELETE) {
