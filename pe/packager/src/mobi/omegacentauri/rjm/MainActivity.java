@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.AssetManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,6 +27,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -104,11 +106,14 @@ public class MainActivity extends Activity {
 			haveMinecraft = false;
 		}
     	
+    	boolean haveAll = true;    	
+    	
     	if (haveMinecraft) {
-    		message += "<p>1. It looks like you already have Minecraft PE installed. Excellent!</p>";
+    		message += "<p>1. You already have Minecraft PE installed. Excellent!</p>";
     	}
     	else {
 			message += "<p>1. Install <a href='"+store+"com.mojang.minecraftpe'>Minecraft PE</a>.</p>";
+			haveAll = false;
     	}
 
     	String qpythonReadable;
@@ -135,6 +140,7 @@ public class MainActivity extends Activity {
 		}
 		else {
 			message += "<p>2. Install <a href='"+store+qpythonPackage+"'>"+qpythonReadable+"</a>.</p>";
+			haveAll = false;
 		}
 		
 		try {
@@ -171,19 +177,27 @@ public class MainActivity extends Activity {
 			message += "<p>3. Install <a href='"+store+"net.zhuoweizhang.mcpelauncher.pro'>BlockLauncher Pro</a> or the free "+
 					"<a href='"+store+"net.zhuoweizhang.mcpelauncher'>BlockLauncher</a>.</p>";
 			bl = "BlockLauncher";
-		}
+			haveAll = false;
+		} 
 		else {
 			message += "<p>3. It looks like you already have "+bl+" installed. Excellent!</p>"; 	
 		}
 		
-		message += "<p>4. Tap on the 'Install' button.</p>";
+		message += "<p>4. Tap on the 'Install' button and agree to install mod." + (haveAll?"":" (The button will show up once the above steps are done.)")+"</p>";
+
+		tv.setText(Html.fromHtml(message));
+		
+		Button install = (Button)findViewById(R.id.install);
+		install.setVisibility(haveAll ? View.VISIBLE : View.INVISIBLE);
+    	tv = (TextView)findViewById(R.id.instructions2);
+		message = "";
+		
 		message += "<p>5. Go to "+bl+", make sure screen is in landcape mode (it may crash in portrait) and tap on the wrench button.</p>";
-		message += "<p>6. Choose 'Manager ModPE Scripts', then 'Import', and then 'Local storage'.</p>";
-		message += "<p>7. Scroll down to 'raspberryjampe.js' and select it.</p>";
+		message += "<p>6. Choose 'Manager ModPE Scripts', then tap on 'raspberryjampe.js'.</p>";
+		message += "<p>7. Tap on 'enable'.</p>";
 		message += "<p>8. Press back and then start Minecraft PE inside BlockLauncher with 'Play'.</p>";
 		message += "<p>9. Switch between Minecraft and QPython to run scripts.</p>";
-		
-		tv.setText(Html.fromHtml(message));
+		tv.setText(Html.fromHtml(message));		
     }
     
     @Override
@@ -302,7 +316,10 @@ public class MainActivity extends Activity {
 		@Override
 		protected void onPostExecute(Boolean success) {
 			if (success != null && success) {
-				Toast.makeText(context, "Scripts and mod ready", Toast.LENGTH_LONG).show();
+				Intent intent = new Intent("net.zhuoweizhang.mcpelauncher.action.IMPORT_SCRIPT");
+				Uri texMPath = Uri.fromFile(new File(Environment.getExternalStorageDirectory().getPath(),"raspberryjampe.js"));
+				intent.setDataAndType(texMPath, "text/plain");			
+				context.startActivity(intent);
 			}
 			else {
 				Toast.makeText(context, "Failed!", Toast.LENGTH_LONG).show();
