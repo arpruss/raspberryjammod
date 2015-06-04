@@ -1,10 +1,10 @@
 mkdir packager/assets
-cp -f raspberryjampe.js p2/
-cp -f raspberryjampe.js p3/
 rm -rf p2
 mkdir p2
 rm -rf p3
 mkdir p3
+cp raspberryjampe.js p2/
+cp raspberryjampe.js p3/
 cp -r `grep -l Pruss ../python2-scripts/mcpipy/*.py` ../python2-scripts/mcpipy/mcpi p2
 rm p2/neurosky.py
 cp -r `grep -l Pruss ../python3-scripts/mcpipy/*.py` ../python3-scripts/mcpipy/mcpi p3

@@ -195,8 +195,8 @@ public class MainActivity extends Activity {
     	tv = (TextView)findViewById(R.id.instructions2);
 		message = "";		
 		message += "<p>5. Go to "+bl+", make sure screen is in landcape mode (it may crash in portrait) and tap on the wrench button.</p>";
-		message += "<p>6. Choose 'Manage ModPE Scripts', then tap on 'raspberryjampe.js'.</p>";
-		message += "<p>7. Tap on 'enable'.</p>";
+		message += "<p>6. Choose 'Manage ModPE Scripts', and make sure switch is on 'ON'.</p>";
+		message += "<p>7. Tap on 'raspberryjampe.js' and choose 'Enable'.</p>";
 		message += "<p>8. Press BACK and then start Minecraft PE inside BlockLauncher with 'Play'.</p>";
 		message += "<p>9. Switch between Minecraft and QPython to run scripts.</p>";
 		tv.setText(Html.fromHtml(message));		

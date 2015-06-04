@@ -6,6 +6,7 @@
 
 import collections
 import random
+import mcpi.settings
 from mcturtle import *
 
 def playProgram(s, dictionary):
@@ -118,5 +119,7 @@ if __name__ == "__main__":
         'f': lambda: t.go(length)
     }
 
-#    print evolve(axiom, rules, 11)
-    lsystem(axiom, rules, dictionary, 11)
+    if mcpi.settings.isPE:
+        lsystem(axiom, rules, dictionary, 10)
+    else:
+        lsystem(axiom, rules, dictionary, 11)
