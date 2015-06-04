@@ -86,7 +86,7 @@ if __name__ == "__main__":
     axiom = 'fA'
     angle = 15
     thickness = 8
-    length = 15
+    length = 10 if mcpi.settings.isPE else 15;
     material = WOOD
     t.penwidth(thickness)
     t.penblock(material)
@@ -119,7 +119,4 @@ if __name__ == "__main__":
         'f': lambda: t.go(length)
     }
 
-    if mcpi.settings.isPE:
-        lsystem(axiom, rules, dictionary, 10)
-    else:
-        lsystem(axiom, rules, dictionary, 11)
+    lsystem(axiom, rules, dictionary, 9 if mcpi.settings.isPE else 11)
