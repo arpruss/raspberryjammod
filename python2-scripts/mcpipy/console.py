@@ -21,6 +21,8 @@ def inputLine(prompt):
                 print c.message
                 if c.message == 'quit':
                     return 'quit()'
+                elif c.message == ' ':
+                    return ''
                 else:
                     return c.message
         time.sleep(0.2)
