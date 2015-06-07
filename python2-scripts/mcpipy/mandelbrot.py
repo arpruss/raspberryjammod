@@ -1,3 +1,7 @@
+#
+# Public domain code by Alexander R. Pruss
+#
+
 from mc import *
 import settings
 import cmath
