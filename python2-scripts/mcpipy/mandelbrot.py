@@ -6,9 +6,14 @@ from mc import *
 import mcpi.settings
 import cmath
 import time
+import sys
 
 ESCAPE = 256
-SIZE = 768 if not mcpi.settings.isPE else 400
+if len(sys.argv) < 2:
+    SIZE = 768 if not mcpi.settings.isPE else 400
+else:
+    SIZE = int(sys.argv[1])
+
 black = WOOL_BLACK
 palette = [ WOOL_WHITE, WOOL_ORANGE, WOOL_MAGENTA, WOOL_LIGHT_BLUE,
             WOOL_YELLOW, WOOL_LIME, WOOL_PINK, WOOL_GRAY, WOOL_LIGHT_GRAY,
@@ -73,16 +78,16 @@ def pollZoom():
     return True
 
 def toComplex(x,y):
-    return  complex((x - posMC.x) * scale  + posCx.real,
-                    (y - posMC.z) * scale  + posCx.imag)
+    return  complex((x - centerMC.x) * scale  + centerCx.real,
+                    (y - centerMC.z) * scale  + centerCx.imag)
 
 def draw():
     count = 0
-    for (x,y) in loopGenerator(SIZE, posMC.x-centerMC.x+SIZE/2, posMC.z-centerMC.z+SIZE/2):
+    for (x,y) in loopGenerator(SIZE, SIZE/2, SIZE/2):
         mcX = x + centerMC.x - SIZE/2
         mcY = y + centerMC.z - SIZE/2
         c = toComplex(mcX, mcY)
-        
+
         esc = escapeTime(c)
         mc.setBlock(mcX, centerMC.y, mcY,
                     palette[esc % len(palette)] if esc < ESCAPE else black)
@@ -94,30 +99,39 @@ def draw():
         else:
             count += 1
 
+def formatComplex(z):
+    return "%.2g+%.2gi" % (z.real,z.imag)
+
+def getInfo():
+    return ( "Center: "+formatComplex(centerCx)+", range from "+
+             formatComplex(toComplex(centerMC.x - SIZE/2, centerMC.z - SIZE/2))+" to "+
+             formatComplex(toComplex(centerMC.x + SIZE/2 - 1, centerMC.z + SIZE/2 - 1)) )
+
 mc = Minecraft()
 centerMC = mc.player.getPos()
+adjustedPlayer = centerMC.clone()
+adjustedPlayer.y += 1
 centerMC.ifloor()
-posMC    = centerMC
-posCx    = complex(0,0)
+centerCx = complex(0,0)
 scale    = 4. / SIZE
 lastHitEvent = None
 
 while True:
+    mc.player.setPos(adjustedPlayer)
+    mc.postToChat(getInfo())
     draw()
+    mc.postToChat("Rendered")
     while not pollZoom():
         time.sleep(0.25)
-    if ( lastHitEvent.pos.y != centerMC.y or lastHitEvent.pos.x < centerMC.x - size / 2 or
-         lastHitEvent.pos.x >= centerMC.x + size / 2 or
-         lastHitEvent.pos.z < centerMC.z - size / 2 or
-         lastHitEvent.pos.z >= centerMC.z + size / 2 ):
-            scale /= 2
-            posMC = centerMC
-            posCx = complex(0,0)
-            mc.postToChat("Recentering at origin")
-    else:
-            posCx = toComplex(lastHitEvent.pos.x,lastHitEvent.pos.z)
-            mc.postToChat("Recentering at "+posCx)
+    if ( lastHitEvent.pos.y != centerMC.y or
+         lastHitEvent.pos.x < centerMC.x - SIZE / 2 or
+         lastHitEvent.pos.x >= centerMC.x + SIZE / 2 or
+         lastHitEvent.pos.z < centerMC.z - SIZE / 2 or
+         lastHitEvent.pos.z >= centerMC.z + SIZE / 2 ):
+            centerCx = complex(0,0)
             scale *= 2
-            posMC = lastHitEvent.pos
-
-mc.postToChat("Done")
+    else:
+            centerCx = toComplex(lastHitEvent.pos.x,lastHitEvent.pos.z)
+            scale /= 2
+    print mc.player.getPos()
+    lastHitEvent = None

@@ -16,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
@@ -187,10 +188,29 @@ public class MCEventHandler {
 
 	class HitDescription {
 		private String description;
-
+		
 		public HitDescription(PlayerInteractEvent event) {
 			BlockPos pos = event.pos.subtract(MinecraftServer.getServer().getEntityWorld().getSpawnPoint());
-			description = ""+pos.getX()+","+pos.getY()+","+pos.getZ()+","+event.face+","+event.entity.getEntityId();
+			description = ""+pos.getX()+","+pos.getY()+","+pos.getZ()+","+numericFace(event.face)+","+event.entity.getEntityId();
+		}
+
+		private int numericFace(EnumFacing face) {
+			switch(face) {
+			case DOWN:
+				return 0;
+			case UP:
+				return 1;
+			case NORTH:
+				return 2;
+			case SOUTH:
+				return 3;
+			case WEST:
+				return 4;
+			case EAST:
+				return 5;
+			default:
+				return 7;
+			}
 		}
 
 		public String getDescription() {
