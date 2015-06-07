@@ -3,11 +3,11 @@
 #
 
 from mc import *
-import settings
+import mcpi.settings
 import cmath
 
 ESCAPE = 256
-SIZE = 768 if not isPE else 400
+SIZE = 768 if not mcpi.settings.isPE else 400
 black = WOOL_BLACK
 palette = [ WOOL_WHITE, WOOL_ORANGE, WOOL_MAGENTA, WOOL_LIGHT_BLUE,
             WOOL_YELLOW, WOOL_LIME, WOOL_PINK, WOOL_GRAY, WOOL_LIGHT_GRAY,
