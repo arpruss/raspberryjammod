@@ -1,5 +1,5 @@
 ﻿#
-# Public domain code by Alexander Pruss
+# MIT-licensed code by Alexander Pruss
 #
 # L-system with turtle graphics
 #

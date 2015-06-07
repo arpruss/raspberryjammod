@@ -1,5 +1,5 @@
 #
-# Public domain code by Alexander R. Pruss
+# MIT-licensed code by Alexander Pruss
 #
 
 from mc import *
