@@ -10,14 +10,9 @@ import sys
 
 ESCAPE = 256
 if len(sys.argv) < 2:
-    SIZE = 768 if not mcpi.settings.isPE else 400
+    SIZE = 200 if not mcpi.settings.isPE else 128
 else:
     SIZE = int(sys.argv[1])
-
-if len(sys.argv) < 3:
-    formula = lambda z,c : z * z + c
-else:
-    formula = eval('lambda z,c : '+sys.argv[2])
 
 black = WOOL_BLACK
 palette = [ WOOL_WHITE, WOOL_ORANGE, WOOL_MAGENTA, WOOL_LIGHT_BLUE,
@@ -30,7 +25,7 @@ def escapeTime(c):
     z = c
     while abs(z) < 2 and i < ESCAPE:
         i = i + 1
-        z = formula(z,c)
+        z = z * z + c
     return i
 
 #
@@ -87,6 +82,7 @@ def toComplex(x,y):
                     (y - centerMC.z) * scale  + centerCx.imag)
 
 def draw():
+    heightScale = maxHeight / math.log(1+ESCAPE)
     count = 0
     for (x,y) in loopGenerator(SIZE, SIZE/2, SIZE/2):
         mcX = x + centerMC.x - SIZE/2
@@ -94,8 +90,9 @@ def draw():
         c = toComplex(mcX, mcY)
 
         esc = escapeTime(c)
-        mc.setBlock(mcX, centerMC.y, mcY,
-                    palette[esc % len(palette)] if esc < ESCAPE else black)
+        mc.setBlocks(mcX, centerMC.y, mcY,
+                     mcX, centerMC.y + heightScale * math.log(1+esc), mcY,
+                     palette[esc % len(palette)] if esc < ESCAPE else black)
         if count >= 1000:
             if pollZoom():
                 break
@@ -115,21 +112,28 @@ def getInfo():
 mc = Minecraft()
 centerMC = mc.player.getPos()
 centerMC.ifloor()
+maxHeight = 50 if not mcpi.settings.isPE else 30
 adjustedPlayer = centerMC.clone()
-adjustedPlayer.y += 1
+adjustedPlayer.y += maxHeight+2
 centerCx = complex(0,0)
 scale    = 4. / SIZE
 lastHitEvent = None
 
 while True:
+    mc.postToChat("Clearing")
+    mc.setBlocks(centerMC.x - SIZE/2, centerMC.y, centerMC.z - SIZE/2,
+                 centerMC.x + SIZE/2 -1, centerMC.y+maxHeight, centerMC.z + SIZE/2,
+                 AIR)
     mc.player.setPos(adjustedPlayer)
     mc.postToChat(getInfo())
     draw()
-    mc.postToChat("Rendered")
+    if lastHitEvent != None:
+        mc.postToChat("Rendered")
+
     while not pollZoom():
         time.sleep(0.25)
-    if ( lastHitEvent.pos.y != centerMC.y or
-         lastHitEvent.pos.x < centerMC.x - SIZE / 2 or
+
+    if ( lastHitEvent.pos.x < centerMC.x - SIZE / 2 or
          lastHitEvent.pos.x >= centerMC.x + SIZE / 2 or
          lastHitEvent.pos.z < centerMC.z - SIZE / 2 or
          lastHitEvent.pos.z >= centerMC.z + SIZE / 2 ):
@@ -138,5 +142,4 @@ while True:
     else:
             centerCx = toComplex(lastHitEvent.pos.x,lastHitEvent.pos.z)
             scale /= 2
-    print mc.player.getPos()
     lastHitEvent = None
