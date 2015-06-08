@@ -1,12 +1,9 @@
 rm python2-scripts.zip
 rm python3-scripts.zip
 chmod -R u+rw python[23]-scripts
-#cd python3-scripts/mcpipy
-#for x in *.py ; do
-#  2to3 -w $x
-#done
-#rm -f *.{bak,pyc} */*.{bak,pyc}
-#cd ..
+rm -r python3-scripts
+cp -r python2-scripts python3-scripts
+2to3 -w -f all python3-scripts
 cd python3-scripts/mcpipy
 rm -rf *.{bak,pyc} */*.{bak,pyc} __pycache__ */__pycache__ */*/__pycache__
 cd ..

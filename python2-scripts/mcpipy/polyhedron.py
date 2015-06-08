@@ -447,6 +447,7 @@ def genFacesFace(points,x0,y0,z0,scale):
     return faceList
 
 def genFacesVertex(points,x0,y0,z0,size):
+    n = len(points)
     hulledges = {}
     for i in range(n-1):
         xi, yi, zi = points[i]
@@ -679,7 +680,7 @@ def genFacesVertex(points,x0,y0,z0,size):
                 #zk1 = matrix[2][0] * xk + matrix[2][1] * yk + matrix[2][2] * zk
                 angles.append((atan2(xk1, yk1), k))
             # Sort by angle, in reverse order.
-            angles.sort(lambda a, b: a[0] < b[0] or (a[0] != b[0] and -1))
+            angles.sort(key=lambda x : -x[0])
             # Search for i and take the next thing below it. Wrap
             # round, of course: if angles[0] is i then we want
             # angles[-1]. Conveniently this will be done for us by
@@ -745,7 +746,7 @@ if __name__ == "__main__":
     else:
         n = 7
 
-    faceMode = len(sys.argv)>2 and sys.argv[2] == "face"
+    faceMode = len(sys.argv)>2 and sys.argv[2][0] == "f"
 
     if len(sys.argv)>3:
         size = int(sys.argv)

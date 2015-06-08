@@ -1,5 +1,5 @@
 #
-# Public domain code by Alexander Pruss
+# MIT-licensed code by Alexander Pruss
 #
 import lsystem
 from mcturtle import *

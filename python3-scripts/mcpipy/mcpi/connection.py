@@ -35,7 +35,7 @@ class Connection:
         #print "s",s
         self.drain()
         self.lastSent = s
-        self.socket.sendall(bytes(s, "UTF-8"))
+        self.socket.sendall(s.encode('utf-8'))
 
     def receive(self):
         """Receives data. Note that the trailing newline '\n' is trimmed"""

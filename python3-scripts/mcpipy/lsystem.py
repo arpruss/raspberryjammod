@@ -1,11 +1,12 @@
 ﻿#
-# Public domain code by Alexander Pruss
+# MIT-licensed code by Alexander Pruss
 #
 # L-system with turtle graphics
 #
 
 import collections
 import random
+import mcpi.settings
 from mcturtle import *
 
 def playProgram(s, dictionary):
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     axiom = 'fA'
     angle = 15
     thickness = 8
-    length = 15
+    length = 10 if mcpi.settings.isPE else 15;
     material = WOOD
     t.penwidth(thickness)
     t.penblock(material)
@@ -118,5 +119,4 @@ if __name__ == "__main__":
         'f': lambda: t.go(length)
     }
 
-#    print evolve(axiom, rules, 11)
-    lsystem(axiom, rules, dictionary, 11)
+    lsystem(axiom, rules, dictionary, 9 if mcpi.settings.isPE else 11)
