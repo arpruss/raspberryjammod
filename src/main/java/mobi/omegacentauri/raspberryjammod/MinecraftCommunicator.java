@@ -32,6 +32,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.S43PacketCamera;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.Vec3;
 import net.minecraft.util.Vec3i;
@@ -88,7 +89,7 @@ public class MinecraftCommunicator {
 	private static final String CAMERAGETENTITYID = "camera.getEntityId";
 
 	private static final Block UNKNOWN_BLOCK = Blocks.beacon;
-	
+
 	private static final float TOO_SMALL = (float) 1e-9;
 
 	Block[] typeMap;
@@ -262,7 +263,8 @@ public class MinecraftCommunicator {
 			entityGetTile(clientPlayer);
 		}
 		else if (cmd.equals(CHAT)) {
-			clientPlayer.sendChatMessage(args);
+			Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(args));
+//			clientPlayer.sendChatMessage(args);
 		}
 		else if (cmd.equals(WORLDGETPLAYERIDS)) {
 			List<EntityPlayer> players = serverWorld.playerEntities;
