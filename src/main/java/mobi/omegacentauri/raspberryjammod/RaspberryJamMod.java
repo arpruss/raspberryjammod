@@ -46,6 +46,7 @@ public class RaspberryJamMod
 	private PythonExternalCommand pythonExternalCommand = null;
 	public static Configuration configFile;
 	public static int portNumber = 4711;
+	public static int concurrentConnections = 4;
 //	public static int defaultDifficulty = -1;
 	
 	@Mod.EventHandler

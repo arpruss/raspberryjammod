@@ -101,6 +101,7 @@ public class MinecraftCommunicator {
 	private boolean listening = true;
 	private boolean translateBlockId = false; // default: do not translate blocks between Pi and Desktop
  	private Minecraft mc;
+ 	private int connectionsActive = 0;
 
 	public MinecraftCommunicator(MCEventHandler eventHandler) throws IOException {
 		this.eventHandler = eventHandler;
@@ -109,54 +110,68 @@ public class MinecraftCommunicator {
 	}
 
 	void communicate() throws IOException {
-		String clientSentence;
-
 		while(listening) {
 			Socket connectionSocket = null;
 
 			try {
-				connectionSocket = socket.accept();
-				BufferedReader reader =
-						new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-				writer = new DataOutputStream(connectionSocket.getOutputStream());
-
-				while(null != (clientSentence = reader.readLine())) {
-					Scanner scan = null;
-					mc = Minecraft.getMinecraft();
-					if (mc == null) {
-						fail("Minecraft not available");
-						continue;
-					}
-					serverWorld = MinecraftServer.getServer().getEntityWorld();
-					if (serverWorld == null) {
-						fail("World not available");
-						continue;
-					}
-					EntityPlayerSP clientPlayer = mc.thePlayer;
-					if (clientPlayer == null) {
-						fail("Player not available");
-						continue;
-					}
-					process(clientPlayer, clientSentence);
+				if (RaspberryJamMod.concurrentConnections == 1) {
+					socketCommunicate(socket.accept());
+				}
+				else if (connectionsActive < RaspberryJamMod.concurrentConnections) {
+					socketCommunicate(socket.accept());
+				}
+				else {
+					// Too many connections: sleep until one or more go away
+					Thread.sleep(1000);
 				}
 			}
 			catch (Exception e) {
-				System.out.println(""+e);
-				try {
-					Thread.sleep(1000);
-				}
-				catch(Exception e2) {					
-				}
-			}
-			finally {
-				if (connectionSocket != null)
-					connectionSocket.close();
 			}
 		}
 	}
 
-	private void process(EntityPlayerSP clientPlayer, String clientSentence) {
+	private void socketCommunicate(Socket connectionSocket) {
+		connectionsActive++;
+		
+		try {
+			String clientSentence;
+			
+			BufferedReader reader =
+					new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+			writer = new DataOutputStream(connectionSocket.getOutputStream());
+	
+			while(null != (clientSentence = reader.readLine())) {
+				process(clientSentence);
+			}
+		} catch (Exception e) {
+			System.out.println(""+e);
+		}
+		finally {
+			connectionsActive--;
+			try {
+				connectionSocket.close();
+			} catch (IOException e) {
+			}
+		}
+	}
+
+	synchronized private void process(String clientSentence) {
 		Scanner scan = null;
+		mc = Minecraft.getMinecraft();
+		if (mc == null) {
+			fail("Minecraft not available");
+			return;
+		}
+		serverWorld = MinecraftServer.getServer().getEntityWorld();
+		if (serverWorld == null) {
+			fail("World not available");
+			return;
+		}
+		EntityPlayerSP clientPlayer = mc.thePlayer;
+		if (clientPlayer == null) {
+			fail("Player not available");
+			return;
+		}
 
 		try {	
 			int paren = clientSentence.indexOf('(');

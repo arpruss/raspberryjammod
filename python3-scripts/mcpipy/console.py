@@ -1,4 +1,12 @@
 #
+# SECURITY WARNING: Do not use this script in a context where multiple simultaneous
+#   connections to Minecraft are allowed, since a second connection could then inject
+#   python code.  The Raspberry Jam Mod is designed for a single concurrent connection
+#   and avoids this security problem.
+#
+
+
+#
 # MIT-licensed code by Alexander Pruss
 #
 
