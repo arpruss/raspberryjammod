@@ -46,7 +46,7 @@ public class RaspberryJamMod
 	private PythonExternalCommand pythonExternalCommand = null;
 	public static Configuration configFile;
 	public static int portNumber = 4711;
-	public static int concurrentConnections = 4;
+	public static int concurrentConnections = 1;
 //	public static int defaultDifficulty = -1;
 	
 	@Mod.EventHandler
@@ -60,7 +60,8 @@ public class RaspberryJamMod
 	}
 	
 	public static void synchronizeConfig() {
-		portNumber = configFile.getInt("Port Number", Configuration.CATEGORY_GENERAL, 4711, 1, 65535, "Port number");
+		portNumber = configFile.getInt("Port number", Configuration.CATEGORY_GENERAL, 4711, 1, 65535, "Port number");
+		concurrentConnections = configFile.getInt("Max connections (experimental)", Configuration.CATEGORY_GENERAL, 1, 1, 16, "Concurrent connections");
 //		defaultDifficulty = configFile.getInt("Default Difficulty", Configuration.CATEGORY_GENERAL, 4711, 1, 65535, "-1=default,0=peaceful,1=easy,2=normal,3=hard");
 		
 		if (configFile.hasChanged()) 
