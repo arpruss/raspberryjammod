@@ -1,5 +1,7 @@
 package mobi.omegacentauri.raspberryjammod;
 
+// TODO: getHeight() should check block queue
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -74,7 +76,7 @@ public class MinecraftCommunicator {
 	private static final String ENTITYGETPOS = "entity.getPos"; 
 	private static final String ENTITYGETTILE = "entity.getTile"; 
 	private static final String ENTITYSETTILE = "entity.setTile"; 
-	private static final String ENTITYSETPOS = "entity.setPos"; 
+	private static final String ENTITYSETPOS = "entity.setPos";
 
 	private static final String EVENTSBLOCKHITS = "events.block.hits";
 	private static final String EVENTSCHATPOSTS = "events.chat.posts";
