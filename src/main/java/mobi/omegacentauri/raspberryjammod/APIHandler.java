@@ -158,16 +158,16 @@ public class APIHandler {
 			IndexOutOfBoundsException {
 		
 		if (cmd.equals(GETBLOCK)) {
-			DesktopBlock b = new DesktopBlock(eventHandler.getBlockState(serverWorld, getPosition(scan)));
+			DesktopBlock b = new DesktopBlock(eventHandler.getBlockState(serverWorld, getBlockPosition(scan)));
 
 			sendLine(b.toAPIBlock().id);
 		}
 		else if (cmd.equals(GETBLOCKWITHDATA)) {
-			APIBlock b = new DesktopBlock(eventHandler.getBlockState(serverWorld, getPosition(scan))).toAPIBlock();
+			APIBlock b = new DesktopBlock(eventHandler.getBlockState(serverWorld, getBlockPosition(scan))).toAPIBlock();
 			sendLine(""+b.id+","+b.meta);
 		}
 		else if (cmd.equals(GETHEIGHT)) {
-			BlockPos pos = getPosition(scan.nextInt(), 0, scan.nextInt());
+			BlockPos pos = getBlockPosition(scan.nextInt(), 0, scan.nextInt());
 			Chunk chunk = serverWorld.getChunkFromBlockCoords(pos);
 			int h = chunk.getHeight(pos);
 			int x = pos.getX();
@@ -185,15 +185,15 @@ public class APIHandler {
 			sendLine(h);
 		}
 		else if (cmd.equals(SETBLOCK)) {
-			BlockPos pos = getPosition(scan);
+			BlockPos pos = getBlockPosition(scan);
 			int id = scan.nextInt();
 			int meta = scan.hasNextInt() ? scan.nextInt() : 0;
 			IBlockState state = new DesktopBlock(new APIBlock(id, meta)).getBlockState();
 			eventHandler.queueSetBlockState(new BlockPos(pos), state);
 		}
 		else if (cmd.equals(SETBLOCKS)) {
-			BlockPos pos1 = getPosition(scan);
-			BlockPos pos2 = getPosition(scan);
+			BlockPos pos1 = getBlockPosition(scan);
+			BlockPos pos2 = getBlockPosition(scan);
 
 			int id = scan.nextInt();
 			int meta = scan.hasNextInt() ? scan.nextInt() : 0;
@@ -555,16 +555,19 @@ public class APIHandler {
 	}
 
 	private void entitySetTile(Entity e, Scanner scan) {
-		BlockPos pos = getPosition(scan);
+		BlockPos pos = getBlockPosition(scan);
 		e.setPositionAndUpdate(pos.getX()+0.5, pos.getY(), (double)pos.getZ()+0.5);
+	}
+	
+	private static int trunc(double x) {
+		return (int)Math.floor(x);
 	}
 
 	private void entityGetTile(Entity e) {
 		BlockPos spawn = serverWorld.getSpawnPoint();
-		Vec3i spawnPoint = new Vec3i(spawn.getX(), spawn.getY(), spawn.getZ());
-		BlockPos pos = e.getPosition().subtract(spawnPoint);
-
-		sendLine(pos);
+		Vec3 spawnPoint = new Vec3(spawn.getX(), spawn.getY(), spawn.getZ());
+		Vec3 pos = e.getPositionVector().subtract(spawnPoint);
+		sendLine(""+trunc(pos.xCoord)+","+trunc(pos.yCoord)+","+trunc(pos.zCoord));
 	}
 
 	private void sendLine(BlockPos pos) {
@@ -599,15 +602,17 @@ public class APIHandler {
 		}
 	}
 
-	private BlockPos getPosition(Scanner scan) {
+	private BlockPos getBlockPosition(Scanner scan) {
 		int x = scan.nextInt();
 		int y = scan.nextInt();
 		int z = scan.nextInt();
-		return getPosition(x, y, z);
+		return getBlockPosition(x, y, z);
 	}
 
-	private BlockPos getPosition(int x, int y, int z) {
-		return serverWorld.getSpawnPoint().add(x,y,z);
+	private BlockPos getBlockPosition(int x, int y, int z) {
+		BlockPos spawnPos = serverWorld.getSpawnPoint();
+		return new BlockPos(x+spawnPos.getX(), y+spawnPos.getY(), z+spawnPos.getZ());
+//		return serverWorld.getSpawnPoint().add(x,y,z);
 	}
 
 	private void initTypeMap() {
