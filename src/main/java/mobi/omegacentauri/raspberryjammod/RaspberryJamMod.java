@@ -47,7 +47,6 @@ public class RaspberryJamMod
 	public static Configuration configFile;
 	public static int portNumber = 4711;
 	public static int concurrentConnections = 1;
-//	public static int defaultDifficulty = -1;
 	
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -62,7 +61,6 @@ public class RaspberryJamMod
 	public static void synchronizeConfig() {
 		portNumber = configFile.getInt("Port Number", Configuration.CATEGORY_GENERAL, 4711, 1, 65535, "Port number");
 		concurrentConnections = configFile.getInt("Max Connections", Configuration.CATEGORY_GENERAL, 1, 1, 16, "Max connections");
-//		defaultDifficulty = configFile.getInt("Default Difficulty", Configuration.CATEGORY_GENERAL, 4711, 1, 65535, "-1=default,0=peaceful,1=easy,2=normal,3=hard");
 		
 		if (configFile.hasChanged()) 
 			configFile.save();
@@ -88,7 +86,6 @@ public class RaspberryJamMod
 		final MCEventHandler eventHandler = new MCEventHandler();
 		FMLCommonHandler.instance().bus().register(eventHandler);
 		MinecraftForge.EVENT_BUS.register(eventHandler);
-//		MinecraftForge.TERRAIN_GEN_BUS.register(eventHandler);
 		try {
 			mcc = new MinecraftCommunicator(eventHandler);
 

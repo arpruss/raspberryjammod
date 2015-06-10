@@ -94,7 +94,7 @@ public class MinecraftCommunicator {
 
 	Block[] typeMap;
 
-	final private ServerSocket socket;
+	final private ServerSocket serverSocket;
 	private World serverWorld;
 	private MCEventHandler eventHandler;
 	private boolean listening = true;
@@ -104,22 +104,22 @@ public class MinecraftCommunicator {
 
 	public MinecraftCommunicator(MCEventHandler eventHandler) throws IOException {
 		this.eventHandler = eventHandler;
-		socket = new ServerSocket(RaspberryJamMod.portNumber);
 		initTypeMap();
+		serverSocket = new ServerSocket(RaspberryJamMod.portNumber);
 	}
 
 	void communicate() throws IOException {
 		while(listening) {
 			Socket connectionSocket = null;
 			if (RaspberryJamMod.concurrentConnections == 1) {
-				socketCommunicate(socket);
+				socketCommunicate(serverSocket);
 			}
 			else if (connectionsActive < RaspberryJamMod.concurrentConnections) {
 				new Thread(new Runnable(){
 
 					@Override
 					public void run() {
-						socketCommunicate(socket);
+						socketCommunicate(serverSocket);
 					}}).start();
 			}
 			else {
@@ -414,19 +414,15 @@ public class MinecraftCommunicator {
 			float angle = scan.nextFloat();
 			Entity e = serverWorld.getEntityByID(id);
 			if (e != null) {
-//				System.out.println("server "+e.rotationYaw);
 				e.rotationYaw = angle;
 				e.setRotationYawHead(angle);
-//				e.setLocationAndAngles(e.getPosition().getX(), e.getPosition().getY(), e.getPosition().getZ(), angle, e.rotationPitch);
 			}
 			else
 				fail(writer, "No such entity");
 			e = mc.theWorld.getEntityByID(id);
 			if (e != null) {
-//				System.out.println("client "+e.rotationYaw);
 				e.rotationYaw = angle;
 				e.setRotationYawHead(angle);
-//				e.setLocationAndAngles(e.getPosition().getX(), e.getPosition().getY(), e.getPosition().getZ(), angle, e.rotationPitch);
 			}
 		}
 		else if (cmd.equals(ENTITYGETPITCH)) {
@@ -624,7 +620,7 @@ public class MinecraftCommunicator {
 
 	private void entitySetTile(Entity e, Scanner scan) {
 		BlockPos pos = getPosition(scan);
-		e.setPositionAndUpdate((double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
+		e.setPositionAndUpdate(pos.getX()+0.5, pos.getY(), (double)pos.getZ()+0.5);
 	}
 
 	private void entityGetTile(DataOutputStream writer, Entity e) {
@@ -679,11 +675,10 @@ public class MinecraftCommunicator {
 	}
 
 	public void close() {
-		
 		listening = false;
 		try {
-			if (socket != null)
-				socket.close();
+			if (serverSocket != null)
+				serverSocket.close();
 		} catch (IOException e) {
 		}
 	}
