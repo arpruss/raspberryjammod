@@ -42,7 +42,7 @@ public class RaspberryJamMod
 	public static final String MODID = "raspberryjammod";
 	public static final String VERSION = "0.16";
 	public static final String NAME = "Raspberry Jam Mod";
-	private MinecraftCommunicator mcc;
+	private APIServer mcc;
 	private PythonExternalCommand pythonExternalCommand = null;
 	public static Configuration configFile;
 	public static int portNumber = 4711;
@@ -87,7 +87,7 @@ public class RaspberryJamMod
 		FMLCommonHandler.instance().bus().register(eventHandler);
 		MinecraftForge.EVENT_BUS.register(eventHandler);
 		try {
-			mcc = new MinecraftCommunicator(eventHandler);
+			mcc = new APIServer(eventHandler);
 
 			new Thread(new Runnable() {
 				@Override
