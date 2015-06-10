@@ -96,12 +96,9 @@ public class APIServer {
 
 			APIHandler api = new APIHandler(eventHandler, writer);
 
-			System.out.println("waiting");
 			while(null != (clientSentence = reader.readLine())) {
-				System.out.println("go");
 				api.process(clientSentence);
 			}
-			System.out.println("waited");
 		} catch (Exception e) {
 			System.out.println(""+e);
 		}

@@ -40,14 +40,14 @@ guiFactory = "mobi.omegacentauri.raspberryjammod.GuiFactory")
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.17";
+	public static final String VERSION = "0.21";
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer mcc;
 	private PythonExternalCommand pythonExternalCommand = null;
 	public static Configuration configFile;
 	public static int portNumber = 4711;
 	public static boolean concurrent = true;
-	
+
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		configFile = new Configuration(event.getSuggestedConfigurationFile());
@@ -57,11 +57,11 @@ public class RaspberryJamMod
 
 		synchronizeConfig();
 	}
-	
+
 	public static void synchronizeConfig() {
 		portNumber = configFile.getInt("Port Number", Configuration.CATEGORY_GENERAL, 4711, 1, 65535, "Port number");
-		concurrent = configFile.getBoolean("Multiple connections", Configuration.CATEGORY_GENERAL, true, "Multiple connections");
-		
+		concurrent = configFile.getBoolean("Multiple Connections", Configuration.CATEGORY_GENERAL, true, "Multiple connections");
+
 		if (configFile.hasChanged()) 
 			configFile.save();
 	}
