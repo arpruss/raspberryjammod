@@ -41,10 +41,11 @@ import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
 
 public class APIServer {
+	private static final int MAX_CONNECTIONS = 64;
 	final private ServerSocket serverSocket;
 	private MCEventHandler eventHandler;
 	private boolean listening = true;
- 	private int connectionsActive = 0;
+	private int connectionsActive = 0;
 
 	public APIServer(MCEventHandler eventHandler) throws IOException {
 		this.eventHandler = eventHandler;
@@ -54,53 +55,53 @@ public class APIServer {
 	void communicate() throws IOException {
 		while(listening) {
 			Socket connectionSocket = null;
-			if (RaspberryJamMod.concurrentConnections == 1) {
-				socketCommunicate(serverSocket);
+			if (! RaspberryJamMod.concurrent) {
+				try {
+					socketCommunicate(serverSocket.accept());
+				} catch(Exception e) {}
 			}
 			else {
-				synchronized(serverSocket) {
-					if (connectionsActive < RaspberryJamMod.concurrentConnections) {
-
+				try {
+					if (connectionsActive < MAX_CONNECTIONS) {
+						final Socket socket = serverSocket.accept();
 						connectionsActive++;
 						new Thread(new Runnable(){
 							@Override
 							public void run() {
-								socketCommunicate(serverSocket);
-								synchronized(serverSocket) {
-									connectionsActive--;
-								}
+								socketCommunicate(socket);
+								connectionsActive--;
 							}}).start();
 					}
 					else {
-						// Too many connections: sleep until one or more go away
+						// Too many connections: sleep hoping one or more go away
 						try {
 							Thread.sleep(1000);
 						}
 						catch (Exception e) {}
 					}
-				}
+				} catch(Exception e) {}
 			}
 		}
 	}
 
-	private void socketCommunicate(ServerSocket serverSocket) {
-		Socket connectionSocket = null;
+	private void socketCommunicate(Socket connectionSocket) {
 		DataOutputStream writer = null;
 		BufferedReader reader = null;
-		
+
 		try {
-			connectionSocket = serverSocket.accept();
-			
 			String clientSentence;
-			
+
 			reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 			writer = new DataOutputStream(connectionSocket.getOutputStream());
-			
+
 			APIHandler api = new APIHandler(eventHandler, writer);
-	
+
+			System.out.println("waiting");
 			while(null != (clientSentence = reader.readLine())) {
+				System.out.println("go");
 				api.process(clientSentence);
 			}
+			System.out.println("waited");
 		} catch (Exception e) {
 			System.out.println(""+e);
 		}
