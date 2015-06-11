@@ -30,6 +30,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 	final String scriptProcessorPath;
 	
 	public ScriptExternalCommand() {
+		System.out.println("Starting ScriptExternalCommand");
 		scriptProcessorPath = getScriptProcessorPath();		
 	}
 	
@@ -95,28 +96,50 @@ public abstract class ScriptExternalCommand implements ICommand {
 		aliases.add(getName());
 		return aliases;
 	}
+	
+	protected String extraPath() {
+		return "";
+	}
 
 	protected String getScriptProcessorPath() {
 		String base = getScriptProcessorCommand();
 		
-		String pathVar = System.getenv("PATH");
-		System.out.println(pathVar);
-		if (pathVar == null)
+		System.out.println("searching");
+
+		String pathSep = System.getProperty("path.separator");
+		String fileSep = System.getProperty("file.separator");
+		if (base.contains("/") || base.contains(fileSep)) {
+			System.out.println("base");
 			return base;
+		}
+		
+		String pathVar = System.getenv("PATH");
+		String extra = extraPath();
+		if (pathVar == null) {
+			if (extra.length()==0)
+				return base;
+			else
+				pathVar = extra;				
+		}
+		else if (extra.length()>0) {
+			pathVar = pathVar + pathSep + extra;
+		}
+		System.out.println("path " +pathVar);
 		
 		String exeExt = isWindows() ? ".exe" : "";
 		
-		String[] paths = pathVar.split(System.getProperty("path.separator")); 
+		String[] paths = pathVar.split(pathSep); 
 		
 		for (String dir : paths) {
-			String p = dir + System.getProperty("file.separator") + base + exeExt;
+			String p = dir + fileSep + base + exeExt;
 			if (new File(p).canExecute())
 				return p;
 		}
+		
 		return base;
 	}
 	
-	private boolean isWindows() {
+	public static boolean isWindows() {
 		return System.getProperty("os.name").startsWith("Windows");
 	}
 	

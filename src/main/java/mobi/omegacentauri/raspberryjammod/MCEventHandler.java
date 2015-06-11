@@ -72,7 +72,8 @@ public class MCEventHandler {
 
 	@SubscribeEvent
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
-		if (event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK) {
+		if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK ||
+			(RaspberryJamMod.leftClickToo && event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)) {
 			if (! restrictToSword || holdingSword()) {
 				synchronized(hits) {
 					if (hits.size() >= MAX_HITS)

@@ -1,6 +1,7 @@
 import socket
 import select
 import sys
+import atexit
 from util import flatten_parameters_to_string
 
 """ @author: Aron Nieminen, Mojang AB"""
@@ -16,6 +17,18 @@ class Connection:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((address, port))
         self.lastSent = ""
+        def close():
+            try:
+                self.socket.close()
+            except:
+                pass
+        atexit.register(close)
+
+    def __del__(self):
+        try:
+            self.socket.close()
+        except:
+            pass
 
     def drain(self):
         """Drains the socket of incoming data"""
@@ -32,7 +45,6 @@ class Connection:
         """Sends data. Note that a trailing newline '\n' is added here"""
         s = "%s(%s)\n"%(f, flatten_parameters_to_string(data))
         #print "f,data:",f,data
-        #print "s",s
         self.drain()
         self.lastSent = s
         self.socket.sendall(s.encode('utf-8'))

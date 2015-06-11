@@ -10,6 +10,10 @@ import net.minecraft.util.BlockPos;
 
 public class PythonExternalCommand extends ScriptExternalCommand {
 
+	public PythonExternalCommand() {
+		super();
+	}
+	
 	@Override
 	public String getName() {
 		return "python";
@@ -43,10 +47,18 @@ public class PythonExternalCommand extends ScriptExternalCommand {
 	public int compareTo(Object o) {
 		return 0;
 	}
+	
+	@Override
+	protected String extraPath() {
+		if (isWindows())
+			return "\\python27\\";
+		else
+			return "";
+	}
 
 	@Override
 	protected String getScriptProcessorCommand() {
-		return "python";
+		return RaspberryJamMod.pythonInterpreter;
 	}
 
 	@Override

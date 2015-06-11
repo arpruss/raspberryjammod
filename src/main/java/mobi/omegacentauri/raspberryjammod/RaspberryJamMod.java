@@ -40,13 +40,15 @@ guiFactory = "mobi.omegacentauri.raspberryjammod.GuiFactory")
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.22";
+	public static final String VERSION = "0.23";
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer mcc;
 	private PythonExternalCommand pythonExternalCommand = null;
 	public static Configuration configFile;
 	public static int portNumber = 4711;
 	public static boolean concurrent = true;
+	public static boolean leftClickToo = true;
+	public static String pythonInterpreter = "python";
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -61,6 +63,8 @@ public class RaspberryJamMod
 	public static void synchronizeConfig() {
 		portNumber = configFile.getInt("Port Number", Configuration.CATEGORY_GENERAL, 4711, 1, 65535, "Port number");
 		concurrent = configFile.getBoolean("Multiple Connections", Configuration.CATEGORY_GENERAL, true, "Multiple connections");
+		leftClickToo = configFile.getBoolean("Detect Sword Left-Click", Configuration.CATEGORY_GENERAL, false, "Detect sword left-click");
+		pythonInterpreter = configFile.getString("Python Interpreter", Configuration.CATEGORY_GENERAL, "python", "Python interpreter");
 
 		if (configFile.hasChanged()) 
 			configFile.save();
