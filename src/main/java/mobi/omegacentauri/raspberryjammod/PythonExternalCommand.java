@@ -51,7 +51,7 @@ public class PythonExternalCommand extends ScriptExternalCommand {
 	@Override
 	protected String extraPath() {
 		if (isWindows())
-			return "\\python27\\";
+			return "\\python27\\;..\\python27\\";
 		else
 			return "";
 	}
