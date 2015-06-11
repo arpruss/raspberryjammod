@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RaspberryJamMod"
-#define MyAppVersion "0.24"
+#define MyAppVersion "0.23"
 #define MyAppPublisher "Omega Centauri Software"
 #define MyAppURL "http://github.com/arpruss/raspberryjammod"
 
@@ -18,19 +18,40 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName=%appdata%\.minecraft\{#MyAppName}
+DefaultDirName={userpf}\{#MyAppName}
 DisableDirPage=yes
 DefaultGroupName={#MyAppName}
-OutputDir=c:\devel\mc\build\
+OutputDir=build\
 OutputBaseFilename=RaspberryJamMod-Installer
 Compression=lzma
 SolidCompression=yes
+LicenseFile=python27\LICENSE.txt
+PrivilegesRequired=lowest
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "python2-scripts\mcpipy\*"; DestDir: "{app}\.minecraft-test\mcpipy\"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft-test\mods\"
-Source: "pypy-2.6.0-win32\*"; DestDir: "{userappdata}\.minecraft-test\pypy"; Flags: createallsubdirs recursesubdirs
-Source: "raspberryjammod.cfg"; DestDir: "{userappdata}\.minecrafttest\config\"
+Source: "python2-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\"
+Source: "Python27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs; Components: Python27
+
+[Components]
+Name: "Mod"; Description: "Raspberry Jam Mod"; Types: full compact custom
+Name: "Python27"; Description: "Python 2.7 interpreter"; Types: custom compact full
+Name: "Scripts27"; Description: "Scripts"; Types: compact custom full
+
+[InstallDelete]
+Type: files; Name: "{userappdata}\.minecraft\mods\RaspberryJamMod*.jar"; Components: Mod
+
+[Messages]
+WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT 1.8 ALREADY INSTALLED. Otherwise, this won't work.
+
+[Icons]
+Name: "{userdesktop}\IDLE for Minecraft Python"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python27\Lib\idlelib\idle.py"; Components: Python27; Tasks: Desktop
+Name: "{group}\IDLE for Minecraft Python"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python27\Lib\idlelib\idle.py"; Components: Python27; Tasks: Start
+Name: "{group}\Uninstall My Program"; Filename: "{uninstallexe}"; Tasks: Start
+
+[Tasks]
+Name: "Desktop"; Description: "Desktop shortcut"; Components: Python27
+Name: "Start"; Description: "Start Menu shortcut"; Components: Python27
