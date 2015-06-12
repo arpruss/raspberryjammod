@@ -31,15 +31,15 @@ public abstract class ScriptExternalCommand implements ICommand {
 	
 	public ScriptExternalCommand() {
 		System.out.println("Starting ScriptExternalCommand");
-		scriptProcessorPath = getScriptProcessorPath();		
+		scriptProcessorPath = getScriptProcessorPath();
 	}
-	
+
 	private boolean sandboxedScriptPath(String path) {
 		// only allow scripts from the selected directories, and don't allow leaving them
 		// by using .., and also don't allow passing options to the script
 		// processor.
-		return ! path.startsWith(".") && 
-				! path.contains("/.") && 
+		return ! path.startsWith(".") &&
+				! path.contains("/.") &&
 				! ( isWindows() && ( path.contains(":") || path.contains("\\.") ) );
 	}
 
@@ -49,7 +49,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 
 		if (! sandboxedScriptPath(args[0]))
 			return null;
-		
+
 		if (args.length == 1) {
 			int lastSlash = args[0].lastIndexOf('/');
 			String subdir = "";
@@ -194,6 +194,9 @@ public abstract class ScriptExternalCommand implements ICommand {
 		ProcessBuilder pb = new ProcessBuilder(cmd);
 //		pb.redirectErrorStream(true);
 		pb.directory(script.getParentFile());
+	        Map<String, String> environment = pb.environment();
+	        environment.put("MINECRAFT_PLAYER_NAME", sender.getCommandSenderName());
+
 //		pb.inheritIO();
 		pb.command(cmd);
 		try {
