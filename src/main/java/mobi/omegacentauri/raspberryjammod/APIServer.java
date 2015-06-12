@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -49,10 +50,12 @@ public class APIServer {
 
 	public APIServer(MCEventHandler eventHandler) throws IOException {
 		this.eventHandler = eventHandler;
-		if (allowRemote)
+		if (RaspberryJamMod.allowRemote) {
 		    serverSocket = new ServerSocket(RaspberryJamMod.portNumber);
-                else
-                    serverSocket = new ServerSocket(RaspberryJamMod.portNumber, 50, InetAddress.getByName("127.0.0.1"));  
+		}
+        else {
+            serverSocket = new ServerSocket(RaspberryJamMod.portNumber, 50, InetAddress.getByName("127.0.0.1"));
+        }
 	}
 
 	void communicate() throws IOException {

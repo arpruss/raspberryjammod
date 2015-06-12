@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RaspberryJamMod"
-#define MyAppVersion "0.24"
+#define MyAppVersion "0.25"
 #define MyAppPublisher "Omega Centauri Software"
 #define MyAppURL "http://github.com/arpruss/raspberryjammod"
 
@@ -56,7 +56,3 @@ Name: "{group}\Uninstall RaspberryJamMod files"; Filename: "{uninstallexe}"; Tas
 [Tasks]
 Name: "Desktop"; Description: "Desktop shortcut"; Components: Python27
 Name: "Start"; Description: "Start Menu shortcut"; Components: Python27
-
-[Registry]
-Root: HCU; Subkey: "Environment";
-    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{userappdata}\.minecraft\python27";

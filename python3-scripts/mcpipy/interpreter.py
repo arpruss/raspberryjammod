@@ -6,5 +6,8 @@
 
 import mc
 import sys
+import os
 
-mc.Minecraft().postToChat("Python interpreter "+sys.executable+" "+sys.version)
+mc = mc.Minecraft()
+mc.postToChat("Python interpreter "+sys.executable+" "+sys.version)
+mc.postToChat("Invoking user "+os.environ['MINECRAFT_PLAYER_NAME']+" "+os.environ['MINECRAFT_PLAYER_ID'])

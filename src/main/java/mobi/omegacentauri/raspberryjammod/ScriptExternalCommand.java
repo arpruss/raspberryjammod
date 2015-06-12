@@ -10,6 +10,7 @@ import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import tv.twitch.chat.IChatAPIListener;
 
@@ -17,6 +18,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
@@ -28,7 +31,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 	abstract protected String[] getScriptPaths();
 	Process runningScript = null;
 	final String scriptProcessorPath;
-	
+
 	public ScriptExternalCommand() {
 		System.out.println("Starting ScriptExternalCommand");
 		scriptProcessorPath = getScriptProcessorPath();
@@ -68,7 +71,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 	protected List<String> getScripts(String subdir) {
 		List<String> scripts = new ArrayList<String>();
 		String ext = getExtension();
-		
+
 		for (String dir : getScriptPaths()) {
 			File[] files = new File(dir+subdir).listFiles();
 			if (files != null) 
@@ -82,12 +85,12 @@ public abstract class ScriptExternalCommand implements ICommand {
 					}
 				}
 		}
-		
+
 		Collections.sort(scripts);
 		for (int i = scripts.size() - 1 ; i > 0 ; i--) 
 			if (scripts.get(i).equals(scripts.get(i-1)))
 				scripts.remove(i);
-		
+
 		return scripts;
 	}
 	@Override
@@ -96,14 +99,14 @@ public abstract class ScriptExternalCommand implements ICommand {
 		aliases.add(getName());
 		return aliases;
 	}
-	
+
 	protected String extraPath() {
 		return "";
 	}
 
 	protected String getScriptProcessorPath() {
 		String base = getScriptProcessorCommand();
-		
+
 		System.out.println("searching");
 
 		String pathSep = System.getProperty("path.separator");
@@ -112,7 +115,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 			System.out.println("base");
 			return base;
 		}
-		
+
 		String pathVar = System.getenv("PATH");
 		String extra = extraPath();
 		if (pathVar == null) {
@@ -125,28 +128,28 @@ public abstract class ScriptExternalCommand implements ICommand {
 			pathVar = pathVar + pathSep + extra;
 		}
 		System.out.println("path " +pathVar);
-		
+
 		String exeExt = isWindows() ? ".exe" : "";
-		
+
 		String[] paths = pathVar.split(pathSep); 
-		
+
 		for (String dir : paths) {
 			String p = dir + fileSep + base + exeExt;
 			if (new File(p).canExecute())
 				return p;
 		}
-		
+
 		return base;
 	}
-	
+
 	public static boolean isWindows() {
 		return System.getProperty("os.name").startsWith("Windows");
 	}
-	
+
 	// returns true if there actually was a script to close
 	public boolean close() {
 		boolean closed = false;
-		
+
 		if (runningScript != null) {
 			try {
 				runningScript.exitValue();
@@ -165,18 +168,20 @@ public abstract class ScriptExternalCommand implements ICommand {
 	@Override
 	public void execute(ICommandSender sender, String[] args)
 			throws CommandException {
-                if (! RaspberryJamMod.allowRemote &&
-                        ! sender.getCommandSenderName().equals(Minecraft.getMinecraft().thePlayer.username)) {
-			Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Blocked remote script launch by "+sender.getCommandSenderName()));
+
+		if (! RaspberryJamMod.allowRemote &&
+				sender.getCommandSenderEntity().getEntityId() != 
+						Minecraft.getMinecraft().thePlayer.getEntityId()) {
+			Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Blocked remote script launch by "+sender.getCommandSenderEntity()));
 			return;
-                }
+		}
 		if (runningScript != null) {
 			if (close()) {
 				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Stopped previous script."));
-//				Minecraft.getMinecraft().thePlayer.sendChatMessage("Stopped previous script.");
+				//				Minecraft.getMinecraft().thePlayer.sendChatMessage("Stopped previous script.");
 			}
 		}
-		
+
 		if (args.length == 0) {
 			return;
 		}
@@ -184,25 +189,27 @@ public abstract class ScriptExternalCommand implements ICommand {
 		if (! sandboxedScriptPath(args[0])) {
 			throw new CommandException("Unacceptable script name");
 		}
-			
+
 		File script = getScript(args[0]);
 		if (script == null) {
 			throw new CommandException("Cannot find script");
 		}
-		
+
 		List<String> cmd = new ArrayList<String>();
 		cmd.add(scriptProcessorPath);
 		cmd.add(script.getName());
 		for (int i = 1 ; i < args.length ; i++)
 			cmd.add(args[i]);
-		
-		ProcessBuilder pb = new ProcessBuilder(cmd);
-//		pb.redirectErrorStream(true);
-		pb.directory(script.getParentFile());
-	        Map<String, String> environment = pb.environment();
-	        environment.put("MINECRAFT_PLAYER_NAME", sender.getCommandSenderName());
 
-//		pb.inheritIO();
+		ProcessBuilder pb = new ProcessBuilder(cmd);
+		//		pb.redirectErrorStream(true);
+		pb.directory(script.getParentFile());
+		Map<String, String> environment = pb.environment();
+		Entity source = (Entity)sender.getCommandSenderEntity();
+		environment.put("MINECRAFT_PLAYER_NAME", sender.getName());
+		environment.put("MINECRAFT_PLAYER_ID", ""+source.getEntityId());
+
+		//		pb.inheritIO();
 		pb.command(cmd);
 		try {
 			System.out.println("Running "+script);
@@ -213,16 +220,16 @@ public abstract class ScriptExternalCommand implements ICommand {
 			throw new CommandException("Error "+e);
 		}
 	}
-	
+
 	private void gobble(final InputStream stream, final String label) {
 		Thread t = new Thread() {
-			
+
 			@Override
 			public void run() {
 				BufferedReader br;
-				
+
 				br = new BufferedReader(new InputStreamReader(stream));
-			
+
 				String line;
 				try {
 					while ( null != ( line = br.readLine()) ) {
@@ -231,7 +238,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 					}
 				} catch (IOException e) {
 				}
-				
+
 				try {
 					br.close();
 				} catch (IOException e) {
@@ -241,17 +248,17 @@ public abstract class ScriptExternalCommand implements ICommand {
 		t.setDaemon(true);
 		t.start();
 	}
-	
+
 	protected File getScript(String base) {
 		String[] paths = getScriptPaths();
 
 		String ext = getExtension();		
 
 		String name = base;
-		
+
 		if (! name.endsWith(ext))
 			name += getExtension();
-		
+
 		for (String path : paths) {
 			try {
 				File f = new File(path + name);

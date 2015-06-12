@@ -187,7 +187,7 @@ public class APIHandler {
 			BlockPos pos = getBlockPosition(scan);
 			short id = scan.nextShort();
 			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
-			eventHandler.queueSetBlockState(new BlockPos(pos), id, meta);
+			eventHandler.queueSetBlockState(pos, id, meta);
 		}
 		else if (cmd.equals(SETBLOCKS)) {
 			BlockPos pos1 = getBlockPosition(scan);
