@@ -156,15 +156,14 @@ public class APIHandler {
 			IndexOutOfBoundsException {
 		
 		if (cmd.equals(GETBLOCK)) {
-			IBlockState state = eventHandler.getBlockState(serverWorld, getBlockPosition(scan));
+			int id = eventHandler.getBlockId(serverWorld, getBlockPosition(scan));
 
-			sendLine(Block.getIdFromBlock(state.getBlock()));
+			sendLine(id);
 		}
 		else if (cmd.equals(GETBLOCKWITHDATA)) {
-			IBlockState state = eventHandler.getBlockState(serverWorld, getBlockPosition(scan));
-			Block block = state.getBlock();
+			MCEventHandler.BlockState state = eventHandler.getBlockState(serverWorld, getBlockPosition(scan));
 			
-			sendLine(""+Block.getIdFromBlock(block)+","+block.getMetaFromState(state));
+			sendLine(""+state.id+","+state.meta);
 		}
 		else if (cmd.equals(GETHEIGHT)) {
 			BlockPos pos = getBlockPosition(scan.nextInt(), 0, scan.nextInt());
@@ -186,18 +185,16 @@ public class APIHandler {
 		}
 		else if (cmd.equals(SETBLOCK)) {
 			BlockPos pos = getBlockPosition(scan);
-			int id = scan.nextInt();
-			int meta = scan.hasNextInt() ? scan.nextInt() : 0;
-			IBlockState state = Block.getBlockById(id).getStateFromMeta(meta); 
-			eventHandler.queueSetBlockState(new BlockPos(pos), state);
+			short id = scan.nextShort();
+			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
+			eventHandler.queueSetBlockState(new BlockPos(pos), id, meta);
 		}
 		else if (cmd.equals(SETBLOCKS)) {
 			BlockPos pos1 = getBlockPosition(scan);
 			BlockPos pos2 = getBlockPosition(scan);
 
-			int id = scan.nextInt();
-			int meta = scan.hasNextInt() ? scan.nextInt() : 0;
-			IBlockState state = Block.getBlockById(id).getStateFromMeta(meta); 
+			short id = scan.nextShort();
+			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
 
 			int x1 = pos1.getX();
 			int x2 = pos2.getX();
@@ -223,7 +220,7 @@ public class APIHandler {
 			for (int x = x1; x <= x2; x++)
 				for (int y = y1; y <= y2; y++)
 					for (int z = z1 ; z <= z2; z++) {
-						eventHandler.queueSetBlockState(new BlockPos(x,y,z), state);
+						eventHandler.queueSetBlockState(new BlockPos(x,y,z), id, meta);
 					}
 		}
 		else if (cmd.equals(PLAYERGETPOS)) {

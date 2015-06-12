@@ -164,28 +164,46 @@ public class MCEventHandler {
 		World world = MinecraftServer.getServer().getEntityWorld();
 		synchronized(setBlockStateQueue) {
 			for (SetBlockState entry: setBlockStateQueue) {
-				if (world.getTileEntity(entry.pos) != null) {
-				}
-				world.setBlockState(entry.pos, entry.state, 2);
+//				if (world.getTileEntity(entry.pos) != null) {
+//				}
+				world.setBlockState(entry.pos, Block.getBlockById(entry.id).getStateFromMeta(entry.meta), 2);
 				world.markBlockForUpdate(entry.pos);
 			}
 			setBlockStateQueue.clear();
 		}
 	}
 
-	public void queueSetBlockState(BlockPos pos, IBlockState s) {
+	public void queueSetBlockState(BlockPos pos, short id, short meta) {
 		synchronized(setBlockStateQueue) {
-			setBlockStateQueue.add(new SetBlockState(pos, s));
+			setBlockStateQueue.add(new SetBlockState(pos, id, meta));
 		}
 	}
 
+	class BlockState {
+		short id;
+		short meta;
+		
+		public BlockState(short id, short meta) {
+			this.id = id;
+			this.meta = meta;
+		}
+
+		public BlockState(IBlockState blockState) {
+			Block block = blockState.getBlock();
+			this.id = (short)Block.getIdFromBlock(block);
+			this.meta = (short)block.getMetaFromState(blockState);
+		}
+	}
+	
 	class SetBlockState {
 		BlockPos pos;
-		IBlockState state;
+		short id;
+		short meta;
 
-		public SetBlockState(BlockPos pos, IBlockState s) {
+		public SetBlockState(BlockPos pos, short id, short meta) {
 			this.pos = pos;
-			this.state = s;
+			this.id = id;
+			this.meta = meta;
 		}
 	}
 
@@ -221,7 +239,7 @@ public class MCEventHandler {
 		}
 	}
 
-	public IBlockState getBlockState(World world, BlockPos pos) {
+	public BlockState getBlockState(World world, BlockPos pos) {
 		int x = pos.getX();
 		int y = pos.getY();
 		int z = pos.getZ();
@@ -231,12 +249,30 @@ public class MCEventHandler {
 				SetBlockState entry = setBlockStateQueue.get(i);
 				BlockPos qPos = entry.pos;
 				if (qPos.getX() == x && qPos.getZ() == z && qPos.getY() == y) {
-					return entry.state;
+					return new BlockState(entry.id, entry.meta);
 				}
 			}
 		}
 		
-		return world.getBlockState(pos);
+		return new BlockState(world.getBlockState(pos));
+	}
+
+	public int getBlockId(World world, BlockPos pos) {
+		int x = pos.getX();
+		int y = pos.getY();
+		int z = pos.getZ();
+	
+		synchronized(setBlockStateQueue) {
+			for (int i = setBlockStateQueue.size() - 1 ; i >= 0 ; i--) {
+				SetBlockState entry = setBlockStateQueue.get(i);
+				BlockPos qPos = entry.pos;
+				if (qPos.getX() == x && qPos.getZ() == z && qPos.getY() == y) {
+					return (int)entry.id;
+				}
+			}
+		}
+		
+		return Block.getIdFromBlock(world.getBlockState(pos).getBlock());
 	}
 
 	class ChatDescription {
