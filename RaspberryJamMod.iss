@@ -56,3 +56,7 @@ Name: "{group}\Uninstall RaspberryJamMod files"; Filename: "{uninstallexe}"; Tas
 [Tasks]
 Name: "Desktop"; Description: "Desktop shortcut"; Components: Python27
 Name: "Start"; Description: "Start Menu shortcut"; Components: Python27
+
+[Registry]
+Root: HCU; Subkey: "Environment";
+    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{userappdata}\.minecraft\python27";
