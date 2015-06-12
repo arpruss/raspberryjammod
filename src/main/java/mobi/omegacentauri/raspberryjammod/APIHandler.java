@@ -92,8 +92,6 @@ public class APIHandler {
 
 	private static final float TOO_SMALL = (float) 1e-9;
 
-	Block[] typeMap;
-
 	private World serverWorld;
 	private MCEventHandler eventHandler;
 	private boolean listening = true;
