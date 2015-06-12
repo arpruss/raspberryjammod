@@ -164,6 +164,8 @@ public class MCEventHandler {
 		World world = MinecraftServer.getServer().getEntityWorld();
 		synchronized(setBlockStateQueue) {
 			for (SetBlockState entry: setBlockStateQueue) {
+				if (world.getTileEntity(entry.pos) != null) {
+				}
 				world.setBlockState(entry.pos, entry.state, 2);
 				world.markBlockForUpdate(entry.pos);
 			}
