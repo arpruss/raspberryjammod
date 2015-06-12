@@ -49,7 +49,10 @@ public class APIServer {
 
 	public APIServer(MCEventHandler eventHandler) throws IOException {
 		this.eventHandler = eventHandler;
-		serverSocket = new ServerSocket(RaspberryJamMod.portNumber);
+		if (allowRemote)
+		    serverSocket = new ServerSocket(RaspberryJamMod.portNumber);
+                else
+                    serverSocket = new ServerSocket(RaspberryJamMod.portNumber, 50, InetAddress.getByName("127.0.0.1"));  
 	}
 
 	void communicate() throws IOException {

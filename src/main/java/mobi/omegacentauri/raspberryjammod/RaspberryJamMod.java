@@ -48,6 +48,7 @@ public class RaspberryJamMod
 	public static int portNumber = 4711;
 	public static boolean concurrent = true;
 	public static boolean leftClickToo = true;
+	public static boolean allowRemote = true;
 	public static String pythonInterpreter = "python";
 
 	@Mod.EventHandler
@@ -63,10 +64,11 @@ public class RaspberryJamMod
 	public static void synchronizeConfig() {
 		portNumber = configFile.getInt("Port Number", Configuration.CATEGORY_GENERAL, 4711, 1, 65535, "Port number");
 		concurrent = configFile.getBoolean("Multiple Connections", Configuration.CATEGORY_GENERAL, true, "Multiple connections");
+		leftClickToo = configFile.getBoolean("Remote Connections", Configuration.CATEGORY_GENERAL, true, "Remote connections");
 		leftClickToo = configFile.getBoolean("Detect Sword Left-Click", Configuration.CATEGORY_GENERAL, false, "Detect sword left-click");
 		pythonInterpreter = configFile.getString("Python Interpreter", Configuration.CATEGORY_GENERAL, "python", "Python interpreter");
 
-		if (configFile.hasChanged()) 
+		if (configFile.hasChanged())
 			configFile.save();
 	}
 

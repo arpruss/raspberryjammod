@@ -158,13 +158,18 @@ public abstract class ScriptExternalCommand implements ICommand {
 			}
 			runningScript = null;
 		}
-		
+
 		return closed;
 	}
-	
+
 	@Override
 	public void execute(ICommandSender sender, String[] args)
 			throws CommandException {
+                if (! RaspberryJamMod.allowRemote &&
+                        ! sender.getCommandSenderName().equals(Minecraft.getMinecraft().thePlayer.username)) {
+			Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Blocked remote script launch by "+sender.getCommandSenderName()));
+			return;
+                }
 		if (runningScript != null) {
 			if (close()) {
 				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Stopped previous script."));
