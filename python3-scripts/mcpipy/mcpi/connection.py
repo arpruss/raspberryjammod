@@ -37,6 +37,9 @@ class Connection:
             if not readable:
                 break
             data = self.socket.recv(1500)
+            if not data:
+                self.socket.close()
+                raise ValueError('Socket got closed')
             e =  "Drained Data: <%s>\n"%data.strip()
             e += "Last Message: <%s>\n"%self.lastSent.strip()
             sys.stderr.write(e)
