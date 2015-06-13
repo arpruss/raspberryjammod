@@ -49,6 +49,7 @@ public class RaspberryJamMod
 	public static boolean concurrent = true;
 	public static boolean leftClickToo = true;
 	public static boolean allowRemote = true;
+	public static volatile boolean active = false;
 	public static String pythonInterpreter = "python";
 
 	@Mod.EventHandler
@@ -74,6 +75,8 @@ public class RaspberryJamMod
 
 	@EventHandler
 	public void onServerStopping(FMLServerStoppingEvent event) {
+		active = false;
+
 		if (mcc != null) {
 			mcc.close();
 		}
@@ -89,6 +92,8 @@ public class RaspberryJamMod
 		
 		synchronizeConfig();
 		
+		active = true;
+
 		final MCEventHandler eventHandler = new MCEventHandler();
 		FMLCommonHandler.instance().bus().register(eventHandler);
 		MinecraftForge.EVENT_BUS.register(eventHandler);

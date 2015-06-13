@@ -164,6 +164,14 @@ public class MCEventHandler {
 		World world = MinecraftServer.getServer().getEntityWorld();
 		synchronized(setBlockStateQueue) {
 			for (SetBlockState entry: setBlockStateQueue) {
+				if (! RaspberryJamMod.active)
+					break;
+				IBlockState oldState = world.getBlockState(entry.pos);
+				Block oldBlock = oldState.getBlock();
+				if (Block.getIdFromBlock(oldBlock) == (int)entry.id &&
+						oldBlock.getMetaFromState(oldState) == (int)entry.meta &&
+						world.getTileEntity(entry.pos) == null)
+					continue;
 				world.setBlockState(entry.pos, Block.getBlockById(entry.id).getStateFromMeta(entry.meta), 3);
 				world.markBlockForUpdate(entry.pos);
 			}
