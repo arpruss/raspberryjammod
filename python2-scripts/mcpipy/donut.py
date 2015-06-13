@@ -23,7 +23,7 @@ def draw_donut(mcx,mcy,mcz,R,r,mcblock):
 
 mc = Minecraft()
 
-playerPos = mc.player.getPos()
+playerPos = Vec3(0,0,0)#mc.player.getPos()
 
 draw_donut(playerPos.x, playerPos.y + 9, playerPos.z, 18, 9, GLASS)
 mc.postToChat("Glass donut done")
