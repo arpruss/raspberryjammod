@@ -10,7 +10,7 @@ import sys
 
 ESCAPE = 256
 if len(sys.argv) < 2:
-    SIZE = 768 if not mcpi.settings.isPE else 400
+    SIZE = 640 if not mcpi.settings.isPE else 400
 else:
     SIZE = int(sys.argv[1])
 
@@ -28,10 +28,13 @@ palette = [ WOOL_WHITE, WOOL_ORANGE, WOOL_MAGENTA, WOOL_LIGHT_BLUE,
 def escapeTime(c):
     i = 0
     z = c
-    while abs(z) < 2 and i < ESCAPE:
-        i = i + 1
-        z = formula(z,c)
-    return i
+    try:
+        while abs(z) < 2 and i < ESCAPE:
+            i = i + 1
+            z = formula(z,c)
+        return i
+    except:
+        return -1
 
 #
 # we could of course just do for x in range(0,size): for y in range(0,size): yield(x,y)
@@ -73,7 +76,7 @@ def loopGenerator(size, cenX, cenY):
             while x < cenX + r and x < size:
                 yield(x, cenY - r)
                 x += 1
-                
+
 def pollZoom():
     global lastHitEvent
     events = mc.events.pollBlockHits()
@@ -94,8 +97,13 @@ def draw():
         c = toComplex(mcX, mcY)
 
         esc = escapeTime(c)
-        mc.setBlock(mcX, centerMC.y, mcY,
-                    palette[esc % len(palette)] if esc < ESCAPE else black)
+        if esc < 0:
+            block = AIR
+        elif esc < ESCAPE:
+            block = palette[esc % len(palette)]
+        else:
+            block = black
+        mc.setBlock(mcX, centerMC.y, mcY,block)
         if count >= 1000:
             if pollZoom():
                 break
