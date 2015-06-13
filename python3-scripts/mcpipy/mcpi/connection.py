@@ -49,6 +49,14 @@ class Connection:
         self.lastSent = s
         self.socket.sendall(s.encode('utf-8'))
 
+    def send_flat(self, f, data):
+        """Sends data. Note that a trailing newline '\n' is added here"""
+        s = "%s(%s)\n"%(f, ",".join(data))
+        #print "f,data:",f,data
+        self.drain()
+        self.lastSent = s
+        self.socket.sendall(s.encode('utf-8'))
+
     def receive(self):
         """Receives data. Note that the trailing newline '\n' is trimmed"""
         s = self.socket.makefile("r").readline().rstrip("\n")
@@ -59,4 +67,9 @@ class Connection:
     def sendReceive(self, *data):
         """Sends and receive data"""
         self.send(*data)
+        return self.receive()
+
+    def sendReceive_flat(self, f, data):
+        """Sends and receive data"""
+        self.send_flat(f, data)
         return self.receive()

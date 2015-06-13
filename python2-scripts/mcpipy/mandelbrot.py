@@ -141,10 +141,11 @@ while True:
          lastHitEvent.pos.x >= centerMC.x + SIZE / 2 or
          lastHitEvent.pos.z < centerMC.z - SIZE / 2 or
          lastHitEvent.pos.z >= centerMC.z + SIZE / 2 ):
+            print "resetting"
             centerCx = complex(0,0)
             scale = 4. / SIZE
     else:
+            print "zooming"
             centerCx = toComplex(lastHitEvent.pos.x,lastHitEvent.pos.z)
             scale /= 2
-    print mc.player.getPos()
     lastHitEvent = None
