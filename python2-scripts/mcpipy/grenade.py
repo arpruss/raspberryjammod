@@ -2,15 +2,35 @@
 # MIT-licensed code by Alexander Pruss
 #
 
+#
+# python grenade.py [speed [gravity]]
+#
+# Throws a grenade with the specified speed in m/s (default: 15) and specified
+# gravitational acceleration (default: earth) in m/s^2 or given by listing a planet,
+# sun, moon or pluto.
+#
+
 from mc import *
 import time
 import sys
 
-g = 9.8
+GRAVITIES = {
+    'sun':274,
+    'mercury':3.59,
+    'venus':8.87,
+    'earth':9.81,
+    'moon':1.62,
+    'mars':3.77,
+    'jupiter':25.95,
+    'saturn':11.08,
+    'uranus':10.67,
+    'neptune':14.07,
+    'pluto':0.42
+    }
 
 def getPath(center, azi, alt, v0):
     vx = v0 * cos(alt) * sin(-azi)
-    vy = v0 * sin(alt) 
+    vy = v0 * sin(alt)
     vz = v0 * cos(alt) * cos(-azi)
     t = 0
     x = center.x + cos(alt) * sin(-azi) * 2
@@ -59,6 +79,14 @@ try:
 except:
     v0 = 15
 
+if 3 <= len(sys.argv):
+    try:
+        g = float(sys.argv[2])
+    except:
+        g = GRAVITIES[sys.argv[2].lower()]
+else:
+    g = GRAVITIES['earth']
+
 center = mc.player.getPos()
 azi = mc.player.getRotation() * pi/180.
 alt = -mc.player.getPitch() * pi/180.
@@ -85,5 +113,3 @@ while True:
     time.sleep(0.1)
     if t > path[-1][0]:
         break
-
-mc.setBlock(path[-1][1],REDSTONE_BLOCK)
