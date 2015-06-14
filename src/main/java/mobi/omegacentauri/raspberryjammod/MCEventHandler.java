@@ -172,8 +172,8 @@ public class MCEventHandler {
 						oldBlock.getMetaFromState(oldState) == (int)entry.meta &&
 						world.getTileEntity(entry.pos) == null)
 					continue;
+				// Maybe the update code should be 2? I don't really know.
 				world.setBlockState(entry.pos, Block.getBlockById(entry.id).getStateFromMeta(entry.meta), 3);
-				world.markBlockForUpdate(entry.pos);
 			}
 			setBlockStateQueue.clear();
 		}
