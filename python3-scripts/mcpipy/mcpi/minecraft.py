@@ -170,7 +170,7 @@ class Minecraft:
         if connection:
             self.conn = connection
         else:
-            self.conn = Connection("localhost", 4711)
+            self.conn = Connection()
 
         self.camera = CmdCamera(self.conn)
         self.entity = CmdEntity(self.conn)
@@ -238,7 +238,7 @@ class Minecraft:
         self.conn.send("world.setting", setting, 1 if bool(status) else 0)
 
     @staticmethod
-    def create(address = "localhost", port = 4711):
+    def create(address = None, port = None):
         return Minecraft(Connection(address, port))
 
 

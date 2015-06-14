@@ -2,6 +2,7 @@ import socket
 import select
 import sys
 import atexit
+import os
 from .util import flatten_parameters_to_string
 
 """ @author: Aron Nieminen, Mojang AB"""
@@ -13,7 +14,17 @@ class Connection:
     """Connection to a Minecraft Pi game"""
     RequestFailed = "Fail"
 
-    def __init__(self, address, port):
+    def __init__(self, address=None, port=None):
+        if address==None:
+            try:
+                 address = os.environ['MINECRAFT_API_HOST']
+            except KeyError:
+                 address = "localhost"
+        if port==None:
+            try:
+                 port = int(os.environ['MINECRAFT_API_PORT'])
+            except KeyError:
+                 port = 4711
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((address, port))
         self.lastSent = ""

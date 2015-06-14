@@ -2,15 +2,35 @@
 # MIT-licensed code by Alexander Pruss
 #
 
+#
+# python grenade.py [speed [gravity]]
+#
+# Throws a grenade with the specified speed in m/s (default: 15) and specified
+# gravitational acceleration (default: earth) in m/s^2 or given by listing a planet,
+# sun, moon or pluto.
+#
+
 from .mc import *
 import time
 import sys
 
-g = 9.8
+GRAVITIES = {
+    'sun':274,
+    'mercury':3.59,
+    'venus':8.87,
+    'earth':9.81,
+    'moon':1.62,
+    'mars':3.77,
+    'jupiter':25.95,
+    'saturn':11.08,
+    'uranus':10.67,
+    'neptune':14.07,
+    'pluto':0.42
+    }
 
 def getPath(center, azi, alt, v0):
     vx = v0 * cos(alt) * sin(-azi)
-    vy = v0 * sin(alt) 
+    vy = v0 * sin(alt)
     vz = v0 * cos(alt) * cos(-azi)
     t = 0
     x = center.x + cos(alt) * sin(-azi) * 2
@@ -59,18 +79,28 @@ try:
 except:
     v0 = 15
 
-center = mc.player.getPos()
-azi = mc.player.getRotation() * pi/180.
-alt = -mc.player.getPitch() * pi/180.
+if 3 <= len(sys.argv):
+    try:
+        g = float(sys.argv[2])
+    except:
+        g = GRAVITIES[sys.argv[2].lower()]
+else:
+    g = GRAVITIES['earth']
 
-horizontal0 = 2
-vertical0 = 2
+try:
+    player = int(os.environ['MINECRAFT_PLAYER_ID'])
+except:
+    player = mc.world.getPlayerId()
+
+center = mc.entity.getPos(player)
+azi = mc.entity.getRotation(player) * pi/180.
+alt = -mc.entity.getPitch(player) * pi/180.
 
 path = getPath(center, azi, alt, v0)
 
 dictionary = {}
-drawGrenade(dictionary, path[0][1], TNT)
 prev = path[0][1]
+drawGrenade(dictionary, prev, TNT)
 t0 = time.time()
 
 while True:
