@@ -87,18 +87,20 @@ if 3 <= len(sys.argv):
 else:
     g = GRAVITIES['earth']
 
-center = mc.player.getPos()
-azi = mc.player.getRotation() * pi/180.
-alt = -mc.player.getPitch() * pi/180.
+try:
+    player = int(os.environ['MINECRAFT_PLAYER_ID'])
+except:
+    player = mc.world.getPlayerId()
 
-horizontal0 = 2
-vertical0 = 2
+center = mc.entity.getPos(player)
+azi = mc.entity.getRotation(player) * pi/180.
+alt = -mc.entity.getPitch(player) * pi/180.
 
 path = getPath(center, azi, alt, v0)
 
 dictionary = {}
-drawGrenade(dictionary, path[0][1], TNT)
 prev = path[0][1]
+drawGrenade(dictionary, prev, TNT)
 t0 = time.time()
 
 while True:
