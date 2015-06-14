@@ -113,3 +113,5 @@ while True:
     time.sleep(0.1)
     if t > path[-1][0]:
         break
+
+mc.setBlock(path[-1][1],REDSTONE_BLOCK)
