@@ -2,8 +2,8 @@
 # MIT-licensed code by Alexander Pruss
 #
 
-from mc import *
-import mcpi.settings
+from .mc import *
+from . import mcpi.settings
 import cmath
 import time
 import sys

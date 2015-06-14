@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
 from math import sin, cos, radians
-import danielbates_minecraft_basic as mc
+from . import danielbates_minecraft_basic as mc
 #import pygame.image # comment this out if not using images - it's slow to import.  If you uncomment, uncomment the image reference below.
 import random
-import server
+from . import server
 
 # TODO: use numpy matrices/vectors instead of my own ones.
 class coordinate3d:

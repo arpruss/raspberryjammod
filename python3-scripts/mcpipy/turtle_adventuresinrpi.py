@@ -1,8 +1,8 @@
 #Minecraft Turtle Example
 #Ported from the scratch turtle project in "Adventures in Raspberry Pi"
-import minecraftturtle
-import mcpi.minecraft as minecraft
-import mcpi.block as block
+from . import minecraftturtle
+from . import mcpi.minecraft as minecraft
+from . import mcpi.block as block
 
 #create connection to minecraft
 mc = minecraft.Minecraft.create()

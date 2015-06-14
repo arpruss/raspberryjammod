@@ -2,10 +2,10 @@
 # MIT-licensed code by Alexander Pruss
 #
 
-import mcpi.minecraft as minecraft
-import mcpi.block as block
-from mcpi.block import *
-from mcpi.entity import *
+from . import mcpi.minecraft as minecraft
+from . import mcpi.block as block
+from .mcpi.block import *
+from .mcpi.entity import *
 import time
 from math import *
 
