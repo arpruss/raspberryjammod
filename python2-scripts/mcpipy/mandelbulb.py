@@ -7,41 +7,28 @@ import mcpi.settings
 import cmath
 import time
 import sys
+try:
+   import multiprocessing
+   cpuCount = multiprocessing.cpu_count()
+except:
+   cpuCount = 1
 
 ESCAPE = 30
 if len(sys.argv) < 2:
     SIZE = 100
 else:
     SIZE = int(sys.argv[1])
+FRACTALSIZE = 2.25
 
-block = REDSTONE_ORE
+block = WOOL_WHITE # REDSTONE_ORE
 
-def escapes(x,y,z):
+def escapes(pos):
+    x,z,y = pos[0],pos[1],pos[2]
+    cx,cy,cz = x,y,z
+
     i = 0
-    cx = x
-    cy = y
-    cz = z
     try:
         while i<ESCAPE:
-        # http://iquilezles.org/www/articles/mandelbulb/mandelbulb.htm
-            """
-            x2 = x*x
-            x4 = x2*x2
-            y2 = y*y
-            y4 = y2*y2
-            z2 = z*z
-            z4 = z2*z2
-
-            k3 = x2 + z2
-            if k3+y2 > 1000: # 1.2:
-                return True
-            k2 = 1./sqrt(k3*k3*k3*k3*k3*k3*k3)
-            k1 = x4 + y4 + z4 - 6*y2*z2 - 6*x2*y2 + 2*z2*x2
-            k4 = x2 - y2 + z2
-            x = cx+64*x*y*z*(x2-z2)*k4*(x4-6*x2*z2+z4)*k1*k2
-            y = cy-16*y2*k3*k4*k4+k1*k1
-            z = cz-8*y*k4*(x4*x4 - 28*x4*x2*z2 + 70*x4*z4 - 28*x2*z2*z4 + z4*z4)*k1*k2
-            """
             r = sqrt(x*x+y*y+z*z)
             if r > 31:
                return True
@@ -75,52 +62,90 @@ def pollZoom():
     lastHitPos = mc.player.getPos()
     return True
 
-def toBulb(x,y,z):
+def toBulb(centerMC,centerBulb,scale,x,y,z):
     return ((x - centerMC.x) * scale  + centerBulb[0],
                     (y - centerMC.y) * scale  + centerBulb[1],
                     (z - centerMC.z) * scale + centerBulb[2])
 
-def draw():
-    count = 0
-    for mcX in range(cornerMC.x, cornerMC.x+SIZE):
-        for mcY in range(cornerMC.y, cornerMC.y+SIZE):
-            for mcZ in range(cornerMC.z, cornerMC.z+SIZE):
-                x,y,z = toBulb(mcX,mcY,mcZ)
-                mc.setBlock(mcX,mcY,mcZ,AIR if escapes(x,y,z) else block)
-        if pollZoom():
-            return
-
-mc = Minecraft()
-startPos = mc.player.getTilePos()
-cornerMC = startPos + Vec3(1,0,1)
-centerMC = cornerMC + Vec3(SIZE/2,SIZE/2,SIZE/2)
-centerBulb = (0,0,0)
-initial = True
-scale    = 2.4 / SIZE
-lastHitEvent = None
-
-while True:
-    mc.player.setPos(startPos)
-    mc.postToChat("Scale: "+str(2.4/SIZE/scale))
-    draw()
-    mc.postToChat("Rendered")
-    if not initial:
-        mc.player.setPos(centerMC)
-    while not pollZoom():
-        time.sleep(0.25)
-    if ( lastHitEvent.pos.x < cornerMC.x or
-         lastHitEvent.pos.x >= cornerMC.x + SIZE or
-         lastHitEvent.pos.y < cornerMC.y or
-         lastHitEvent.pos.y >= cornerMC.y + SIZE or
-         lastHitEvent.pos.z < cornerMC.z or
-         lastHitEvent.pos.z >= cornerMC.z + SIZE ):
-            mc.postToChat("resetting")
-            centerBulb = (0,0,0)
-            scale = 2.2 / SIZE
-            initial = True
+def drawCore(core,cores,centerBulb,scale,cornerMC,size,block):
+    if core > 0:
+        minecraft = Minecraft()
     else:
-            mc.postToChat("zooming")
-            centerBulb = toBulb(lastHitPos.x, lastHitPos.y, lastHitPos.z)
-            scale /= 8
-            initial = False
+        minecraft = mc
+    centerMC = cornerMC + Vec3(size/2,size/2,size/2)
+    count = 0
+    for mcX in range(cornerMC.x, cornerMC.x+size):
+        if mcX % cores != core:
+            continue
+#        minecraft.setBlocks(mcX,cornerMC.y,cornerMC.z,mcX,cornerMC.y+size-1,cornerMC.z+size-1,AIR)
+        for mcY in range(cornerMC.y, cornerMC.y+size):
+            for mcZ in range(cornerMC.z, cornerMC.z+size):
+                if not escapes(toBulb(centerMC,centerBulb,scale,mcX,mcY,mcZ)):
+                    minecraft.setBlock(mcX,mcY,mcZ,block)
+                else:
+                    minecraft.setBlock(mcX,mcY,mcZ,AIR) 
+        if core==0 and pollZoom():
+            return
+    minecraft.postToChat("Core "+str(core+1)+" of "+str(cores)+" has rendered")
+
+def terminateProcesses():
+    global processes
+    for p in processes:
+        try: p.terminate()
+        except: pass
+    processes = []
+
+
+def draw():
+    global processes
+    if cpuCount < 4:
+        processes = []
+        drawCore(0,1,centerBulb,scale,cornerMC,SIZE,block)
+    else:
+        cores = cpuCount - 2 # reserve two cores for Minecraft server and client processes
+        processes = []
+        for i in range (1,cores):
+             processes.append(multiprocessing.Process(target=drawCore,args=(i,cores,centerBulb,scale,cornerMC,SIZE,block)))
+        for p in processes:
+             p.start()
+        drawCore(0,cores,centerBulb,scale,cornerMC,SIZE,block)
+        if pollZoom():
+             terminateProcesses()
+
+if __name__=='__main__':
+    mc = Minecraft()
+    startPos = mc.player.getTilePos()
+    cornerMC = startPos + Vec3(1,0,1)
+    centerMC = cornerMC + Vec3(SIZE/2,SIZE/2,SIZE/2)
+    centerBulb = (0,0,0)
+    initial = True
+    scale    = FRACTALSIZE / SIZE
     lastHitEvent = None
+    processes = []
+
+    while True:
+        mc.player.setPos(startPos)
+        mc.postToChat("Scale: "+str(FRACTALSIZE/SIZE/scale))
+        draw()
+        if not initial:
+            mc.player.setPos(centerMC)
+        while not pollZoom():
+            time.sleep(0.25)
+        terminateProcesses()
+        processes = []
+        if ( lastHitEvent.pos.x < cornerMC.x or
+             lastHitEvent.pos.x >= cornerMC.x + SIZE or
+             lastHitEvent.pos.y < cornerMC.y or
+             lastHitEvent.pos.y >= cornerMC.y + SIZE or
+             lastHitEvent.pos.z < cornerMC.z or
+             lastHitEvent.pos.z >= cornerMC.z + SIZE ):
+                mc.postToChat("resetting")
+                centerBulb = (0,0,0)
+                scale = FRACTALSIZE / SIZE
+                initial = True
+        else:
+                mc.postToChat("zooming")
+                centerBulb = toBulb(centerMC,centerBulb,scale,lastHitPos.x,lastHitPos.y,lastHitPos.z)
+                scale /= 8
+                initial = False
+        lastHitEvent = None
