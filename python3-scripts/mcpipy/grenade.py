@@ -10,7 +10,7 @@
 # sun, moon or pluto.
 #
 
-from .mc import *
+from mc import *
 import time
 import sys
 

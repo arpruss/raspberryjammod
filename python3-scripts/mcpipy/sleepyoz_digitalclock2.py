@@ -4,10 +4,10 @@
 # mcpipy.com retrieved from URL below, written by SleepyOz
 # http://www.raspberrypi.org/phpBB3/viewtopic.php?f=32&t=33427
 
-from . import mcpi.block as block
-from . import mcpi.minecraft as minecraft
+import mcpi.block as block
+import mcpi.minecraft as minecraft
 import time
-from . import server
+import server
 
 
 """

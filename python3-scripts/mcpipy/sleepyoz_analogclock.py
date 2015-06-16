@@ -12,12 +12,12 @@ SleepyOz: tfptfp(at)gmail.com
 # http://www.raspberrypi.org/phpBB3/viewtopic.php?f=32&t=33427
 
 import math
-from . import mcpi.block as block
-from . import mcpi.minecraft as minecraft
+import mcpi.block as block
+import mcpi.minecraft as minecraft
 from PIL import Image # Remember to "sudo apt-get install python-imaging" to make PIL available.
 from PIL import ImageDraw
 import time
-from . import server
+import server
 
 
 # Not very good colour names, because they are inverting when displayed.

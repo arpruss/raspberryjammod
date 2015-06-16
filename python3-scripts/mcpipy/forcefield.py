@@ -1,4 +1,4 @@
-from .mc import *
+from mc import *
 import os
 import time
 

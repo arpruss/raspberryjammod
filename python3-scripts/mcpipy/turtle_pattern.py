@@ -1,7 +1,7 @@
 #Minecraft Turtle Example - Crazy Pattern
-from . import minecraftturtle
-from . import mcpi.minecraft as minecraft
-from . import mcpi.block as block
+import minecraftturtle
+import mcpi.minecraft as minecraft
+import mcpi.block as block
 import random
 
 #create connection to minecraft

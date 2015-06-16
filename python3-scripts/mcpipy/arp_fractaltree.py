@@ -1,7 +1,7 @@
 #based on code by Martin O'Hanlon (www.stuffaboutcode.com)
 #Minecraft Turtle Example ported to ARP's Turtle class
 
-from .turtle import *
+from turtle import *
 import random
 
 def tree(branchLen,t):

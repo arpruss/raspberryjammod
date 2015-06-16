@@ -33,7 +33,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class MCEventHandler {
-	List<SetBlockState> setBlockStateQueue = new ArrayList<SetBlockState>();		
+	List<SetBlockState> blockActionQueue = new ArrayList<SetBlockState>();		
 	List<HitDescription> hits = new LinkedList<HitDescription>();
 	List<ChatDescription> chats = new LinkedList<ChatDescription>();
 	static final int MAX_HITS = 512;
@@ -162,58 +162,68 @@ public class MCEventHandler {
 	@SubscribeEvent
 	public void onServerTick(TickEvent.ServerTickEvent event) {
 		World world = MinecraftServer.getServer().getEntityWorld();
-		synchronized(setBlockStateQueue) {
-			for (SetBlockState entry: setBlockStateQueue) {
+
+		synchronized(blockActionQueue) {
+			for (SetBlockState entry: blockActionQueue) {
 				if (! RaspberryJamMod.active)
 					break;
-				IBlockState oldState = world.getBlockState(entry.pos);
-				Block oldBlock = oldState.getBlock();
-				if (Block.getIdFromBlock(oldBlock) == (int)entry.id &&
-						oldBlock.getMetaFromState(oldState) == (int)entry.meta &&
-						world.getTileEntity(entry.pos) == null)
-					continue;
-				// Maybe the update code should be 2? I don't really know.
-				world.setBlockState(entry.pos, Block.getBlockById(entry.id).getStateFromMeta(entry.meta), 3);
+				entry.execute(world);
 			}
-			setBlockStateQueue.clear();
+			blockActionQueue.clear();
 		}
 	}
 
-	public void queueSetBlockState(BlockPos pos, short id, short meta) {
-		synchronized(setBlockStateQueue) {
-			setBlockStateQueue.add(new SetBlockState(pos, id, meta));
+	public void queueBlockAction(SetBlockState s) {
+		synchronized(blockActionQueue) {
+			blockActionQueue.add(s);
 		}
 	}
 
-	class BlockState {
-		short id;
-		short meta;
+	public BlockState getBlockState(World world, BlockPos pos) {
+		int x = pos.getX();
+		int y = pos.getY();
+		int z = pos.getZ();
+	
+		synchronized(blockActionQueue) {
+			for (int i = blockActionQueue.size() - 1 ; i >= 0 ; i--) {
+				SetBlockState entry = blockActionQueue.get(i);
+				if (entry.contains(x,y,z)) {
+					return new BlockState(entry.id, entry.meta);
+				}
+			}
+		}
 		
-		public BlockState(short id, short meta) {
-			this.id = id;
-			this.meta = meta;
-		}
+		return new BlockState(world.getBlockState(pos));
+	}
 
-		public BlockState(IBlockState blockState) {
-			Block block = blockState.getBlock();
-			this.id = (short)Block.getIdFromBlock(block);
-			this.meta = (short)block.getMetaFromState(blockState);
+	public int getBlockId(World world, BlockPos pos) {
+		int x = pos.getX();
+		int y = pos.getY();
+		int z = pos.getZ();
+	
+		synchronized(blockActionQueue) {
+			for (int i = blockActionQueue.size() - 1 ; i >= 0 ; i--) {
+				SetBlockState entry = blockActionQueue.get(i);
+				if (entry.contains(x,y,z)) {
+					return (int)entry.id;
+				}
+			}
+		}
+		
+		return Block.getIdFromBlock(world.getBlockState(pos).getBlock());
+	}
+
+	static class ChatDescription {
+		int id;
+		String message;
+		public ChatDescription(int entityId, String message) {
+			this.id = entityId;
+			this.message = message;
 		}
 	}
 	
-	class SetBlockState {
-		BlockPos pos;
-		short id;
-		short meta;
 
-		public SetBlockState(BlockPos pos, short id, short meta) {
-			this.pos = pos;
-			this.id = id;
-			this.meta = meta;
-		}
-	}
-
-	class HitDescription {
+	static class HitDescription {
 		private String description;
 		
 		public HitDescription(PlayerInteractEvent event) {
@@ -244,74 +254,4 @@ public class MCEventHandler {
 			return description;
 		}
 	}
-
-	public BlockState getBlockState(World world, BlockPos pos) {
-		int x = pos.getX();
-		int y = pos.getY();
-		int z = pos.getZ();
-	
-		synchronized(setBlockStateQueue) {
-			for (int i = setBlockStateQueue.size() - 1 ; i >= 0 ; i--) {
-				SetBlockState entry = setBlockStateQueue.get(i);
-				BlockPos qPos = entry.pos;
-				if (qPos.getX() == x && qPos.getZ() == z && qPos.getY() == y) {
-					return new BlockState(entry.id, entry.meta);
-				}
-			}
-		}
-		
-		return new BlockState(world.getBlockState(pos));
-	}
-
-	public int getBlockId(World world, BlockPos pos) {
-		int x = pos.getX();
-		int y = pos.getY();
-		int z = pos.getZ();
-	
-		synchronized(setBlockStateQueue) {
-			for (int i = setBlockStateQueue.size() - 1 ; i >= 0 ; i--) {
-				SetBlockState entry = setBlockStateQueue.get(i);
-				BlockPos qPos = entry.pos;
-				if (qPos.getX() == x && qPos.getZ() == z && qPos.getY() == y) {
-					return (int)entry.id;
-				}
-			}
-		}
-		
-		return Block.getIdFromBlock(world.getBlockState(pos).getBlock());
-	}
-
-	class ChatDescription {
-		int id;
-		String message;
-		public ChatDescription(int entityId, String message) {
-			this.id = entityId;
-			this.message = message;
-		}
-	}
-	
-//	class MyChat extends GuiChat {
-//		public MyChat() {
-//			super();
-//		}
-//		
-//		@Override
-//	    public void onGuiClosed() {
-//			super.onGuiClosed();
-//			System.out.println("closed");
-//		}
-//
-//		@Override
-//	    protected boolean func_175276_a(IChatComponent p_175276_1_) {
-//			System.out.println("175276");
-//			return super.func_175276_a(p_175276_1_);
-//		}
-//
-//
-//		@Override
-//	    public void sendChatMessage(String msg, boolean addToChat) {
-//			System.out.println("scm "+msg);
-//			super.sendChatMessage(msg, addToChat);
-//		}
-//	}
 }

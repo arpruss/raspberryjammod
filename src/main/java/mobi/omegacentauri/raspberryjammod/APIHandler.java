@@ -159,7 +159,7 @@ public class APIHandler {
 			sendLine(id);
 		}
 		else if (cmd.equals(GETBLOCKWITHDATA)) {
-			MCEventHandler.BlockState state = eventHandler.getBlockState(serverWorld, getBlockPosition(scan));
+			BlockState state = eventHandler.getBlockState(serverWorld, getBlockPosition(scan));
 			
 			sendLine(""+state.id+","+state.meta);
 		}
@@ -185,7 +185,7 @@ public class APIHandler {
 			BlockPos pos = getBlockPosition(scan);
 			short id = scan.nextShort();
 			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
-			eventHandler.queueSetBlockState(pos, id, meta);
+			eventHandler.queueBlockAction(new SetBlockState(pos, id, meta));
 		}
 		else if (cmd.equals(SETBLOCKS)) {
 			BlockPos pos1 = getBlockPosition(scan);
@@ -193,33 +193,7 @@ public class APIHandler {
 
 			short id = scan.nextShort();
 			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
-
-			int x1 = pos1.getX();
-			int x2 = pos2.getX();
-			if (x2 < x1) {
-				int t = x2;
-				x2 = x1;
-				x1 = t;
-			}
-			int y1 = pos1.getY();
-			int y2 = pos2.getY();
-			if (y2 < y1) {
-				int t = y2;
-				y2 = y1;
-				y1 = t;
-			}
-			int z1 = pos1.getZ();
-			int z2 = pos2.getZ();
-			if (z2 < z1) {
-				int t = z2;
-				z2 = z1;
-				z1 = t;
-			}
-			for (int x = x1; x <= x2; x++)
-				for (int y = y1; y <= y2; y++)
-					for (int z = z1 ; z <= z2; z++) {
-						eventHandler.queueSetBlockState(new BlockPos(x,y,z), id, meta);
-					}
+			eventHandler.queueBlockAction(new SetBlocksState(pos1, pos2, id, meta));
 		}
 		else if (cmd.equals(PLAYERGETPOS)) {
 			entityGetPos(clientPlayer);

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from . import mcpi.minecraft as minecraft
-from . import mcpi.block as block
-from . import server
+import mcpi.minecraft as minecraft
+import mcpi.block as block
+import server
 import math
 
 mc = minecraft.Minecraft.create(server.address)

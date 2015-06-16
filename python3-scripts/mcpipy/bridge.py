@@ -3,7 +3,7 @@
 #
 
 
-from .mc import *
+from mc import *
 import time
 import os
 

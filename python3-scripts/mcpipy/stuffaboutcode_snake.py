@@ -16,14 +16,14 @@
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #import the minecraft.py module from the minecraft directory
-from . import mcpi.minecraft as minecraft
+import mcpi.minecraft as minecraft
 #import minecraft block module
-from . import mcpi.block as block
+import mcpi.block as block
 #import time, so delays can be used
 import time
 #import random module to create random number
 import random
-from . import server
+import server
 
 
 #snake class which controls the whole game

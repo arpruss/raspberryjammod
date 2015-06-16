@@ -6,8 +6,8 @@
 
 import collections
 import random
-from . import mcpi.settings
-from .mcturtle import *
+import mcpi.settings
+from mcturtle import *
 
 def playProgram(s, dictionary):
     for c in s:
