@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -61,25 +60,33 @@ public class NightVisionExternalCommand implements ICommand {
 	@Override
 	public void execute(ICommandSender sender, String[] args)
 			throws CommandException {
+                boolean nv;
+
 		if (args.length == 0) {
-			return;
+                    nv = ! eventHandler.nightVision;
 		}
-		if (args[0].toLowerCase().equals("on")) {
-			eventHandler.nightVision = true;
-			EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-			if (player != null) {
-				player.addPotionEffect(new PotionEffect(Potion.nightVision.id, 4096));
-				player.addChatComponentMessage(new ChatComponentText("Enabled night vision"));
-			}
-		}
-		else if (args[0].toLowerCase().equals("off")) {
-			eventHandler.nightVision = false;
-			EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-			if (player != null) {
-				player.removePotionEffect(Potion.nightVision.id);
-				player.addChatComponentMessage(new ChatComponentText("Disabled night vision"));
-			}
-		}
+		else if (args[0].toLowerCase().equals("on")) {
+                    nv = true;
+                }
+                else if (args[0].toLowerCase().equals("off")) {
+                    nv = false;
+                }
+                else {
+		    throw new CommandException("Usage: /nightvision [on|off]");
+                }
+
+		eventHandler.nightVision = nv;
+		EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+		if (player != null) {
+  		if (nv) {
+  				player.addPotionEffect(new PotionEffect(Potion.nightVision.id, 4096));
+  				player.addChatComponentMessage(new ChatComponentText("Enabled night vision"));
+  		}
+  		else {
+  				player.removePotionEffect(Potion.nightVision.id);
+  				player.addChatComponentMessage(new ChatComponentText("Disabled night vision"));
+  		}
+  	}
 	}
 
 	@Override
@@ -94,7 +101,7 @@ public class NightVisionExternalCommand implements ICommand {
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "nightvision on|off";
+		return "nightvision [on|off]";
 	}
 
 	@Override
