@@ -14,6 +14,8 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
@@ -39,8 +41,10 @@ public class MCEventHandler {
 	static final int MAX_HITS = 512;
 	private boolean stopChanges = false;
 	private boolean restrictToSword = true;
+	volatile boolean nightVision = false;
 	ServerChatEvent chatEvents;
 	static final int MAX_CHATS = 512;
+	int clientTickCount = 0;
 
 	public void setStopChanges(boolean stopChanges) {
 		this.stopChanges = stopChanges;
@@ -158,11 +162,23 @@ public class MCEventHandler {
 		hits.clear();
 		chats.clear();
 	}
+	
+	@SubscribeEvent
+	public void onClientTick(TickEvent.ClientTickEvent event) {
+		if (nightVision && clientTickCount % 1024 == 0) {
+			EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+			
+			if (player != null) {
+				player.addPotionEffect(new PotionEffect(Potion.nightVision.id, 4096));
+			}
+		}
+		clientTickCount++;
+	}
 
 	@SubscribeEvent
 	public void onServerTick(TickEvent.ServerTickEvent event) {
 		World world = MinecraftServer.getServer().getEntityWorld();
-
+		
 		synchronized(blockActionQueue) {
 			for (SetBlockState entry: blockActionQueue) {
 				if (! RaspberryJamMod.active)

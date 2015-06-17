@@ -14,6 +14,7 @@ import java.util.Map;
 
 import tv.twitch.chat.IChatAPIListener;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
@@ -33,7 +34,6 @@ public abstract class ScriptExternalCommand implements ICommand {
 	final String scriptProcessorPath;
 
 	public ScriptExternalCommand() {
-		System.out.println("Starting ScriptExternalCommand");
 		scriptProcessorPath = getScriptProcessorPath();
 	}
 
@@ -107,12 +107,9 @@ public abstract class ScriptExternalCommand implements ICommand {
 	protected String getScriptProcessorPath() {
 		String base = getScriptProcessorCommand();
 
-		System.out.println("searching");
-
 		String pathSep = System.getProperty("path.separator");
 		String fileSep = System.getProperty("file.separator");
 		if (base.contains("/") || base.contains(fileSep)) {
-			System.out.println("base");
 			return base;
 		}
 
@@ -127,7 +124,6 @@ public abstract class ScriptExternalCommand implements ICommand {
 		else if (extra.length()>0) {
 			pathVar = pathVar + pathSep + extra;
 		}
-		System.out.println("path " +pathVar);
 
 		String exeExt = isWindows() ? ".exe" : "";
 
@@ -168,7 +164,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 	@Override
 	public void execute(ICommandSender sender, String[] args)
 			throws CommandException {
-
+		
 		if (! RaspberryJamMod.allowRemote &&
 				sender.getCommandSenderEntity().getEntityId() != 
 						Minecraft.getMinecraft().thePlayer.getEntityId()) {

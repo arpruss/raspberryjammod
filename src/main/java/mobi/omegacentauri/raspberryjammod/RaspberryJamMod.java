@@ -15,6 +15,7 @@ import net.minecraft.block.state.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
@@ -44,6 +45,7 @@ public class RaspberryJamMod
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer mcc;
 	private PythonExternalCommand pythonExternalCommand = null;
+	private NightVisionExternalCommand nightVisionExternalCommand = null;
 	public static Configuration configFile;
 	public static int portNumber = 4711;
 	public static boolean concurrent = true;
@@ -122,5 +124,7 @@ public class RaspberryJamMod
 
 		pythonExternalCommand = new PythonExternalCommand();
 		event.registerServerCommand(pythonExternalCommand);
+		nightVisionExternalCommand = new NightVisionExternalCommand(eventHandler);
+		event.registerServerCommand(nightVisionExternalCommand);
 	}
 }

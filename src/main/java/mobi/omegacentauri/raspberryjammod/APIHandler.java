@@ -51,6 +51,9 @@ public class APIHandler {
 	private static final String GETBLOCK = "world.getBlock";
 	private static final String GETBLOCKWITHDATA = "world.getBlockWithData";
 	private static final String GETHEIGHT = "world.getHeight"; 
+
+	private static final String GETLIGHTLEVEL = "block.getLightLevel";
+	private static final String SETLIGHTLEVEL = "block.setLightLevel";
 	
 	private static final String WORLDSPAWNENTITY = "world.spawnEntity";
 	private static final String WORLDDELETEENTITY = "world.removeEntity";
@@ -181,7 +184,15 @@ public class APIHandler {
 
 			sendLine(h);
 		}
-		else if (cmd.equals(SETBLOCK)) {
+		else if (cmd.equals(GETLIGHTLEVEL)) {
+			sendLine(Block.getBlockById(scan.nextInt()).getLightValue()/15.);
+		}
+		else if (cmd.equals(SETLIGHTLEVEL)) {
+			int id = scan.nextInt();
+			float value = scan.nextFloat();
+			Block.getBlockById(id).setLightLevel(value);
+		}
+ 		else if (cmd.equals(SETBLOCK)) {
 			BlockPos pos = getBlockPosition(scan);
 			short id = scan.nextShort();
 			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
@@ -584,5 +595,12 @@ public class APIHandler {
 
 	EntityPlayerMP getServerPlayer(EntityPlayerSP playerSP) {
 		return (EntityPlayerMP)serverWorld.getEntityByID(playerSP.getEntityId());
+	}
+	
+	static EntityPlayerMP getServerPlayer() {
+		EntityPlayerSP playerSP = Minecraft.getMinecraft().thePlayer;
+		if (playerSP == null)
+			return null;
+		return (EntityPlayerMP)MinecraftServer.getServer().getEntityWorld().getEntityByID(playerSP.getEntityId());
 	}
 }
