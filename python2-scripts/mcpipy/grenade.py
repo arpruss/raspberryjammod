@@ -101,6 +101,8 @@ path = getPath(center, azi, alt, v0)
 dictionary = {}
 prev = path[0][1]
 drawGrenade(dictionary, prev, TNT)
+for key in dictionary:
+    mc.setBlock(key,dictionary[key])
 t0 = time.time()
 
 while True:
