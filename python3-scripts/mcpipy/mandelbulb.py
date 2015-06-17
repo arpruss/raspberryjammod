@@ -5,8 +5,8 @@
 # mandelbulb.py [size [power [half]]]
 #
 
-from mc import *
-import mcpi.settings
+from .mc import *
+from . import mcpi.settings
 import cmath
 import time
 import sys

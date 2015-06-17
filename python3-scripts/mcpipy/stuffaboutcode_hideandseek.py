@@ -7,16 +7,16 @@
 # http://www.stuffaboutcode.com/2013/01/raspberry-pi-minecraft-hide-and-seek.html
 
 #import the minecraft.py module from the minecraft directory
-import mcpi.minecraft as minecraft
+from . import mcpi.minecraft as minecraft
 #import minecraft block module
-import mcpi.block as block
+from . import mcpi.block as block
 #import time, so delays can be used
 import time
 #import random module to create random number
 import random
 #import math module to use square root function
 import math
-import server
+from . import server
 
 
 #function to round players float position to integer position

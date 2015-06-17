@@ -11,9 +11,9 @@ See: http://jjinux.blogspot.com/2013/05/drawing-sierpinskis-triangle-in.html
 
 import random
 
-import mcpi.minecraft
-import mcpi.block as block
-import server
+from . import mcpi.minecraft
+from . import mcpi.block as block
+from . import server
 
 # It goes from -MAX_XZ to MAX_XZ.
 MAX_XZ = 128

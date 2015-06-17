@@ -2,7 +2,7 @@
 # MIT-licensed code by Alexander Pruss
 #
 
-from mc import *
+from .mc import *
 from random import *
 from time import *
 

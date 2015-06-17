@@ -2,7 +2,7 @@
 # MIT-licensed code by Alexander Pruss
 #
 
-from mcturtle import *
+from .mcturtle import *
 t = Turtle()
 t.pendelay(0)
 t.turtle(None)

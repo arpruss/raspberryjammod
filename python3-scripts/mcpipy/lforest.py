@@ -4,9 +4,9 @@
 # L-system with turtle graphics
 #
 
-import lsystem
+from . import lsystem
 import random
-from mcturtle import *
+from .mcturtle import *
 
 t = Turtle()
 t.pendelay(0)

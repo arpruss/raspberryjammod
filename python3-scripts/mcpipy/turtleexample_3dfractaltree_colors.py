@@ -1,9 +1,9 @@
 #Martin O'Hanlon
 #www.stuffaboutcode.com
 #Minecraft Turtle Example
-import minecraftturtle
-import mcpi.minecraft as minecraft
-import mcpi.block as block
+from . import minecraftturtle
+from . import mcpi.minecraft as minecraft
+from . import mcpi.block as block
 import random
 
 def tree(branchLen,t):
