@@ -26,6 +26,7 @@ def drawGlyph(mc, pos, forwardVec, upVec, glyph, foreground, background=None):
 
 
 def drawText(mc, font, pos, forwardVec, upVec, text, foreground, background=None):
+    text = text.decode("cp1252")
     pixelPos = pos.clone()
     height = len(font[32][3])
     numLines = text.count("\n")+1
@@ -78,7 +79,7 @@ if __name__ == '__main__':
     background = block.OBSIDIAN
 
     if len(sys.argv) <= 1:
-        text = "Hello, world!\nWelcome to Minecraft."
+        text = "Hello, world!\nWelcome to Minecraft.\xea"
     else:
         del sys.argv[0]
         text = " ".join(sys.argv)
