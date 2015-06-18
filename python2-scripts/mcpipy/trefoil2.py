@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# MIT-licensed code by Alexander Pruss
+# Code under the MIT license by Alexander Pruss
 #
 
 #

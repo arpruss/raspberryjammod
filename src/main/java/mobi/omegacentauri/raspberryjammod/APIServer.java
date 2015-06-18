@@ -50,14 +50,14 @@ public class APIServer {
 	private List<Socket> socketList;
 
 	public APIServer(MCEventHandler eventHandler) throws IOException {
-                socketList = new ArrayList<Socket>();
+		socketList = new ArrayList<Socket>();
 		this.eventHandler = eventHandler;
 		if (RaspberryJamMod.allowRemote) {
-		    serverSocket = new ServerSocket(RaspberryJamMod.portNumber);
+			serverSocket = new ServerSocket(RaspberryJamMod.portNumber);
 		}
-        else {
-            serverSocket = new ServerSocket(RaspberryJamMod.portNumber, 50, InetAddress.getByName("127.0.0.1"));
-        }
+		else {
+			serverSocket = new ServerSocket(RaspberryJamMod.portNumber, 50, InetAddress.getByName("127.0.0.1"));
+		}
 	}
 
 	void communicate() throws IOException {
@@ -70,10 +70,10 @@ public class APIServer {
 			}
 			else {
 				try {
-                                    int numSockets;
-                                    synchronized(socketList) {
-                                        numSockets = socketList.size();
-                                    }
+					int numSockets;
+					synchronized(socketList) {
+						numSockets = socketList.size();
+					}
 					if (numSockets < MAX_CONNECTIONS) {
 						final Socket socket = serverSocket.accept();
 						new Thread(new Runnable(){
@@ -98,8 +98,8 @@ public class APIServer {
 		DataOutputStream writer = null;
 		BufferedReader reader = null;
 		synchronized(socketList) {
-                   socketList.add(connectionSocket);
-                }
+			socketList.add(connectionSocket);
+		}
 
 		try {
 			String clientSentence;
@@ -116,13 +116,13 @@ public class APIServer {
 			System.out.println(""+e);
 		}
 		finally {
-			   synchronized(socketList) {
-                               socketList.remove(connectionSocket);
-                           }
-				try {
-					connectionSocket.close();
-				} catch (IOException e) {
-				}
+			synchronized(socketList) {
+				socketList.remove(connectionSocket);
+			}
+			try {
+				connectionSocket.close();
+			} catch (IOException e) {
+			}
 			if (reader != null)
 				try {
 					reader.close();
@@ -139,17 +139,17 @@ public class APIServer {
 	public void close() {
 		listening = false;
 		synchronized(socketList) {
-    		for (Socket s : socketList) {
-                        try {
-                            s.close();
-                        }
-                        catch(IOException e) {}
-                    }
-                }
+			for (Socket s : socketList) {
+				try {
+					s.close();
+				}
+				catch(IOException e) {}
+			}
+		}
 		if (serverSocket != null)
-  		try {
-  				serverSocket.close();
-  		} catch (IOException e) {
-  		}
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+			}
 	}
 }
