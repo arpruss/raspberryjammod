@@ -97,20 +97,30 @@ GLASS_PANE          = Block(102)
 MELON               = Block(103)
 FENCE_GATE          = Block(107)
 REDSTONE_BLOCK      = Block(152)
+
 if settings.isPE:
    HARDENED_CLAY_STAINED = WOOL
 else:
    HARDENED_CLAY_STAINED = Block(159)
+
+if settings.isPE:
+   SEA_LANTERN         = Block(246) # glowing obsidian
+else:
+   SEA_LANTERN         = Block(169)
+
 CARPET              = Block(171)
 COAL_BLOCK          = Block(173)
-GLOWING_OBSIDIAN    = Block(246)
-NETHER_REACTOR_CORE = Block(247)
-if not settings.isPE:
-    REDSTONE_LAMP_INACTIVE = Block(123)
-    REDSTONE_LAMP_ACTIVE   = Block(124)
+
+if settings.isPE:
+   GLOWING_OBSIDIAN    = Block(246)
+   NETHER_REACTOR_CORE = Block(247)
+   REDSTONE_LAMP_INACTIVE = OBSIDIAN
+   REDSTONE_LAMP_ACTIVE = GLOWING_OBSIDIAN
 else:
-    REDSTONE_LAMP_INACTIVE = OBSIDIAN
-    REDSTONE_LAMP_ACTIVE = GLOWING_OBSIDIAN
+   GLOWING_OBSIDIAN    = SEA_LANTERN
+   NETHER_REACTOR_CORE = SEA_LANTERN
+   REDSTONE_LAMP_INACTIVE = Block(123)
+   REDSTONE_LAMP_ACTIVE   = Block(124)
 
 SUNFLOWER  = Block(175,0)
 LILAC      = Block(175,1)
