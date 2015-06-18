@@ -1,10 +1,10 @@
 #
-# MIT-licensed code by Alexander R. Pruss
+# Code under the MIT license by Alexander R. Pruss
 #
 # Useful for checking which interpreter RaspberryJamMod's /py command is picking up.
 #
 
-from . import mc
+import mc
 import sys
 import os
 

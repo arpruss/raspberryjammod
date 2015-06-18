@@ -1,8 +1,8 @@
 #
-# MIT-licensed code by Alexander Pruss
+# Code under the MIT license by Alexander Pruss
 #
 
-from .mcturtle import *
+from mcturtle import *
 import random
 
 def tree(depth,thickness,branchLen):

@@ -1,5 +1,5 @@
 #
-# MIT-licensed code by Alexander Pruss
+# Code under the MIT license by Alexander Pruss
 #
 
 #
@@ -10,7 +10,7 @@
 # sun, moon or pluto.
 #
 
-from .mc import *
+from mc import *
 import time
 import sys
 
@@ -101,6 +101,8 @@ path = getPath(center, azi, alt, v0)
 dictionary = {}
 prev = path[0][1]
 drawGrenade(dictionary, prev, TNT)
+for key in dictionary:
+    mc.setBlock(key,dictionary[key])
 t0 = time.time()
 
 while True:

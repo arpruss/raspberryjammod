@@ -1,9 +1,9 @@
 #
-# MIT-licensed code by Alexander Pruss
+# Code under the MIT license by Alexander Pruss
 #
 
-from . import mcpi.minecraft as minecraft
-from . import mcpi.block as block
+import mcpi.minecraft as minecraft
+import mcpi.block as block
 import math
 import sys
 

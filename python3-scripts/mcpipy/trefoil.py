@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 #
-# MIT-licensed code by Alexander Pruss
+# Code under the MIT license by Alexander Pruss
 #
 
 #
 # Draw a trefoil
 #
 
-from .mc import *
+from mc import *
 
 def ball(x0,y0,z0,r,block_type,done):
   for x in range(-r,r):

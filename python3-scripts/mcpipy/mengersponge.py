@@ -1,8 +1,8 @@
 #
-# MIT-licensed code by Alexander Pruss
+# Code under the MIT license by Alexander Pruss
 #
-from .mc import *
-from . import mcpi.settings as settings
+from mc import *
+import mcpi.settings as settings
 
 def deleteCubes(x0,y0,z0,length):
     length /= 3

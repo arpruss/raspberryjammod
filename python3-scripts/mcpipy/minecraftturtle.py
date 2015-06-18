@@ -2,8 +2,8 @@
 #Martin O'Hanlon
 #www.stuffaboutcode.com
 
-from . import mcpi.minecraft as minecraft
-from . import mcpi.block as block
+import mcpi.minecraft as minecraft
+import mcpi.block as block
 import time
 import math
 

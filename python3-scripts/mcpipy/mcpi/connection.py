@@ -2,7 +2,8 @@ import socket
 import select
 import sys
 import atexit
-import os
+import time
+import struct
 from .util import flatten_parameters_to_string
 
 """ @author: Aron Nieminen, Mojang AB"""
@@ -14,28 +15,21 @@ class Connection:
     """Connection to a Minecraft Pi game"""
     RequestFailed = "Fail"
 
-    def __init__(self, address=None, port=None):
-        if address==None:
-            try:
-                 address = os.environ['MINECRAFT_API_HOST']
-            except KeyError:
-                 address = "localhost"
-        if port==None:
-            try:
-                 port = int(os.environ['MINECRAFT_API_PORT'])
-            except KeyError:
-                 port = 4711
+    def __init__(self, address, port):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((address, port))
+        self.readFile = self.socket.makefile("r")
         self.lastSent = ""
-        def close():
-            try:
-                self.socket.close()
-            except:
-                pass
-        atexit.register(close)
+        atexit.register(self.close)
 
     def __del__(self):
+        self.close()
+
+    def close(self):
+        try:
+            self.readFile.close()
+        except:
+            pass
         try:
             self.socket.close()
         except:
@@ -73,7 +67,8 @@ class Connection:
 
     def receive(self):
         """Receives data. Note that the trailing newline '\n' is trimmed"""
-        s = self.socket.makefile("r").readline().rstrip("\n")
+#        s = self.socket.makefile("r").readline().rstrip("\n")
+        s = self.readFile.readline().rstrip("\n")
         if s == Connection.RequestFailed:
             raise RequestError("%s failed"%self.lastSent.strip())
         return s

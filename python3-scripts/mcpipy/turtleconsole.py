@@ -1,12 +1,12 @@
 #
-# MIT-licensed code by Alexander Pruss
+# Code under the MIT license by Alexander Pruss
 #
 
-from . import mcpi.minecraft as minecraft
+import mcpi.minecraft as minecraft
 import time
 from math import *
-from .mcpi.block import *
-from .mcturtle import *
+from mcpi.block import *
+from mcturtle import *
 import code
 import sys
 

@@ -1,12 +1,13 @@
 #
-# MIT-licensed code by Alexander Pruss
+# Code under the MIT license by Alexander Pruss
 #
 #
 # mandelbulb.py [size [power [half]]]
 #
+# Options for half: south, north, east, west, up, down
 
-from .mc import *
-from . import mcpi.settings
+from mc import *
+import mcpi.settings
 import cmath
 import time
 import sys
@@ -22,15 +23,15 @@ if len(sys.argv) < 3:
 else:
     power = int(sys.argv[2])
 
-if power != 8:
-    fractalSize = 4.
-else:
+if power == 8:
     fractalSize = 2.16
+else:
+    fractalSize = 4.
 
 if len(sys.argv) < 4:
-    half = False
+    half = None
 else:
-    half = sys.argv[3].lower()[0] == 'h'
+    half = sys.argv[3].lower()[0]
 
 palette = list(reversed([WOOL_WHITE,HARDENED_CLAY_STAINED_WHITE,WOOL_PINK,WOOL_LIGHT_GRAY,WOOL_LIGHT_BLUE,WOOL_MAGENTA,WOOL_PURPLE,HARDENED_CLAY_STAINED_LIGHT_BLUE,HARDENED_CLAY_STAINED_LIGHT_GRAY,HARDENED_CLAY_STAINED_MAGENTA,HARDENED_CLAY_STAINED_PINK,HARDENED_CLAY_STAINED_RED,WOOL_RED,REDSTONE_BLOCK,HARDENED_CLAY_STAINED_ORANGE,WOOL_ORANGE,HARDENED_CLAY_STAINED_YELLOW,WOOL_YELLOW,WOOL_LIME,HARDENED_CLAY_STAINED_LIME,HARDENED_CLAY_STAINED_PURPLE,HARDENED_CLAY_STAINED_CYAN,WOOL_CYAN,WOOL_BLUE,HARDENED_CLAY_STAINED_BLUE,WOOL_GRAY,HARDENED_CLAY_STAINED_GREEN,WOOL_GREEN,HARDENED_CLAY_STAINED_BROWN,WOOL_BROWN,HARDENED_CLAY_STAINED_GRAY,WOOL_BLACK]));
 
@@ -84,9 +85,28 @@ def toBulb(centerMC,centerBulb,scale,x,y,z):
 
 def draw():
     count = 0
-    for mcX in range(cornerMC.x, cornerMC.x+size):
-        for mcY in range(cornerMC.y, cornerMC.y+size):
-            for mcZ in range(cornerMC.z, cornerMC.z+size/2 if half else cornerMC.z+size):
+    
+    rangeX = list(range(cornerMC.x, cornerMC.x+size))
+    rangeY = list(range(cornerMC.y, cornerMC.y+size))
+    rangeZ = list(range(cornerMC.z, cornerMC.z+size))
+    
+    if not half is None:
+        if half == 'w':
+            rangeX = list(range(cornerMC.x, cornerMC.x+size/2))
+        elif half == 'e':
+            rangeX = list(range(cornerMC.x+size/2, cornerMC.x+size))
+        elif half == 'n':
+            rangeZ = list(range(cornerMC.z, cornerMC.z+size/2))
+        elif half == 's':
+            rangeZ = list(range(cornerMC.z+size/2, cornerMC.z+size))
+        elif half == 'u':
+            rangeY = list(range(cornerMC.y+size/2, cornerMC.y+size))
+        elif half == 'd':
+            rangeY = list(range(cornerMC.y, cornerMC.y+size/2))
+
+    for mcX in rangeX:
+        for mcY in rangeY:
+            for mcZ in rangeZ:
                 radius = calculate(toBulb(centerMC,centerBulb,scale,mcX,mcY,mcZ))
                 if radius < 0:
                     mc.setBlock(mcX,mcY,mcZ,AIR)

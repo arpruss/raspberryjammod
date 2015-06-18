@@ -1,13 +1,13 @@
 ﻿#
-# MIT-licensed code by Alexander Pruss
+# Code under the MIT license by Alexander Pruss
 #
 # L-system with turtle graphics
 #
 
 import collections
 import random
-from . import mcpi.settings
-from .mcturtle import *
+import mcpi.settings
+from mcturtle import *
 
 def playProgram(s, dictionary):
     for c in s:

@@ -1,12 +1,12 @@
 #
-# MIT-licensed code by Alexander Pruss
+# Code under the MIT license by Alexander Pruss
 #
 
 #
 # Draw a knot
 #
 
-from .mc import *
+from mc import *
 
 mc = Minecraft()
 playerPos = mc.player.getPos()

@@ -4,10 +4,10 @@
 # mcpipy.com retrieved from URL below, written by zhuowei
 # http://www.minecraftforum.net/topic/1638036-my-first-script-for-minecraft-pi-api-a-rainbow/
 
-from . import mcpi.minecraft as minecraft
-from . import mcpi.block as block
+import mcpi.minecraft as minecraft
+import mcpi.block as block
 from math import *
-from . import server
+import server
 
 colors = [14, 1, 4, 5, 3, 11, 10]
 

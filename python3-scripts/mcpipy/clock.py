@@ -1,8 +1,8 @@
 #
-# MIT-licensed code by Alexander Pruss
+# Code under the MIT license by Alexander Pruss
 #
 
-from .drawing import *
+from drawing import *
 import time
 
 d = Drawing()
