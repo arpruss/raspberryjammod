@@ -97,6 +97,7 @@ GLASS_PANE          = Block(102)
 MELON               = Block(103)
 FENCE_GATE          = Block(107)
 REDSTONE_BLOCK      = Block(152)
+QUARTZ_BLOCK        = Block(155)
 
 if settings.isPE:
    HARDENED_CLAY_STAINED = WOOL

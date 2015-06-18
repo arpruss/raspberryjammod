@@ -68,15 +68,14 @@ class Connection:
 
     def send_flat(self, f, data):
         """Sends data. Note that a trailing newline '\n' is added here"""
+        #print "f,data:",f,ddata
         s = "%s(%s)\n"%(f, ",".join(data))
-        #print "f,data:",f,data
         self.drain()
         self.lastSent = s
         self.socket.sendall(s.encode('utf-8'))
 
     def receive(self):
         """Receives data. Note that the trailing newline '\n' is trimmed"""
-#        s = self.socket.makefile("r").readline().rstrip("\n")
         s = self.readFile.readline().rstrip("\n")
         if s == Connection.RequestFailed:
             raise RequestError("%s failed"%self.lastSent.strip())

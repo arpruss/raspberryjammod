@@ -34,7 +34,11 @@ public abstract class ScriptExternalCommand implements ICommand {
 	final String scriptProcessorPath;
 
 	public ScriptExternalCommand() {
-		scriptProcessorPath = getScriptProcessorPath();
+		String path = getScriptProcessorPath();
+		if (path.contains("/") || path.contains(System.getProperty("file.separator")))
+			scriptProcessorPath = new File(path).getAbsolutePath().toString();
+		else
+			scriptProcessorPath = path;
 	}
 
 	private boolean sandboxedScriptPath(String path) {

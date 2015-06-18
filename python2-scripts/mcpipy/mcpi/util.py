@@ -14,7 +14,7 @@ def floorFlatten(l):
             yield str(e)
         elif isinstance(e, float):
             yield str(int(math.floor(e)))
-        else:
+        elif not e is None:
             for ee in floorFlatten(e): yield ee
 
 def flatten_parameters_to_string(l):

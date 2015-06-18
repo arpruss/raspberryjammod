@@ -2,11 +2,11 @@
 # Code under the MIT license by Alexander R. Pruss
 #
 
-from mc import *
 import sys
 import time
+import mcpi.minecraft as minecraft
 
-# vectors must be Vec3
+# vectors must be minecraft.Vec3
 def drawGlyph(mc, pos, forwardVec, upVec, glyph, foreground, background=None):
     bitmap = glyph[3]
     height = len(bitmap)
@@ -26,6 +26,7 @@ def drawGlyph(mc, pos, forwardVec, upVec, glyph, foreground, background=None):
 
 
 def drawText(mc, font, pos, forwardVec, upVec, text, foreground, background=None):
+    text = text.decode("cp1252")
     pixelPos = pos.clone()
     height = len(font[32][3])
     numLines = text.count("\n")+1
@@ -51,30 +52,31 @@ def angleToTextDirectionCardinal(angle):
 def angleToTextDirection(angle):
     direction = int(round((angle % 360) / 45))
     if direction == 0:
-        return Vec3(-1,0,0)
+        return minecraft.Vec3(-1,0,0)
     elif direction == 1:
-        return Vec3(-1,0,-1)
+        return minecraft.Vec3(-1,0,-1)
     elif direction == 2:
-        return Vec3(0,0,-1)
+        return minecraft.Vec3(0,0,-1)
     elif direction == 3:
-        return Vec3(1,0,-1)
+        return minecraft.Vec3(1,0,-1)
     elif direction == 4:
-        return Vec3(1,0,0)
+        return minecraft.Vec3(1,0,0)
     elif direction == 5:
-        return Vec3(1,0,1)
+        return minecraft.Vec3(1,0,1)
     elif direction == 6:
-        return Vec3(0,0,1)
+        return minecraft.Vec3(0,0,1)
     else:
-        return Vec3(-1,0,1)
+        return minecraft.Vec3(-1,0,1)
 
 if __name__ == '__main__':
     import fonts
+    import mcpi.block as block
 
-    mc = Minecraft()
+    mc = minecraft.Minecraft()
     pos = mc.player.getPos()
     forward = angleToTextDirection(mc.player.getRotation())
     foreground = 169 # sea lantern
-    background = OBSIDIAN
+    background = block.OBSIDIAN
 
     if len(sys.argv) <= 1:
         text = "Hello, world!\nWelcome to Minecraft."
@@ -82,4 +84,4 @@ if __name__ == '__main__':
         del sys.argv[0]
         text = " ".join(sys.argv)
 
-    pos = drawText(mc, fonts.FONTS['tallfont'], pos, forward, Vec3(0,1,0), text, foreground, background)
+    pos = drawText(mc, fonts.FONTS['tallfont'], pos, forward, minecraft.Vec3(0,1,0), text, foreground, background)

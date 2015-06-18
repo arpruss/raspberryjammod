@@ -26,15 +26,16 @@ def transform(c, t):
             r -= p
         return c
 
+def evolveGenerator(axiom):
+    for c in axiom:
+        if c in rules:
+            yield transform(c, rules[c])
+        else:
+            yield c
+
 def evolve(axiom, rules, levelCount):
     for i in range(levelCount):
-        out = ""
-        for c in axiom:
-            if c in rules:
-                out += transform(c, rules[c])
-            else:
-                out += c
-        axiom = out
+        axiom = ''.join(evolveGenerator(axiom))
     return axiom
 
 
@@ -120,3 +121,4 @@ if __name__ == "__main__":
     }
 
     lsystem(axiom, rules, dictionary, 9 if mcpi.settings.isPE else 11)
+    
