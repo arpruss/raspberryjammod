@@ -1,3 +1,7 @@
+#
+# Code under the MIT license by Alexander Pruss
+#
+
 from mc import *
 import text
 import datetime
