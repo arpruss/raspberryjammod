@@ -43,9 +43,12 @@ public class SetBlocksState extends SetBlockState {
 					IBlockState oldState = world.getBlockState(here);
 					Block oldBlock = oldState.getBlock();
 
+					if (world.getTileEntity(here) != null) {
+						world.removeTileEntity(here);
+					}
+
 					if (Block.getIdFromBlock(oldBlock) != intId ||
-							oldBlock.getMetaFromState(oldState) != intMeta ||
-							world.getTileEntity(here) != null) {
+							oldBlock.getMetaFromState(oldState) != intMeta) {
 						world.setBlockState(here, Block.getBlockById(intId).getStateFromMeta(intMeta), 3);
 					}
 				}

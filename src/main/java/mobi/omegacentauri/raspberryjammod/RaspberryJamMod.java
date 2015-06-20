@@ -41,7 +41,7 @@ guiFactory = "mobi.omegacentauri.raspberryjammod.GuiFactory")
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.28";
+	public static final String VERSION = "0.29";
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer mcc;
 	private PythonExternalCommand pythonExternalCommand = null;

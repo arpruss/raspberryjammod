@@ -196,7 +196,22 @@ public class APIHandler {
 			BlockPos pos = getBlockPosition(scan);
 			short id = scan.nextShort();
 			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
-			eventHandler.queueBlockAction(new SetBlockState(pos, id, meta));
+			String tagString = getRest(scan);
+			
+			SetBlockState setState;
+			
+			if (tagString.length() > 0) {
+				try {
+					setState = new SetBlockNBT(pos, id, meta, JsonToNBT.func_180713_a(tagString));
+				} catch (NBTException e) {
+					setState = new SetBlockState(pos, id, meta);
+				}
+			}
+			else {
+				setState = new SetBlockState(pos, id, meta);
+			}
+			
+			eventHandler.queueBlockAction(setState);
 		}
 		else if (cmd.equals(SETBLOCKS)) {
 			BlockPos pos1 = getBlockPosition(scan);
@@ -204,7 +219,23 @@ public class APIHandler {
 
 			short id = scan.nextShort();
 			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
-			eventHandler.queueBlockAction(new SetBlocksState(pos1, pos2, id, meta));
+
+			String tagString = getRest(scan);
+			
+			SetBlocksState setState;
+			
+			if (tagString.length() > 0) {
+				try {
+					setState = new SetBlocksNBT(pos1, pos2, id, meta, JsonToNBT.func_180713_a(tagString));
+				} catch (NBTException e) {
+					setState = new SetBlocksState(pos1, pos2, id, meta);
+				}
+			}
+			else {
+				setState = new SetBlocksState(pos1, pos2, id, meta);
+			}
+
+			eventHandler.queueBlockAction(setState);
 		}
 		else if (cmd.equals(PLAYERGETPOS)) {
 			entityGetPos(clientPlayer);

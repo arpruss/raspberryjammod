@@ -24,10 +24,12 @@ public class SetBlockState {
 	public void execute(World world) {
 		IBlockState oldState = world.getBlockState(pos);
 		Block oldBlock = oldState.getBlock();
+		
+		if (null != world.getTileEntity(pos))
+			world.removeTileEntity(pos);
 
 		if (Block.getIdFromBlock(oldBlock) != (int)id ||
-				oldBlock.getMetaFromState(oldState) != (int)meta ||
-				world.getTileEntity(pos) != null)
+				oldBlock.getMetaFromState(oldState) != (int)meta )
 			 world.setBlockState(pos, Block.getBlockById(id).getStateFromMeta(meta), 3);
 		// Maybe the update code should be 2? I don't really know.
 	}
