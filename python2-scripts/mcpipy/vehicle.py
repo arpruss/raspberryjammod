@@ -2,65 +2,99 @@
 # Code under the MIT license by Alexander Pruss
 #
 
-#
-# Make a moving vehicle out of whatever the player is standing on, within a set distance
-#
-# Add a 'b' argument if you have and want an airtight bubble in the vehicle for going underwater
-# Add an 'n' argument if you want (somewhat) non-destructive mode
-#
+"""
+ Make a moving vehicle out of whatever blocks the player is standing near. 
+
+ Add a 'b' argument if you have and want an airtight bubble in the vehicle for going underwater
+ Add an 'n' argument if you want (somewhat) non-destructive mode
+ Add an 'q' argument if you don't want the vehicle to flash red as it is scanned
+
+ The vehicle detection algorithm works as follows:
+   first, search for nearest non-terrain block within distance SCAN_DISTANCE of the player
+   second, get the largest connected set of non-terrain blocks, including diagonal connections, up to 
+     distance MAX_DISTANCE in each coordinate
+   in bubble mode, add the largest set of air blocks, excluding diagonal connections, or a small bubble about the
+     player if the the vehicle is not airtight
+"""
 
 from mc import *
 import time
 import sys
 
-MAX_DISTANCE_FROM_PLAYER = 25
+SCAN_DISTANCE = 5
+MAX_DISTANCE = 25
 
 bubble = False
 nondestructive = False
+flash = True
 
-for opt in sys.argv[1:]:
-    if opt[0] == 'b':
-        bubble = True
-    elif opt[0] == 'n':
-        nondestructive = True
+if len(sys.argv)>1:
+    for x in ''.join(sys.argv[1:]):
+        if x == 'b':
+            bubble = True
+        elif x == 'n':
+            nondestructive = True
+        elif x == 'q':
+            flash = False
 
 # the following blocks do not count as part of the vehicle
-SKIP = set((AIR.id,WATER_FLOWING.id,WATER_STATIONARY.id,GRASS.id,DIRT.id,LAVA_FLOWING.id,LAVA_STATIONARY.id))
+TERRAIN = set((AIR.id,WATER_FLOWING.id,WATER_STATIONARY.id,GRASS.id,DIRT.id,LAVA_FLOWING.id,
+               LAVA_STATIONARY.id,GRASS.id,DOUBLE_TALLGRASS.id,GRASS_TALL.id,BEDROCK.id,GRAVEL.id))
+
+def box(x0,y0,z0,x1,y1,z1):
+    for x in range(x0,x1+1):
+        for y in range(y0,y1+1):
+            for z in range(z0,z1+1):
+                yield (x,y,z)
+
+def getSeed(x0,y0,z0):
+    scanned = set()
+    for r in range(0,SCAN_DISTANCE+1):
+        for x,y,z in box(-r,-r,-r,r,r,r):
+            if x*x+y*y+z*z <= r*r and (x,y,z) not in scanned:
+                blockId = mc.getBlock(x+x0,y+y0,z+z0)
+                scanned.add((x,y,z))
+                if blockId not in TERRAIN:
+                    return (x0+x,y0+y,z0+z)
+    return None
 
 def scan(x0,y0,z0):
     global highWater
 
-    positions = {}
-    positions[(x0,y0,z0)] = mc.getBlockWithData(x0,y0,z0)
+    seed = getSeed(x0,y0,z0)
+    if seed is None:
+        return {}
 
+    block = mc.getBlockWithData(seed)
+    positions = {seed:block}
+    if flash:
+        mc.setBlock(seed,WOOL_RED)
     foundAny = True
 
     while foundAny:
         foundAny = False
         for q in list(positions.keys()):
-            for x in range(-1,2):
-                for y in range(-1,2):
-                    for z in range(-1,2):
-                        pos = (x+q[0],y+q[1],z+q[2])
-                        if pos not in positions:
-                            if ( abs(pos[0]-x0) <= MAX_DISTANCE_FROM_PLAYER and
-                                abs(pos[1]-y0) <= MAX_DISTANCE_FROM_PLAYER and
-                                abs(pos[2]-z0) <= MAX_DISTANCE_FROM_PLAYER ):
-                                block = mc.getBlockWithData(pos)
-                                if block.id in SKIP:
-                                    if (block.id == WATER_STATIONARY.id or block.id == WATER_FLOWING.id) and (highWater is None or highWater < pos[1]):
-                                        highWater = pos[1]
-                                else:
-                                    positions[pos] = block
-                                    foundAny = True
-
-    if positions[(x0,y0,z0)].id in SKIP:
-        del positions[(x0,y0,z0)]
+            for x,y,z in box(-1,-1,-1,1,1,1):
+                pos = (x+q[0],y+q[1],z+q[2])
+                if pos not in positions:
+                    if ( abs(pos[0]-x0) <= MAX_DISTANCE and
+                        abs(pos[1]-y0) <= MAX_DISTANCE and
+                        abs(pos[2]-z0) <= MAX_DISTANCE ):
+                        block = mc.getBlockWithData(pos)
+                        if block.id in TERRAIN:
+                            if (block.id == WATER_STATIONARY.id or block.id == WATER_FLOWING.id) and (highWater is None or highWater < pos[1]):
+                                highWater = pos[1]
+                        else:
+                            positions[pos] = block
+                            mc.setBlock(pos,WOOL_RED)
+                            foundAny = True
 
     offsets = {}
 
     for pos in positions:
         offsets[(pos[0]-x0,pos[1]-y0,pos[2]-z0)] = positions[pos]
+        if flash:
+            mc.setBlock(pos,positions[pos])
 
     return offsets
 
@@ -75,9 +109,9 @@ def getBubble(vehicle):
         for q in list(positions):
             for x,y,z in [(-1,0,0),(1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1)]:
                 pos = (x+q[0],y+q[1],z+q[2])
-                if (abs(pos[0]) >= MAX_DISTANCE_FROM_PLAYER or 
-                    abs(pos[1]) >= MAX_DISTANCE_FROM_PLAYER or
-                    abs(pos[2]) >= MAX_DISTANCE_FROM_PLAYER):
+                if (abs(pos[0]) >= MAX_DISTANCE or 
+                    abs(pos[1]) >= MAX_DISTANCE or
+                    abs(pos[2]) >= MAX_DISTANCE):
                     mc.postToChat("Vehicle is not airtight!")
                     positions = set()
                     for x1 in range(-1,2):
@@ -95,19 +129,32 @@ def getBubble(vehicle):
         del positions[(0,0,0)]
     return positions
 
+stairDirectionsClockwise = [2, 1, 3, 0]
+stairToClockwise = [3, 1, 0, 2]
+STAIRS = set((STAIRS_COBBLESTONE.id, STAIRS_WOOD.id, 108, 109, 114, 128, 134, 135, 136, 156, 163, 164, 180))
+
+# TODO: rotate blocks other than stairs
+def rotateBlock(block,amount):
+    if block.id in STAIRS:
+        meta = block.data
+        return Block(block.id, (meta & ~0x03) | stairDirectionsClockwise[(stairToClockwise[meta & 0x03] + amount) % 4])
+    else:
+        return block
+
+
 def rotate(dict, amount):
     if amount == 0:
         return dict
     out = {}
     if amount == 1:
         for pos in dict:
-            out[(-pos[2],pos[1],pos[0])] = dict[pos]
+            out[(-pos[2],pos[1],pos[0])] = rotateBlock(dict[pos],amount)
     elif amount == 2:
         for pos in dict:
-            out[(-pos[0],pos[1],-pos[2])] = dict[pos]
+            out[(-pos[0],pos[1],-pos[2])] = rotateBlock(dict[pos],amount)
     else:
         for pos in dict:
-            out[(pos[2],pos[1],-pos[0])] = dict[pos]
+            out[(pos[2],pos[1],-pos[0])] = rotateBlock(dict[pos],amount)
     return out
 
 def translate(base,x,y,z):
