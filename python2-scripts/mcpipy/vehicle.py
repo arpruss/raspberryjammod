@@ -19,11 +19,12 @@ except:
 SKIP = set((AIR.id,WATER_FLOWING.id,WATER_STATIONARY.id,GRASS.id,DIRT.id,LAVA_FLOWING.id,LAVA_STATIONARY.id))
 
 def scan(dict,startPos,curPos=None):
+    global highWater
     if curPos is not None:
         block = mc.getBlockWithData(curPos[0]+startPos[0],curPos[1]+startPos[1],curPos[2]+startPos[2])
 
         if block.id in SKIP:
-            if block == WATER_STATIONARY and (highWater is None or highWater < curPos[1]+startPos[1]):
+            if (block.id == WATER_STATIONARY.id or block.id == WATER_FLOWING.id) and (highWater is None or highWater < curPos[1]+startPos[1]):
                 highWater = curPos[1]+startPos[1]
             return
         else:
@@ -49,7 +50,7 @@ def rotate(dict, amount):
             out[(-pos[2],pos[1],pos[0])] = dict[pos]
     elif amount == 2:
         for pos in dict:
-            out[(-pos[1],pos[1],-pos[2])] = dict[pos]
+            out[(-pos[0],pos[1],-pos[2])] = dict[pos]
     else:
         for pos in dict:
             out[(pos[2],pos[1],-pos[0])] = dict[pos]
@@ -91,7 +92,7 @@ while True:
         todo = {}
         for pos in oldVehicle:
             if pos not in newVehicle:
-                todo[pos] = WATER_FLOWING.id if pos[1] < highWater else AIR.id
+                todo[pos] = WATER_FLOWING.id if highWater is not None and pos[1] <= highWater else AIR.id
         for pos in newVehicle:
             block = newVehicle[pos]
             if pos not in oldVehicle or oldVehicle[pos] != block:
