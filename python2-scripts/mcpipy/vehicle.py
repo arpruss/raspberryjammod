@@ -208,7 +208,9 @@ while True:
             if pos not in oldVehicle or oldVehicle[pos] != block:
                 todo[pos] = block
                 if nondestructive and pos not in oldVehicle:
-                    saved[pos] = mc.getBlockWithData(pos)
+                    curBlock = mc.getBlockWithData(pos)
+                    if curBlock == block:
+                        del todo[pos]
         for pos in todo:
             mc.setBlock(pos,todo[pos])
         oldVehicle = newVehicle
