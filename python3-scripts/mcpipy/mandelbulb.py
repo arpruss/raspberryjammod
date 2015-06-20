@@ -34,7 +34,6 @@ else:
     half = sys.argv[3].lower()[0]
 
 palette = list(reversed([WOOL_WHITE,HARDENED_CLAY_STAINED_WHITE,WOOL_PINK,WOOL_LIGHT_GRAY,WOOL_LIGHT_BLUE,WOOL_MAGENTA,WOOL_PURPLE,HARDENED_CLAY_STAINED_LIGHT_BLUE,HARDENED_CLAY_STAINED_LIGHT_GRAY,HARDENED_CLAY_STAINED_MAGENTA,HARDENED_CLAY_STAINED_PINK,HARDENED_CLAY_STAINED_RED,WOOL_RED,REDSTONE_BLOCK,HARDENED_CLAY_STAINED_ORANGE,WOOL_ORANGE,HARDENED_CLAY_STAINED_YELLOW,WOOL_YELLOW,WOOL_LIME,HARDENED_CLAY_STAINED_LIME,HARDENED_CLAY_STAINED_PURPLE,HARDENED_CLAY_STAINED_CYAN,WOOL_CYAN,WOOL_BLUE,HARDENED_CLAY_STAINED_BLUE,WOOL_GRAY,HARDENED_CLAY_STAINED_GREEN,WOOL_GREEN,HARDENED_CLAY_STAINED_BROWN,WOOL_BROWN,HARDENED_CLAY_STAINED_GRAY,WOOL_BLACK]));
-if settings.isPE:
 
 def calculate(pos):
     x,z,y = pos[0],pos[1],pos[2]
@@ -87,23 +86,23 @@ def toBulb(centerMC,centerBulb,scale,x,y,z):
 def draw():
     count = 0
     
-    rangeX = range(cornerMC.x, cornerMC.x+size)
-    rangeY = range(cornerMC.y, cornerMC.y+size)
-    rangeZ = range(cornerMC.z, cornerMC.z+size)
+    rangeX = list(range(cornerMC.x, cornerMC.x+size))
+    rangeY = list(range(cornerMC.y, cornerMC.y+size))
+    rangeZ = list(range(cornerMC.z, cornerMC.z+size))
     
     if not half is None:
         if half == 'w':
-            rangeX = range(cornerMC.x, cornerMC.x+size/2)
+            rangeX = list(range(cornerMC.x, cornerMC.x+size/2))
         elif half == 'e':
-            rangeX = range(cornerMC.x+size/2, cornerMC.x+size)
+            rangeX = list(range(cornerMC.x+size/2, cornerMC.x+size))
         elif half == 'n':
-            rangeZ = range(cornerMC.z, cornerMC.z+size/2)
+            rangeZ = list(range(cornerMC.z, cornerMC.z+size/2))
         elif half == 's':
-            rangeZ = range(cornerMC.z+size/2, cornerMC.z+size)
+            rangeZ = list(range(cornerMC.z+size/2, cornerMC.z+size))
         elif half == 'u':
-            rangeY = range(cornerMC.y+size/2, cornerMC.y+size)
+            rangeY = list(range(cornerMC.y+size/2, cornerMC.y+size))
         elif half == 'd':
-            rangeY = range(cornerMC.y, cornerMC.y+size/2)
+            rangeY = list(range(cornerMC.y, cornerMC.y+size/2))
 
     for mcX in rangeX:
         for mcY in rangeY:
