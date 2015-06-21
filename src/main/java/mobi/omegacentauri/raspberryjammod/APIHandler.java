@@ -458,10 +458,12 @@ public class APIHandler {
 		}
 		else if (cmd.equals(WORLDSETTING)) {
 			String setting = scan.next();
-			if (setting.equals("world_immutable"))
+			if (setting.equals("world_immutable")) // across connections
 				eventHandler.setStopChanges(scan.nextInt() != 0);
-			else if (setting.equals("include_nbt_with_data"))
+			else if (setting.equals("include_nbt_with_data")) // connection-specific
 				includeNBTWithData = (scan.nextInt() != 0);
+			else if (setting.equals("pause_drawing")) // across connections
+				eventHandler.setPause(scan.nextInt() != 0);
 			// name_tags not supported
 		}
 		else if (cmd.equals(EVENTSSETTING)) {

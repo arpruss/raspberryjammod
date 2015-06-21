@@ -63,7 +63,7 @@ public class NightVisionExternalCommand implements ICommand {
                 boolean nv;
 
 		if (args.length == 0) {
-                    nv = ! eventHandler.nightVision;
+                    nv = ! eventHandler.getNightVision();
 		}
 		else if (args[0].toLowerCase().equals("on")) {
                     nv = true;
@@ -75,7 +75,7 @@ public class NightVisionExternalCommand implements ICommand {
 		    throw new CommandException("Usage: /nightvision [on|off]");
                 }
 
-		eventHandler.nightVision = nv;
+		eventHandler.setNightVision(nv);
 		EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
 		if (player != null) {
   		if (nv) {

@@ -41,6 +41,16 @@ if len(sys.argv)>1:
 TERRAIN = set((AIR.id,WATER_FLOWING.id,WATER_STATIONARY.id,GRASS.id,DIRT.id,LAVA_FLOWING.id,
                LAVA_STATIONARY.id,GRASS.id,DOUBLE_TALLGRASS.id,GRASS_TALL.id,BEDROCK.id,GRAVEL.id))
 
+NEED_SUPPORT = set((SAPLING.id,WATER_FLOWING.id,LAVA_FLOWING.id,GRASS_TALL.id,34,35,FLOWER_YELLOW.id,
+                    FLOWER_CYAN.id,MUSHROOM_BROWN.id,MUSHROOM_RED.id,TORCH.id,63,DOOR_WOOD.id,LADDER.id,
+                    66,68,69,70,DOOR_IRON.id,72,75,76,77,SUGAR_CANE.id,93,94,96,104,105,106,108,111,
+                    113,115,116,117,122,127,131,132,141,142,143,145,147,148,149,150,151,154,157,
+                    167,CARPET.id,SUNFLOWER.id,176,177,178,183,184,185,186,187,188,189,190,191,192,
+                    193,194,195,196,197))
+
+def keyFunction(dict,pos):
+    return (dict[pos].id in NEED_SUPPORT,pos)    
+
 def box(x0,y0,z0,x1,y1,z1):
     for x in range(x0,x1+1):
         for y in range(y0,y1+1):
@@ -73,6 +83,7 @@ def scan(x0,y0,z0):
 
     while len(newlyAdded)>0:
         adding = set()
+        mc.postToChat("Added "+str(len(newlyAdded))+" blocks")
         for q in newlyAdded:
             for x,y,z in box(-1,-1,-1,1,1,1):
                 pos = (x+q[0],y+q[1],z+q[2])
@@ -92,7 +103,7 @@ def scan(x0,y0,z0):
 
     offsets = {}
 
-    for pos in positions:
+    for pos in sorted(positions, key=lambda x : keyFunction(positions,x)):
         offsets[(pos[0]-x0,pos[1]-y0,pos[2]-z0)] = positions[pos]
         if flash:
             setBlockWithData(pos,positions[pos])
@@ -220,8 +231,10 @@ while True:
                     if curBlock == block:
                         del todo[pos]
                     saved[pos] = curBlock
-        for pos in sorted(todo):
+#        mc.setting("pause_drawing",1)
+        for pos in sorted(todo, key=lambda x : keyFunction(todo,x)):
             setBlockWithData(pos,todo[pos])
+#        mc.setting("pause_drawing",0)
         oldVehicle = newVehicle
         oldPos = vehiclePos
         oldRotation = vehicleRotation

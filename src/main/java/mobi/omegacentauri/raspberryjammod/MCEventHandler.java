@@ -37,16 +37,17 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class MCEventHandler {
-	List<SetBlockState> blockActionQueue = new ArrayList<SetBlockState>();		
-	List<HitDescription> hits = new LinkedList<HitDescription>();
-	List<ChatDescription> chats = new LinkedList<ChatDescription>();
-	static final int MAX_HITS = 512;
-	private boolean stopChanges = false;
-	private boolean restrictToSword = true;
-	volatile boolean nightVision = false;
-	ServerChatEvent chatEvents;
-	static final int MAX_CHATS = 512;
-	int clientTickCount = 0;
+	private List<SetBlockState> blockActionQueue = new ArrayList<SetBlockState>();		
+	private List<HitDescription> hits = new LinkedList<HitDescription>();
+	private List<ChatDescription> chats = new LinkedList<ChatDescription>();
+	private static final int MAX_HITS = 512;
+	private volatile boolean stopChanges = false;
+	private volatile boolean restrictToSword = true;
+	private volatile boolean nightVision = false;
+	private volatile boolean pause = false;
+	private ServerChatEvent chatEvents;
+	private static final int MAX_CHATS = 512;
+	private int clientTickCount = 0;
 
 	public void setStopChanges(boolean stopChanges) {
 		this.stopChanges = stopChanges;
@@ -179,15 +180,17 @@ public class MCEventHandler {
 
 	@SubscribeEvent
 	public void onServerTick(TickEvent.ServerTickEvent event) {
-		World world = MinecraftServer.getServer().getEntityWorld();
-		
-		synchronized(blockActionQueue) {
-			for (SetBlockState entry: blockActionQueue) {
-				if (! RaspberryJamMod.active)
-					break;
-				entry.execute(world);
+		if (!pause) {
+			World world = MinecraftServer.getServer().getEntityWorld();
+			
+			synchronized(blockActionQueue) {
+				for (SetBlockState entry: blockActionQueue) {
+					if (! RaspberryJamMod.active)
+						break;
+					entry.execute(world);
+				}
+				blockActionQueue.clear();
 			}
-			blockActionQueue.clear();
 		}
 	}
 
@@ -299,6 +302,19 @@ public class MCEventHandler {
 		public String getDescription() {
 			return description;
 		}
+	}
+
+
+	public void setPause(boolean b) {
+		pause = b;
+	}
+
+	public void setNightVision(boolean b) {
+		nightVision = b;
+	}
+
+	public boolean getNightVision() {
+		return nightVision;
 	}
 
 
