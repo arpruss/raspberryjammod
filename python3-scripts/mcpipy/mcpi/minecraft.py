@@ -223,7 +223,7 @@ class Minecraft:
         """Get a cuboid of blocks (x0,y0,z0,x1,y1,z1) => [id:int]"""
         return int(self.conn.sendReceive_flat("world.getBlocks", floorFlatten(args)))
 
-    # must have no NBT tags in any Block instances
+    # must have no NBT tags in Block instance
     def setBlock(self, *args):
         """Set block (x,y,z,id,[data])"""
         self.conn.send_flat("world.setBlock", floorFlatten(args))
@@ -233,6 +233,7 @@ class Minecraft:
         data = list(flatten(args))
         self.conn.send_flat("world.setBlock", list(floorFlatten(data[:5]))+data[5:])
 
+    # must have no NBT tags in Block instance
     def setBlocks(self, *args):
         """Set a cuboid of blocks (x0,y0,z0,x1,y1,z1,id,[data])"""
         self.conn.send_flat("world.setBlocks", floorFlatten(args))

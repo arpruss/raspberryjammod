@@ -3,6 +3,7 @@ import select
 import sys
 import atexit
 import os
+import platform
 from .util import flatten_parameters_to_string
 
 """ @author: Aron Nieminen, Mojang AB"""
@@ -29,10 +30,13 @@ class Connection:
         self.socket.connect((address, port))
         self.readFile = self.socket.makefile("r")
         self.lastSent = ""
-        atexit.register(self.close)
+        if platform.system() == "Windows":
+            atexit.register(self.close)
 
     def __del__(self):
-        self.close()
+        if platform.system() == "Windows":
+            self.close()
+            atexit.unregister(self.close)
 
     def close(self):
         try:

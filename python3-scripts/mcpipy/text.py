@@ -84,4 +84,4 @@ if __name__ == '__main__':
         del sys.argv[0]
         text = " ".join(sys.argv)
 
-    pos = drawText(mc, fonts.FONTS['tallfont'], pos, forward, minecraft.Vec3(0,1,0), text, foreground, background)
+    drawText(mc, fonts.FONTS['tallfont'], pos, forward, minecraft.Vec3(0,1,0), text, foreground, background)

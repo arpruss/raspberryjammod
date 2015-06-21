@@ -41,6 +41,16 @@ if len(sys.argv)>1:
 TERRAIN = set((AIR.id,WATER_FLOWING.id,WATER_STATIONARY.id,GRASS.id,DIRT.id,LAVA_FLOWING.id,
                LAVA_STATIONARY.id,GRASS.id,DOUBLE_TALLGRASS.id,GRASS_TALL.id,BEDROCK.id,GRAVEL.id))
 
+NEED_SUPPORT = set((SAPLING.id,WATER_FLOWING.id,LAVA_FLOWING.id,GRASS_TALL.id,34,35,FLOWER_YELLOW.id,
+                    FLOWER_CYAN.id,MUSHROOM_BROWN.id,MUSHROOM_RED.id,TORCH.id,63,DOOR_WOOD.id,LADDER.id,
+                    66,68,69,70,DOOR_IRON.id,72,75,76,77,SUGAR_CANE.id,93,94,96,104,105,106,108,111,
+                    113,115,116,117,122,127,131,132,141,142,143,145,147,148,149,150,151,154,157,
+                    167,CARPET.id,SUNFLOWER.id,176,177,178,183,184,185,186,187,188,189,190,191,192,
+                    193,194,195,196,197))
+
+def keyFunction(dict,erase,pos):
+    return (dict[pos].id in NEED_SUPPORT,pos not in erase or erase[pos].id not in NEED_SUPPORT,pos[1],pos[0],pos[2])
+
 def box(x0,y0,z0,x1,y1,z1):
     for x in range(x0,x1+1):
         for y in range(y0,y1+1):
@@ -58,6 +68,15 @@ def getSeed(x0,y0,z0):
                     return (x0+x,y0+y,z0+z)
     return None
 
+def safeSetBlockWithData(pos,block):
+    """
+    Draw block, making sure buttons are not depressed. This is to fix a glitch where launching 
+    the vehicle script from a commandblock resulted in re-pressing of the button.
+    """
+    if block.id == WOOD_BUTTON.id or block.id == STONE_BUTTON.id:
+        block = Block(block.id, block.data & ~0x08)
+    setBlockWithData(pos,block)
+
 def scan(x0,y0,z0):
     global highWater
 
@@ -67,12 +86,13 @@ def scan(x0,y0,z0):
 
     block = getBlockWithData(seed)
     positions = {seed:block}
-    if flash:
-        mc.setBlock(seed,WOOL_RED)
+    if flash and block.id not in NEED_SUPPORT:
+        mc.setBlock(seed,GOLD_BLOCK)
     newlyAdded = set(positions.keys())
 
     while len(newlyAdded)>0:
         adding = set()
+        mc.postToChat("Added "+str(len(newlyAdded))+" blocks")
         for q in newlyAdded:
             for x,y,z in box(-1,-1,-1,1,1,1):
                 pos = (x+q[0],y+q[1],z+q[2])
@@ -87,15 +107,16 @@ def scan(x0,y0,z0):
                         else:
                             positions[pos] = block
                             adding.add(pos)
-                            mc.setBlock(pos,WOOL_RED)
+                            if block.id not in NEED_SUPPORT:
+                                mc.setBlock(pos,GOLD_BLOCK)
         newlyAdded = adding
 
     offsets = {}
-
-    for pos in positions:
+    empty = {}
+    for pos in sorted(positions, key=lambda x : keyFunction(positions,empty,x)):
         offsets[(pos[0]-x0,pos[1]-y0,pos[2]-z0)] = positions[pos]
         if flash:
-            setBlockWithData(pos,positions[pos])
+            safeSetBlockWithData(pos,positions[pos])
 
     return offsets
 
@@ -139,6 +160,12 @@ def rotateBlock(block,amount):
     if block.id in STAIRS:
         meta = block.data
         return Block(block.id, (meta & ~0x03) | stairDirectionsClockwise[(stairToClockwise[meta & 0x03] + amount) % 4])
+    elif block.id == STONE_BUTTON.id or block.id == WOOD_BUTTON.id:
+        direction = block.data & 0x07
+        if direction < 1 or direction > 4:
+            return block
+        direction = 1 + stairDirectionsClockwise[(stairToClockwise[direction-1] + amount) % 4]
+        return Block(block.id, (block.data & ~0x07) | direction)
     else:
         return block
 
@@ -204,6 +231,7 @@ while True:
     if vehiclePos != oldPos or vehicleRotation != oldRotation:
         newVehicle = translate(baseVehicle,vehiclePos.x,vehiclePos.y,vehiclePos.z)
         todo = {}
+        erase = {}
         for pos in oldVehicle:
             if pos not in newVehicle:
                 if nondestructive and pos in saved:
@@ -211,17 +239,23 @@ while True:
                     del saved[pos]
                 else:
                     todo[pos] = WATER_STATIONARY if highWater is not None and pos[1] <= highWater else AIR
+            else:
+                erase[pos] = newVehicle[pos]
         for pos in newVehicle:
             block = newVehicle[pos]
             if pos not in oldVehicle or oldVehicle[pos] != block:
                 todo[pos] = block
-                if nondestructive and pos not in oldVehicle:
+                if pos not in oldVehicle and nondestructive:
                     curBlock = getBlockWithData(pos)
                     if curBlock == block:
                         del todo[pos]
                     saved[pos] = curBlock
-        for pos in todo:
-            setBlockWithData(pos,todo[pos])
+                    erase[pos] = curBlock
+
+#        mc.setting("pause_drawing",1)
+        for pos in sorted(todo, key=lambda x : keyFunction(todo,erase,x)):
+            safeSetBlockWithData(pos,todo[pos])
+#        mc.setting("pause_drawing",0)
         oldVehicle = newVehicle
         oldPos = vehiclePos
         oldRotation = vehicleRotation

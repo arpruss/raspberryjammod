@@ -10,4 +10,12 @@ import os
 
 mc = mc.Minecraft()
 mc.postToChat("Python interpreter "+sys.executable+" "+sys.version)
-mc.postToChat("Invoking user "+os.environ['MINECRAFT_PLAYER_NAME']+" "+os.environ['MINECRAFT_PLAYER_ID'])
+try:
+    userName = os.environ['MINECRAFT_PLAYER_NAME']
+except:
+    userName = "unspecified"
+try:
+    userId = os.environ['MINECRAFT_PLAYER_ID']
+except:
+    userId = "unspecified"
+mc.postToChat("Invoked by user "+userName+" "+userId)

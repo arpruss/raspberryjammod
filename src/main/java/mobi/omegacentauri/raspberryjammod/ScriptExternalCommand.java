@@ -9,6 +9,7 @@ import java.lang.ProcessBuilder;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,18 +23,23 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.world.World;
 
 public abstract class ScriptExternalCommand implements ICommand {
 	abstract protected String getScriptProcessorCommand();
 	abstract protected String getExtension();
 	abstract protected String[] getScriptPaths();
-	Process runningScript = null;
+	private List<Process> runningScripts;
 	final String scriptProcessorPath;
+	private World serverWorld;
+	private static final String[] allOptions = { "-add" };
 
 	public ScriptExternalCommand() {
+		runningScripts = new LinkedList<Process>(); 
 		String path = getScriptProcessorPath();
 		if (path.contains("/") || path.contains(System.getProperty("file.separator")))
 			scriptProcessorPath = new File(path).getAbsolutePath().toString();
@@ -53,23 +59,40 @@ public abstract class ScriptExternalCommand implements ICommand {
 	@Override
 	public List addTabCompletionOptions(ICommandSender sender, String[] args,
 			BlockPos pos) {
+		
+		if (args.length == 0) {
+			return null;
+		}
+		
+		for (int i = 0 ; i < args.length - 1 ; i++)
+			if (! args[i].startsWith("-"))
+				return null;
 
-		if (! sandboxedScriptPath(args[0]))
+		int arg = args.length - 1;
+		
+		if (args[arg].startsWith("-")) {
+			List<String> list = new ArrayList<String>();
+			for (String o : allOptions) {
+				if (o.toLowerCase().startsWith(args[arg].toLowerCase())) {
+					list.add(o);
+				}
+			}
+			return list;
+		}
+
+		if (! sandboxedScriptPath(args[arg]))
 			return null;
 
-		if (args.length == 1) {
-			int lastSlash = args[0].lastIndexOf('/');
-			String subdir = "";
-			if (lastSlash != -1) {
-				subdir = args[0].substring(0, lastSlash + 1);
-			}
-			List<String> scripts = getScripts(subdir);
-			for (int i = scripts.size() - 1; i>=0; i--)
-				if (! scripts.get(i).toLowerCase().startsWith(args[0].toLowerCase()))
-					scripts.remove(i);
-			return scripts;
+		int lastSlash = args[arg].lastIndexOf('/');
+		String subdir = "";
+		if (lastSlash != -1) {
+			subdir = args[0].substring(arg, lastSlash + 1);
 		}
-		return null;
+		List<String> scripts = getScripts(subdir);
+		for (int i = scripts.size() - 1; i>=0; i--)
+			if (! scripts.get(i).toLowerCase().startsWith(args[arg].toLowerCase()))
+				scripts.remove(i);
+		return scripts;
 	}
 
 	protected List<String> getScripts(String subdir) {
@@ -146,21 +169,21 @@ public abstract class ScriptExternalCommand implements ICommand {
 		return System.getProperty("os.name").startsWith("Windows");
 	}
 
-	// returns true if there actually was a script to close
-	public boolean close() {
-		boolean closed = false;
-
-		if (runningScript != null) {
+	// returns number of scripts closed
+	public int close() {
+		int closed = 0;
+		
+		for (Process runningScript : runningScripts) { 
 			try {
 				runningScript.exitValue();
 			}
 			catch (IllegalThreadStateException e) {
 				// script was still running
-				closed = true;
+				closed++;
 				runningScript.destroy();
 			}
-			runningScript = null;
 		}
+		runningScripts.clear();
 
 		return closed;
 	}
@@ -169,28 +192,48 @@ public abstract class ScriptExternalCommand implements ICommand {
 	public void execute(ICommandSender sender, String[] args)
 			throws CommandException {
 		
+		System.out.println("execute");
+		
+		World serverWorld = MinecraftServer.getServer().getEntityWorld();
+		
 		if (! RaspberryJamMod.allowRemote &&
-				sender.getCommandSenderEntity().getEntityId() != 
-						Minecraft.getMinecraft().thePlayer.getEntityId()) {
-			Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Blocked remote script launch by "+sender.getCommandSenderEntity()));
+				serverWorld.playerEntities.size() > 1 &&
+				! sender.getName().equals(Minecraft.getMinecraft().thePlayer.getName())) {
+			Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new 
+					ChatComponentText("Blocked possible remote script launch by "+sender.getCommandSenderEntity()));
 			return;
 		}
-		if (runningScript != null) {
-			if (close()) {
-				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Stopped previous script."));
-				//				Minecraft.getMinecraft().thePlayer.sendChatMessage("Stopped previous script.");
+
+		int arg = 0;
+		boolean addMode = false;
+		
+		while (arg < args.length && args[arg].startsWith("-")) {
+			if (args[arg].startsWith("-a")) 
+				addMode = true;
+			arg++;
+		}
+		
+		if (!addMode) {
+			int c = close();
+			if (0 < c) {
+				String message;
+				if (1 < c)
+					message = "Stopped the "+c+" running scripts.";
+				else
+					message = "Stopped the running script.";
+				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(message));
 			}
 		}
 
-		if (args.length == 0) {
+		if (args.length <= arg) {
 			return;
 		}
 
-		if (! sandboxedScriptPath(args[0])) {
+		if (! sandboxedScriptPath(args[arg])) {
 			throw new CommandException("Unacceptable script name");
 		}
 
-		File script = getScript(args[0]);
+		File script = getScript(args[arg]);
 		if (script == null) {
 			throw new CommandException("Cannot find script");
 		}
@@ -198,22 +241,25 @@ public abstract class ScriptExternalCommand implements ICommand {
 		List<String> cmd = new ArrayList<String>();
 		cmd.add(scriptProcessorPath);
 		cmd.add(script.getName());
-		for (int i = 1 ; i < args.length ; i++)
-			cmd.add(args[i]);
+		for (int i = 1 ; arg+i < args.length ; i++)
+			cmd.add(args[arg+i]);
 
 		ProcessBuilder pb = new ProcessBuilder(cmd);
 		//		pb.redirectErrorStream(true);
 		pb.directory(script.getParentFile());
 		Map<String, String> environment = pb.environment();
-		Entity source = (Entity)sender.getCommandSenderEntity();
 		environment.put("MINECRAFT_PLAYER_NAME", sender.getName());
-		environment.put("MINECRAFT_PLAYER_ID", ""+source.getEntityId());
+		Entity player = serverWorld.getPlayerEntityByName(sender.getName());
+		if (player != null) {
+			environment.put("MINECRAFT_PLAYER_ID", ""+player.getEntityId());
+		}
 
 		//		pb.inheritIO();
 		pb.command(cmd);
 		try {
 			System.out.println("Running "+script);
-			runningScript = pb.start();
+			Process runningScript = pb.start();
+			runningScripts.add(runningScript);
 			gobble(runningScript.getInputStream(), "");
 			gobble(runningScript.getErrorStream(), "[ERR] ");
 		} catch (IOException e) {
