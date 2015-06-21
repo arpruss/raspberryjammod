@@ -220,7 +220,7 @@ while True:
                     if curBlock == block:
                         del todo[pos]
                     saved[pos] = curBlock
-        for pos in todo:
+        for pos in sorted(todo):
             setBlockWithData(pos,todo[pos])
         oldVehicle = newVehicle
         oldPos = vehiclePos

@@ -3,7 +3,7 @@
 #
 
 """
- Make a moving vehicle out of whatever blocks the player is standing near. 
+ Make a moving vehicle out of whatever blocks the player is standing near.
 
  Add a 'b' argument if you have and want an airtight bubble in the vehicle for going underwater
  Add an 'n' argument if you want (somewhat) non-destructive mode
@@ -11,7 +11,7 @@
 
  The vehicle detection algorithm works as follows:
    first, search for nearest non-terrain block within distance SCAN_DISTANCE of the player
-   second, get the largest connected set of non-terrain blocks, including diagonal connections, up to 
+   second, get the largest connected set of non-terrain blocks, including diagonal connections, up to
      distance MAX_DISTANCE in each coordinate
    in bubble mode, add the largest set of air blocks, excluding diagonal connections, or a small bubble about the
      player if the the vehicle is not airtight
@@ -22,7 +22,7 @@ import time
 import sys
 
 SCAN_DISTANCE = 5
-MAX_DISTANCE = 25
+MAX_DISTANCE = 30
 
 bubble = False
 nondestructive = False
@@ -69,11 +69,11 @@ def scan(x0,y0,z0):
     positions = {seed:block}
     if flash:
         mc.setBlock(seed,WOOL_RED)
-    foundAny = True
+    newlyAdded = set(positions.keys())
 
-    while foundAny:
-        foundAny = False
-        for q in list(positions.keys()):
+    while len(newlyAdded)>0:
+        adding = set()
+        for q in newlyAdded:
             for x,y,z in box(-1,-1,-1,1,1,1):
                 pos = (x+q[0],y+q[1],z+q[2])
                 if pos not in positions:
@@ -86,8 +86,9 @@ def scan(x0,y0,z0):
                                 highWater = pos[1]
                         else:
                             positions[pos] = block
+                            adding.add(pos)
                             mc.setBlock(pos,WOOL_RED)
-                            foundAny = True
+        newlyAdded = adding
 
     offsets = {}
 
