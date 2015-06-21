@@ -2,6 +2,7 @@ package mobi.omegacentauri.raspberryjammod;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 
@@ -36,5 +37,9 @@ public class SetBlockState {
 	
 	public boolean contains(int x, int y, int z) {
 		return x == pos.getX() && y == pos.getY() && z == pos.getZ();
+	}
+	
+	public String describe() {
+		return ""+id+","+meta+",";
 	}
 }

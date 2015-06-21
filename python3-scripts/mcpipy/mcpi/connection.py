@@ -68,7 +68,7 @@ class Connection:
 
     def send_flat(self, f, data):
         """Sends data. Note that a trailing newline '\n' is added here"""
-        #print "f,data:",f,ddata
+#        print "f,data:",f,list(data)
         s = "%s(%s)\n"%(f, ",".join(data))
         self.drain()
         self.lastSent = s

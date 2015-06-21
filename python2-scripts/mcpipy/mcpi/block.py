@@ -2,25 +2,42 @@ import settings
 
 class Block:
     """Minecraft PI block description. Can be sent to Minecraft.setBlock/s"""
-    def __init__(self, id, data=0):
+    def __init__(self, id, data=0, nbt=None):
         self.id = id
         self.data = data
+        if nbt is not None and len(nbt)==0:
+            self.nbt = None
+        else:
+            self.nbt = nbt
 
-    def __cmp__(self, rhs):
-        return hash(self) - hash(rhs)
+    def __eq__(self, rhs):
+        return self.id == rhs.id and self.data == rhs.data and self.nbt == rhs.nbt
+
+    def __ne__(self, rhs):
+        return not self.__eq__(rhs)
 
     def __hash__(self):
-        return (self.id << 8) + self.data
+        h = (self.id << 8) + self.data
+        if self.nbt is not None:
+            h ^= hash(self.nbt)
 
     def withData(self, data):
         return Block(self.id, data)
 
     def __iter__(self):
         """Allows a Block to be sent whenever id [and data] is needed"""
-        return iter((self.id, self.data))
-        
+        if self.nbt is not None:
+           return iter((self.id, self.data, self.nbt))
+        else:
+           return iter((self.id, self.data))
+
     def __repr__(self):
-        return "Block(%d, %d)"%(self.id, self.data)
+        if self.nbt is None:
+            return "Block(%d, %d)"%(self.id, self.data)
+        else:
+            return "Block(%d, %d, %s)"%(self.id, self.data, self.nbt)
+
+
 
 AIR                 = Block(0)
 STONE               = Block(1)

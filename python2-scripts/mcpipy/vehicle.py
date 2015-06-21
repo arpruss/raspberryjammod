@@ -65,7 +65,7 @@ def scan(x0,y0,z0):
     if seed is None:
         return {}
 
-    block = mc.getBlockWithData(seed)
+    block = getBlockWithData(seed)
     positions = {seed:block}
     if flash:
         mc.setBlock(seed,WOOL_RED)
@@ -80,7 +80,7 @@ def scan(x0,y0,z0):
                     if ( abs(pos[0]-x0) <= MAX_DISTANCE and
                         abs(pos[1]-y0) <= MAX_DISTANCE and
                         abs(pos[2]-z0) <= MAX_DISTANCE ):
-                        block = mc.getBlockWithData(pos)
+                        block = getBlockWithData(pos)
                         if block.id in TERRAIN:
                             if (block.id == WATER_STATIONARY.id or block.id == WATER_FLOWING.id) and (highWater is None or highWater < pos[1]):
                                 highWater = pos[1]
@@ -94,7 +94,7 @@ def scan(x0,y0,z0):
     for pos in positions:
         offsets[(pos[0]-x0,pos[1]-y0,pos[2]-z0)] = positions[pos]
         if flash:
-            mc.setBlock(pos,positions[pos])
+            setBlockWithData(pos,positions[pos])
 
     return offsets
 
@@ -165,6 +165,13 @@ def translate(base,x,y,z):
 
 mc = Minecraft()
 
+if hasattr(Minecraft, 'getBlockWithNBT'):
+    getBlockWithData = mc.getBlockWithNBT
+    setBlockWithData = mc.setBlockWithNBT
+else:
+    getBlockWithData = mc.getBlockWithData
+    setBlockWithData = mc.setBlock
+
 vehiclePos = mc.player.getTilePos()
 vehicleRotation = int(round(mc.player.getRotation() / 90.)) % 4
 
@@ -202,17 +209,18 @@ while True:
                     todo[pos] = saved[pos]
                     del saved[pos]
                 else:
-                    todo[pos] = WATER_FLOWING.id if highWater is not None and pos[1] <= highWater else AIR.id
+                    todo[pos] = WATER_STATIONARY if highWater is not None and pos[1] <= highWater else AIR
         for pos in newVehicle:
             block = newVehicle[pos]
             if pos not in oldVehicle or oldVehicle[pos] != block:
                 todo[pos] = block
                 if nondestructive and pos not in oldVehicle:
-                    curBlock = mc.getBlockWithData(pos)
+                    curBlock = getBlockWithData(pos)
                     if curBlock == block:
                         del todo[pos]
+                    saved[pos] = curBlock
         for pos in todo:
-            mc.setBlock(pos,todo[pos])
+            setBlockWithData(pos,todo[pos])
         oldVehicle = newVehicle
         oldPos = vehiclePos
         oldRotation = vehicleRotation

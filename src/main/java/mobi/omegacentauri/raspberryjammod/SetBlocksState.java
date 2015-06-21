@@ -32,6 +32,7 @@ public class SetBlocksState extends SetBlockState {
 		int z1 = pos.getZ();
 		int intId = (int)id;
 		int intMeta = (int)meta;
+		IBlockState state = Block.getBlockById(intId).getStateFromMeta(intMeta);
 		
 		for (int x = pos.getX() ; x <= x2 ; x++)
 			for (int y = y1 ; y <= y2 ; y++)
@@ -49,7 +50,7 @@ public class SetBlocksState extends SetBlockState {
 
 					if (Block.getIdFromBlock(oldBlock) != intId ||
 							oldBlock.getMetaFromState(oldState) != intMeta) {
-						world.setBlockState(here, Block.getBlockById(intId).getStateFromMeta(intMeta), 3);
+						world.setBlockState(here, state, 3);
 					}
 				}
 		

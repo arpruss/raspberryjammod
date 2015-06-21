@@ -101,6 +101,7 @@ public class APIHandler {
  	private Minecraft mc;
  	private int connectionsActive = 0;
 	DataOutputStream writer = null;
+	private boolean includeNBTWithData = false;
 
 	public APIHandler(MCEventHandler eventHandler, DataOutputStream writer) throws IOException {
 		this.eventHandler = eventHandler;
@@ -162,9 +163,12 @@ public class APIHandler {
 			sendLine(id);
 		}
 		else if (cmd.equals(GETBLOCKWITHDATA)) {
-			BlockState state = eventHandler.getBlockState(serverWorld, getBlockPosition(scan));
-			
-			sendLine(""+state.id+","+state.meta);
+			if (includeNBTWithData)
+				sendLine(eventHandler.describeBlockState(serverWorld, getBlockPosition(scan)));
+			else {
+				BlockState state = eventHandler.getBlockState(serverWorld, getBlockPosition(scan));
+				sendLine(""+state.id+","+state.meta);
+			}
 		}
 		else if (cmd.equals(GETHEIGHT)) {
 			BlockPos pos = getBlockPosition(scan.nextInt(), 0, scan.nextInt());
@@ -200,10 +204,11 @@ public class APIHandler {
 			
 			SetBlockState setState;
 			
-			if (tagString.length() > 0) {
+			if (tagString.contains("{")) {
 				try {
 					setState = new SetBlockNBT(pos, id, meta, JsonToNBT.func_180713_a(tagString));
 				} catch (NBTException e) {
+					System.err.println("Cannot parse NBT");
 					setState = new SetBlockState(pos, id, meta);
 				}
 			}
@@ -224,7 +229,7 @@ public class APIHandler {
 			
 			SetBlocksState setState;
 			
-			if (tagString.length() > 0) {
+			if (tagString.contains("{")) {
 				try {
 					setState = new SetBlocksNBT(pos1, pos2, id, meta, JsonToNBT.func_180713_a(tagString));
 				} catch (NBTException e) {
@@ -455,6 +460,8 @@ public class APIHandler {
 			String setting = scan.next();
 			if (setting.equals("world_immutable"))
 				eventHandler.setStopChanges(scan.nextInt() != 0);
+			else if (setting.equals("include_nbt_with_data"))
+				includeNBTWithData = (scan.nextInt() != 0);
 			// name_tags not supported
 		}
 		else if (cmd.equals(EVENTSSETTING)) {

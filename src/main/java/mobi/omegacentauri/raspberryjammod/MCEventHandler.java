@@ -214,6 +214,34 @@ public class MCEventHandler {
 		return new BlockState(world.getBlockState(pos));
 	}
 
+	public String describeBlockState(World world, BlockPos pos) {
+		int x = pos.getX();
+		int y = pos.getY();
+		int z = pos.getZ();
+	
+		synchronized(blockActionQueue) {
+			for (int i = blockActionQueue.size() - 1 ; i >= 0 ; i--) {
+				SetBlockState entry = blockActionQueue.get(i);
+				if (entry.contains(x,y,z)) {
+					return entry.describe();
+				}
+			}
+		}
+
+		IBlockState state = world.getBlockState(pos);
+		Block block = state.getBlock();
+		int meta = block.getMetaFromState(state);
+		String describe = ""+block.getIdFromBlock(block)+","+meta+",";
+
+		TileEntity tileEntity = world.getTileEntity(pos);
+		if (tileEntity == null)
+			return describe;
+		NBTTagCompound tag = new NBTTagCompound();
+		tileEntity.writeToNBT(tag);
+		SetBlockNBT.scrubNBT(tag);
+		return describe+tag.toString();
+	}
+
 	public int getBlockId(World world, BlockPos pos) {
 		int x = pos.getX();
 		int y = pos.getY();
@@ -272,4 +300,6 @@ public class MCEventHandler {
 			return description;
 		}
 	}
+
+
 }
