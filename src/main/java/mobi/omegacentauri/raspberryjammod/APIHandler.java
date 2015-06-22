@@ -66,27 +66,27 @@ public class APIHandler {
 	private static final String PLAYERSETROTATION = "player.setRotation";   	
 	private static final Object PLAYERSETPITCH = "player.setPitch"; 
 	private static final Object PLAYERSETDIRECTION = "player.setDirection"; 
-	private static final String PLAYERGETDIRECTION = "player.getDirection"; 
-	private static final String PLAYERGETROTATION = "player.getRotation"; 
+	private static final String PLAYERGETDIRECTION = "player.getDirection";
+	private static final String PLAYERGETROTATION = "player.getRotation";
 	private static final String PLAYERGETPITCH = "player.getPitch";
 	private static final String PLAYERGETPOS = "player.getPos";
 	private static final String PLAYERGETTILE = "player.getTile";
-	private static final String ENTITYGETDIRECTION = "entity.getDirection"; 
-	private static final String ENTITYGETROTATION = "entity.getRotation"; 
-	private static final String ENTITYGETPITCH = "entity.getPitch"; 
-	private static final String ENTITYSETDIRECTION = "entity.setDirection"; 
-	private static final String ENTITYSETROTATION = "entity.setRotation"; 
-	private static final String ENTITYSETPITCH = "entity.setPitch"; 
-	private static final String ENTITYGETPOS = "entity.getPos"; 
-	private static final String ENTITYGETTILE = "entity.getTile"; 
-	private static final String ENTITYSETTILE = "entity.setTile"; 
+	private static final String ENTITYGETDIRECTION = "entity.getDirection";
+	private static final String ENTITYGETROTATION = "entity.getRotation";
+	private static final String ENTITYGETPITCH = "entity.getPitch";
+	private static final String ENTITYSETDIRECTION = "entity.setDirection";
+	private static final String ENTITYSETROTATION = "entity.setRotation";
+	private static final String ENTITYSETPITCH = "entity.setPitch";
+	private static final String ENTITYGETPOS = "entity.getPos";
+	private static final String ENTITYGETTILE = "entity.getTile";
+	private static final String ENTITYSETTILE = "entity.setTile";
 	private static final String ENTITYSETPOS = "entity.setPos";
 
 	private static final String EVENTSBLOCKHITS = "events.block.hits";
 	private static final String EVENTSCHATPOSTS = "events.chat.posts";
 	private static final String EVENTSCLEAR = "events.clear";
 	private static final String EVENTSSETTING = "events.setting";
-	
+
 	private static final String CAMERASETFOLLOW = "camera.setFollow";
 	private static final String CAMERASETNORMAL = "camera.setNormal";
 	private static final String CAMERAGETENTITYID = "camera.getEntityId";
@@ -480,6 +480,7 @@ public class APIHandler {
 			}
 		}
 		else if (cmd.equals(CAMERASETFOLLOW) || cmd.equals(CAMERASETNORMAL)) {
+                        mc.gameSettings.debugCamEnable = false;
 			EntityPlayerMP playerMP = getServerPlayer(clientPlayer);
 			boolean follow = cmd.equals(CAMERASETFOLLOW);
 
@@ -504,11 +505,14 @@ public class APIHandler {
 				mc.entityRenderer.loadEntityShader(mc.getRenderViewEntity());
 			}
 		}
+		else if (cmd.equals("camera.setDebug")) {
+                     mc.gameSettings.debugCamEnable = true;
+                }
 	}
-	
+
 	static private String getRest(Scanner scan) {
 		StringBuilder out = new StringBuilder();
-		
+
 		while (scan.hasNext()) {
 			if (out.length() > 0)
 				out.append(",");
