@@ -2,8 +2,8 @@
 # Code under the MIT license by Alexander Pruss
 #
 
-import mcpi.minecraft as minecraft
-import mcpi.block as block
+from . import mcpi.minecraft as minecraft
+from . import mcpi.block as block
 import math
 import sys
 

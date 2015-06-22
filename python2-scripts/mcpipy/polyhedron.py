@@ -749,7 +749,7 @@ if __name__ == "__main__":
     faceMode = len(sys.argv)>2 and sys.argv[2][0] == "f"
 
     if len(sys.argv)>3:
-        size = int(sys.argv)
+        size = int(sys.argv[3])
     else:
         size = 50
 

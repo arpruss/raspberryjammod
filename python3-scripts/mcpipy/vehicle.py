@@ -17,248 +17,315 @@
      player if the the vehicle is not airtight
 """
 
-from mcpi.minecraft import *
-from mcpi.block import *
+from .mcpi.minecraft import *
+from .mcpi.block import *
 from math import *
-import time
-import sys
 
-SCAN_DISTANCE = 5
-MAX_DISTANCE = 30
+class Vehicle():
+    # the following blocks do not count as part of the vehicle
+    TERRAIN = set((AIR.id,WATER_FLOWING.id,WATER_STATIONARY.id,GRASS.id,DIRT.id,LAVA_FLOWING.id,
+                    LAVA_STATIONARY.id,GRASS.id,DOUBLE_TALLGRASS.id,GRASS_TALL.id,BEDROCK.id,GRAVEL.id))
 
-bubble = False
-nondestructive = False
-flash = True
+    # ideally, the following blocks are drawn last and erased first
+    NEED_SUPPORT = set((SAPLING.id,WATER_FLOWING.id,LAVA_FLOWING.id,GRASS_TALL.id,34,FLOWER_YELLOW.id,
+                        FLOWER_CYAN.id,MUSHROOM_BROWN.id,MUSHROOM_RED.id,TORCH.id,63,DOOR_WOOD.id,LADDER.id,
+                        66,68,69,70,DOOR_IRON.id,72,75,76,77,SUGAR_CANE.id,93,94,96,104,105,106,108,111,
+                        113,115,116,117,122,127,131,132,141,142,143,145,147,148,149,150,151,154,157,
+                        167,CARPET.id,SUNFLOWER.id,176,177,178,183,184,185,186,187,188,189,190,191,192,
+                        193,194,195,196,197))
+    SCAN_DISTANCE = 5
+    MAX_DISTANCE = 30
+    stairDirectionsClockwise = [2, 1, 3, 0]
+    stairToClockwise = [3, 1, 0, 2]
+    STAIRS = set((STAIRS_COBBLESTONE.id, STAIRS_WOOD.id, 108, 109, 114, 128, 134, 135, 136, 156, 163, 164, 180))
 
-if len(sys.argv)>1:
-    for x in ''.join(sys.argv[1:]):
-        if x == 'b':
-            bubble = True
-        elif x == 'n':
-            nondestructive = True
-        elif x == 'q':
-            flash = False
+    def __init__(self,mc,nondestructive):
+        self.mc = mc
+        self.nondestructive = nondestructive
+        self.highWater = -256
+        self.baseVehicle = {}
+        if hasattr(Minecraft, 'getBlockWithNBT'):
+            self.getBlockWithData = self.mc.getBlockWithNBT
+            self.setBlockWithData = self.mc.setBlockWithNBT
+        else:
+            self.getBlockWithData = self.mc.getBlockWithData
+            self.setBlockWithData = self.mc.setBlock
+        self.curVehicle = {}
+        self.curRotation = 0
+        self.curLocation = None
+        self.saved = {}
+        self.startAngle = 0
 
-# the following blocks do not count as part of the vehicle
-TERRAIN = set((AIR.id,WATER_FLOWING.id,WATER_STATIONARY.id,GRASS.id,DIRT.id,LAVA_FLOWING.id,
-               LAVA_STATIONARY.id,GRASS.id,DOUBLE_TALLGRASS.id,GRASS_TALL.id,BEDROCK.id,GRAVEL.id))
+    @staticmethod
+    def keyFunction(dict,erase,pos):
+        return (pos in dict and dict[pos].id in Vehicle.NEED_SUPPORT,
+                pos not in erase or erase[pos].id not in Vehicle.NEED_SUPPORT,
+                pos[1],pos[0],pos[2])
 
-NEED_SUPPORT = set((SAPLING.id,WATER_FLOWING.id,LAVA_FLOWING.id,GRASS_TALL.id,34,35,FLOWER_YELLOW.id,
-                    FLOWER_CYAN.id,MUSHROOM_BROWN.id,MUSHROOM_RED.id,TORCH.id,63,DOOR_WOOD.id,LADDER.id,
-                    66,68,69,70,DOOR_IRON.id,72,75,76,77,SUGAR_CANE.id,93,94,96,104,105,106,108,111,
-                    113,115,116,117,122,127,131,132,141,142,143,145,147,148,149,150,151,154,157,
-                    167,CARPET.id,SUNFLOWER.id,176,177,178,183,184,185,186,187,188,189,190,191,192,
-                    193,194,195,196,197))
+    @staticmethod
+    def box(x0,y0,z0,x1,y1,z1):
+        for x in range(x0,x1+1):
+            for y in range(y0,y1+1):
+                for z in range(z0,z1+1):
+                    yield (x,y,z)
 
-def keyFunction(dict,erase,pos):
-    return (dict[pos].id in NEED_SUPPORT,pos not in erase or erase[pos].id not in NEED_SUPPORT,pos[1],pos[0],pos[2])
+    def getSeed(self,x0,y0,z0):
+        scanned = set()
+        for r in range(0,Vehicle.SCAN_DISTANCE+1):
+            for x,y,z in Vehicle.box(-r,-r,-r,r,r,r):
+                if x*x+y*y+z*z <= r*r and (x,y,z) not in scanned:
+                    blockId = self.mc.getBlock(x+x0,y+y0,z+z0)
+                    scanned.add((x,y,z))
+                    if blockId not in Vehicle.TERRAIN:
+                        return (x0+x,y0+y,z0+z)
+        return None
 
-def box(x0,y0,z0,x1,y1,z1):
-    for x in range(x0,x1+1):
-        for y in range(y0,y1+1):
-            for z in range(z0,z1+1):
-                yield (x,y,z)
+    def safeSetBlockWithData(self,pos,block):
+        """
+        Draw block, making sure buttons are not depressed. This is to fix a glitch where launching 
+        the vehicle script from a commandblock resulted in re-pressing of the button.
+        """
+        if block.id == WOOD_BUTTON.id or block.id == STONE_BUTTON.id:
+            block = Block(block.id, block.data & ~0x08)
+        self.setBlockWithData(pos,block)
 
-def getSeed(x0,y0,z0):
-    scanned = set()
-    for r in range(0,SCAN_DISTANCE+1):
-        for x,y,z in box(-r,-r,-r,r,r,r):
-            if x*x+y*y+z*z <= r*r and (x,y,z) not in scanned:
-                blockId = mc.getBlock(x+x0,y+y0,z+z0)
-                scanned.add((x,y,z))
-                if blockId not in TERRAIN:
-                    return (x0+x,y0+y,z0+z)
-    return None
+    def scan(self,x0,y0,z0,angle=0,flash=True):
+        positions = {}
+        self.curLocation = (x0,y0,z0)
+        self.curRotation = 0
+        self.startAngle = angle
 
-def safeSetBlockWithData(pos,block):
-    """
-    Draw block, making sure buttons are not depressed. This is to fix a glitch where launching 
-    the vehicle script from a commandblock resulted in re-pressing of the button.
-    """
-    if block.id == WOOD_BUTTON.id or block.id == STONE_BUTTON.id:
-        block = Block(block.id, block.data & ~0x08)
-    setBlockWithData(pos,block)
+        seed = self.getSeed(x0,y0,z0)
+        if seed is None:
+            return {}
 
-def scan(x0,y0,z0):
-    global highWater
+        block = self.getBlockWithData(seed)
+        self.curVehicle = {seed:block}
+        if flash and block.id not in Vehicle.NEED_SUPPORT:
+            self.mc.setBlock(seed,GLOWSTONE_BLOCK)
+        newlyAdded = set(self.curVehicle.keys())
 
-    seed = getSeed(x0,y0,z0)
-    if seed is None:
-        return {}
+        searched = set()
+        searched.add(seed)
 
-    block = getBlockWithData(seed)
-    positions = {seed:block}
-    if flash and block.id not in NEED_SUPPORT:
-        mc.setBlock(seed,GOLD_BLOCK)
-    newlyAdded = set(positions.keys())
+        while len(newlyAdded)>0:
+            adding = set()
+            self.mc.postToChat("Added "+str(len(newlyAdded))+" blocks")
+            for q in newlyAdded:
+                for x,y,z in Vehicle.box(-1,-1,-1,1,1,1):
+                    pos = (x+q[0],y+q[1],z+q[2])
+                    if pos not in searched:
+                        if ( abs(pos[0]-x0) <= Vehicle.MAX_DISTANCE and
+                            abs(pos[1]-y0) <= Vehicle.MAX_DISTANCE and
+                            abs(pos[2]-z0) <= Vehicle.MAX_DISTANCE ):
+                            searched.add(pos)
+                            block = self.getBlockWithData(pos)
+                            if block.id in Vehicle.TERRAIN:
+                                if ((block.id == WATER_STATIONARY.id or block.id == WATER_FLOWING.id) and 
+                                    self.highWater < pos[1]):
+                                    self.highWater = pos[1]
+                            else:
+                                self.curVehicle[pos] = block
+                                adding.add(pos)
+                                if flash and block.id not in Vehicle.NEED_SUPPORT:
+                                    self.mc.setBlock(pos,GLOWSTONE_BLOCK)
+            newlyAdded = adding
 
-    while len(newlyAdded)>0:
-        adding = set()
-        mc.postToChat("Added "+str(len(newlyAdded))+" blocks")
-        for q in newlyAdded:
-            for x,y,z in box(-1,-1,-1,1,1,1):
-                pos = (x+q[0],y+q[1],z+q[2])
-                if pos not in positions:
-                    if ( abs(pos[0]-x0) <= MAX_DISTANCE and
-                        abs(pos[1]-y0) <= MAX_DISTANCE and
-                        abs(pos[2]-z0) <= MAX_DISTANCE ):
-                        block = getBlockWithData(pos)
-                        if block.id in TERRAIN:
-                            if (block.id == WATER_STATIONARY.id or block.id == WATER_FLOWING.id) and (highWater is None or highWater < pos[1]):
-                                highWater = pos[1]
-                        else:
-                            positions[pos] = block
-                            adding.add(pos)
-                            if block.id not in NEED_SUPPORT:
-                                mc.setBlock(pos,GOLD_BLOCK)
-        newlyAdded = adding
+        self.baseVehicle = {}
+        for pos in self.curVehicle:
+            self.baseVehicle[(pos[0]-x0,pos[1]-y0,pos[2]-z0)] = self.curVehicle[pos]
 
-    offsets = {}
-    empty = {}
-    for pos in sorted(positions, key=lambda x : keyFunction(positions,empty,x)):
-        offsets[(pos[0]-x0,pos[1]-y0,pos[2]-z0)] = positions[pos]
         if flash:
-            safeSetBlockWithData(pos,positions[pos])
+            import time
+            empty = {}
+            for pos in sorted(self.curVehicle, key=lambda a : Vehicle.keyFunction(self.curVehicle,empty,a)):
+                self.safeSetBlockWithData(pos,self.curVehicle[pos])
 
-    return offsets
+    def angleToRotation(self,angle):
+        return int(round((angle-self.startAngle)/90.)) % 4
 
-def getBubble(vehicle):
-    positions = set()
-    positions.add((0,0,0))
+    def drawVehicle(self,x,y,z,angle,save=True):
+        self.curLocation = (x,y,z)
+        self.curRotation = self.angleToRotation(angle)
+        self.curVehicle = {}
+        self.saved = {}
+        empty = {}
+        self.mc.postToChat("rot "+str(self.curRotation))
+        vehicle = Vehicle.rotate(self.baseVehicle,self.curRotation)
+        for pos in sorted(vehicle, key=lambda a : Vehicle.keyFunction(vehicle,empty,a)):
+            drawPos = (pos[0] + x, pos[1] + y, pos[2] + z)
+            if save and self.nondestructive:
+                self.saved[drawPos] = self.getBlockWithData(drawPos)
+            self.safeSetBlockWithData(drawPos,vehicle[pos])
+            self.curVehicle[pos] = vehicle[pos]
 
-    tooBig = False
-    foundAny = True
-    while foundAny:
-        foundAny = False
-        for q in list(positions):
-            for x,y,z in [(-1,0,0),(1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1)]:
-                pos = (x+q[0],y+q[1],z+q[2])
-                if (abs(pos[0]) >= MAX_DISTANCE or 
-                    abs(pos[1]) >= MAX_DISTANCE or
-                    abs(pos[2]) >= MAX_DISTANCE):
-                    mc.postToChat("Vehicle is not airtight!")
-                    positions = set()
-                    for x1 in range(-1,2):
-                        for y1 in range(-1,2):
-                            for z1 in range(-1,2):
-                                if (x1,y1,z1) not in vehicle:
-                                    positions.add((x1,y1,z1))
-                    if (0,2,0) not in vehicle:
-                        positions.add((0,2,0))
-                    return positions
-                if pos not in positions and pos not in vehicle:
-                    positions.add(pos)
-                    foundAny = True
-    if (0,0,0) in vehicle:
-        del positions[(0,0,0)]
-    return positions
+    def eraseVehicle(self):
+        todo = {}
+        for pos in self.curVehicle:
+            if nondestructive and pos in saved:
+                todo[pos] = saved[pos]
+            else:
+                todo[pos] = self.defaultFiller(pos)
+        empty = {}
+        for pos in sorted(todo, key=lambda x : Vehicle.keyFunction(todo,empty,x)):
+            self.safeSetBlockWithData(pos,todo[pos])
+        self.saved = {}
+        self.curVehicle = {}
 
-stairDirectionsClockwise = [2, 1, 3, 0]
-stairToClockwise = [3, 1, 0, 2]
-STAIRS = set((STAIRS_COBBLESTONE.id, STAIRS_WOOD.id, 108, 109, 114, 128, 134, 135, 136, 156, 163, 164, 180))
+    def setVehicle(self,dict,startAngle=None):
+        if not startAngle is None:
+            self.startAngle = startAngle
+        self.baseVehicle = dict
 
-# TODO: rotate blocks other than stairs
-def rotateBlock(block,amount):
-    if block.id in STAIRS:
-        meta = block.data
-        return Block(block.id, (meta & ~0x03) | stairDirectionsClockwise[(stairToClockwise[meta & 0x03] + amount) % 4])
-    elif block.id == STONE_BUTTON.id or block.id == WOOD_BUTTON.id:
-        direction = block.data & 0x07
-        if direction < 1 or direction > 4:
+    def setHighWater(self,y):
+        self.highWater = -256;
+
+    def addBubble(self):
+        positions = set()
+        positions.add((0,0,0))
+
+        newlyAdded = set()
+        newlyAdded.add((0,0,0))
+
+        while len(newlyAdded) > 0:
+            adding = set()
+            for q in newlyAdded:
+                for x,y,z in [(-1,0,0),(1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1)]:
+                    pos = (x+q[0],y+q[1],z+q[2])
+                    if (abs(pos[0]) >= Vehicle.MAX_DISTANCE or 
+                        abs(pos[1]) >= Vehicle.MAX_DISTANCE or
+                        abs(pos[2]) >= Vehicle.MAX_DISTANCE):
+                        self.mc.postToChat("Vehicle is not airtight!")
+                        positions = set()
+                        for x1 in range(-1,2):
+                            for y1 in range(-1,2):
+                                for z1 in range(-1,2):
+                                    if (x1,y1,z1) not in self.baseVehicle:
+                                        self.baseVehicle[(x1,y1,z1)] = AIR
+                        if (0,2,0) not in self.baseVehicle:
+                            self.baseVehicle[(x,y+2,z)] = AIR
+                        return
+                    if pos not in positions and pos not in self.baseVehicle:
+                        positions.add(pos)
+                        adding.add(pos)
+            newlyAdded = adding
+        if (0,0,0) in self.baseVehicle:
+            del positions[(0,0,0)]
+        for pos in positions:
+            self.baseVehicle[pos] = AIR
+
+    # TODO: rotate blocks other than stairs and buttons
+    @staticmethod
+    def rotateBlock(block,amount):
+        if block.id in Vehicle.STAIRS:
+            meta = block.data
+            return Block(block.id, (meta & ~0x03) | 
+                         Vehicle.stairDirectionsClockwise[(Vehicle.stairToClockwise[meta & 0x03] + amount) % 4])
+        elif block.id == STONE_BUTTON.id or block.id == WOOD_BUTTON.id:
+            direction = block.data & 0x07
+            if direction < 1 or direction > 4:
+                return block
+            direction = 1 + Vehicle.stairDirectionsClockwise[(Vehicle.stairToClockwise[direction-1] + amount) % 4]
+            return Block(block.id, (block.data & ~0x07) | direction)
+        else:
             return block
-        direction = 1 + stairDirectionsClockwise[(stairToClockwise[direction-1] + amount) % 4]
-        return Block(block.id, (block.data & ~0x07) | direction)
-    else:
-        return block
 
+    @staticmethod
+    def rotate(dict, amount):
+        out = {}
+        amount = amount % 4
+        if amount == 0:
+            return dict
+        elif amount == 1:
+            for pos in dict:
+                out[(-pos[2],pos[1],pos[0])] = Vehicle.rotateBlock(dict[pos],amount)
+        elif amount == 2:
+            for pos in dict:
+                out[(-pos[0],pos[1],-pos[2])] = Vehicle.rotateBlock(dict[pos],amount)
+        else:
+            for pos in dict:
+                out[(pos[2],pos[1],-pos[0])] = Vehicle.rotateBlock(dict[pos],amount)
+        return out
 
-def rotate(dict, amount):
-    if amount == 0:
-        return dict
-    out = {}
-    if amount == 1:
-        for pos in dict:
-            out[(-pos[2],pos[1],pos[0])] = rotateBlock(dict[pos],amount)
-    elif amount == 2:
-        for pos in dict:
-            out[(-pos[0],pos[1],-pos[2])] = rotateBlock(dict[pos],amount)
-    else:
-        for pos in dict:
-            out[(pos[2],pos[1],-pos[0])] = rotateBlock(dict[pos],amount)
-    return out
+    def defaultFiller(self,pos):
+         return WATER_STATIONARY if self.highWater is not None and pos[1] <= self.highWater else AIR
 
-def translate(base,x,y,z):
-    out = {}
-    for pos in base:
-        out[(x+pos[0],y+pos[1],z+pos[2])] = base[pos]
-    return out
+    @staticmethod
+    def translate(base,x,y,z):
+        out = {}
+        for pos in base:
+            out[(x+pos[0],y+pos[1],z+pos[2])] = base[pos]
+        return out
 
-mc = Minecraft()
-
-if hasattr(Minecraft, 'getBlockWithNBT'):
-    getBlockWithData = mc.getBlockWithNBT
-    setBlockWithData = mc.setBlockWithNBT
-else:
-    getBlockWithData = mc.getBlockWithData
-    setBlockWithData = mc.setBlock
-
-vehiclePos = mc.player.getTilePos()
-vehicleRotation = int(round(mc.player.getRotation() / 90.)) % 4
-
-highWater = None
-mc.postToChat("Scanning vehicle")
-baseVehicle = scan(vehiclePos.x,vehiclePos.y,vehiclePos.z)
-mc.postToChat("Number of blocks: "+str(len(baseVehicle)))
-if bubble:
-    mc.postToChat("Scanning for air bubble")
-    for pos in getBubble(baseVehicle):
-        baseVehicle[pos] = AIR
-
-if len(baseVehicle) == 0 and not bubble:
-    mc.postToChat("Make a vehicle and then stand on or in it when starting this script.")
-    exit()
-else:
-    mc.postToChat("Now walk around.")
-
-oldVehicle = translate(baseVehicle,vehiclePos.x,vehiclePos.y,vehiclePos.z)
-oldPos = vehiclePos
-oldRotation = vehicleRotation
-saved = {}
-
-while True:
-    vehiclePos = mc.player.getTilePos()
-    vehicleRotation = int(round(mc.player.getRotation() / 90.)) % 4
-    if vehicleRotation != oldRotation:
-        baseVehicle = rotate(baseVehicle,(vehicleRotation-oldRotation)%4)
-    if vehiclePos != oldPos or vehicleRotation != oldRotation:
-        newVehicle = translate(baseVehicle,vehiclePos.x,vehiclePos.y,vehiclePos.z)
+    def moveTo(self,x,y,z,angleDegrees):
+        rotation = self.angleToRotation(angleDegrees)
+        if self.curRotation == rotation and (x,y,z) == self.curLocation:
+            return 
+        base = Vehicle.rotate(self.baseVehicle, rotation)
+        newVehicle = Vehicle.translate(base,x,y,z)
         todo = {}
         erase = {}
-        for pos in oldVehicle:
+        for pos in self.curVehicle:
             if pos not in newVehicle:
-                if nondestructive and pos in saved:
-                    todo[pos] = saved[pos]
-                    del saved[pos]
+                if self.nondestructive and pos in self.saved:
+                    todo[pos] = self.saved[pos]
+                    del self.saved[pos]
                 else:
-                    todo[pos] = WATER_STATIONARY if highWater is not None and pos[1] <= highWater else AIR
+                    todo[pos] = self.defaultFiller(pos)
             else:
-                erase[pos] = newVehicle[pos]
+                erase[pos] = self.curVehicle[pos]
         for pos in newVehicle:
             block = newVehicle[pos]
-            if pos not in oldVehicle or oldVehicle[pos] != block:
+            if pos not in self.curVehicle or self.curVehicle[pos] != block:
                 todo[pos] = block
-                if pos not in oldVehicle and nondestructive:
-                    curBlock = getBlockWithData(pos)
+                if pos not in self.curVehicle and self.nondestructive:
+                    curBlock = self.getBlockWithData(pos)
                     if curBlock == block:
                         del todo[pos]
-                    saved[pos] = curBlock
+                    self.saved[pos] = curBlock
                     erase[pos] = curBlock
+        for pos in sorted(todo, key=lambda x : Vehicle.keyFunction(todo,erase,x)):
+            self.safeSetBlockWithData(pos,todo[pos])
+        self.curVehicle = newVehicle
+        self.curLocation = (x,y,z)
+        self.curRotation = rotation
 
-#        mc.setting("pause_drawing",1)
-        for pos in sorted(todo, key=lambda x : keyFunction(todo,erase,x)):
-            safeSetBlockWithData(pos,todo[pos])
-#        mc.setting("pause_drawing",0)
-        oldVehicle = newVehicle
-        oldPos = vehiclePos
-        oldRotation = vehicleRotation
-    time.sleep(0.25)
+
+if __name__ == '__main__':
+    import time
+    import sys
+
+    bubble = False
+    nondestructive = False
+    flash = True
+
+    if len(sys.argv)>1:
+        for x in ''.join(sys.argv[1:]):
+            if x == 'b':
+                bubble = True
+            elif x == 'n':
+                nondestructive = True
+            elif x == 'q':
+                flash = False
+
+    minecraft = Minecraft()
+    vehiclePos = minecraft.player.getTilePos()
+
+    vehicle = Vehicle(minecraft,nondestructive)
+    minecraft.postToChat("Scanning vehicle")
+    vehicle.scan(vehiclePos.x,vehiclePos.y,vehiclePos.z,minecraft.player.getRotation(),flash)
+    minecraft.postToChat("Number of blocks: "+str(len(vehicle.baseVehicle)))
+    if bubble:
+        minecraft.postToChat("Scanning for air bubble")
+        vehicle.addBubble()
+
+    if len(vehicle.baseVehicle) == 0:
+        minecraft.postToChat("Make a vehicle and then stand on or in it when starting this script.")
+        exit()
+    else:
+        minecraft.postToChat("Now walk around.")
+
+    while True:
+        pos = minecraft.player.getTilePos()
+        vehicle.moveTo(pos.x,pos.y,pos.z,minecraft.player.getRotation())
+        time.sleep(0.25)

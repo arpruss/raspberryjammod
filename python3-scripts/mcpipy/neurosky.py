@@ -2,10 +2,10 @@
 # Code under the MIT license by Alexander Pruss
 #
 
-from mc import *
+from .mc import *
 import sys
 import time
-from NeuroPy.NeuroPy import NeuroPy
+from .NeuroPy.NeuroPy import NeuroPy
 
 mc = Minecraft()
 

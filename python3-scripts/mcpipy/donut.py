@@ -6,7 +6,7 @@
 # Draw a water-filled donut
 #
 
-from mc import *
+from .mc import *
 
 def draw_donut(mcx,mcy,mcz,R,r,mcblock):
   for x in range(-R-r,R+r):

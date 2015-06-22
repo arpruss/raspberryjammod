@@ -7,8 +7,8 @@
 import sys
 import random
 import threading
-import mcpi.minecraft as minecraft
-import server
+from . import mcpi.minecraft as minecraft
+from . import server
 
 
 defaultDifficulty = 0.1

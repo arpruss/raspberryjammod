@@ -24,7 +24,7 @@
 from math import pi, asin, atan2, cos, sin, sqrt
 import string
 import random
-import drawing
+from . import drawing
 import sys
 
 # Python code to find the crossing point of two lines.
@@ -749,7 +749,7 @@ if __name__ == "__main__":
     faceMode = len(sys.argv)>2 and sys.argv[2][0] == "f"
 
     if len(sys.argv)>3:
-        size = int(sys.argv)
+        size = int(sys.argv[3])
     else:
         size = 50
 

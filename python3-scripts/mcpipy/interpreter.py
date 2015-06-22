@@ -4,7 +4,7 @@
 # Useful for checking which interpreter RaspberryJamMod's /py command is picking up.
 #
 
-import mc
+from . import mc
 import sys
 import os
 
@@ -18,4 +18,4 @@ try:
     userId = os.environ['MINECRAFT_PLAYER_ID']
 except:
     userId = "unspecified"
-mc.postToChat("Invoked by "+userName+", id "+userId)
+mc.postToChat("Invoked by user "+userName+" "+userId)

@@ -6,8 +6,8 @@
 #
 # Options for half: south, north, east, west, up, down
 
-from mc import *
-import mcpi.settings as settings
+from .mc import *
+from . import mcpi.settings as settings
 import cmath
 import time
 import sys

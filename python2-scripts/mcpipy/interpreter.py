@@ -18,4 +18,4 @@ try:
     userId = os.environ['MINECRAFT_PLAYER_ID']
 except:
     userId = "unspecified"
-mc.postToChat("Invoked by "+userName+", id "+userId)
+mc.postToChat("Invoked by user "+userName+" "+userId)
