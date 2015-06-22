@@ -17,7 +17,9 @@
      player if the the vehicle is not airtight
 """
 
-from mc import *
+from mcpi.minecraft import *
+from mcpi.block import *
+from math import *
 import time
 import sys
 
