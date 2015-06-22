@@ -36,7 +36,10 @@ class Connection:
     def __del__(self):
         if platform.system() == "Windows":
             self.close()
-            atexit.unregister(self.close)
+            try:
+                atexit.unregister(self.close)
+            except:
+                pass   
 
     def close(self):
         try:
