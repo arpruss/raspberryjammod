@@ -90,7 +90,7 @@ else:
 try:
     player = int(os.environ['MINECRAFT_PLAYER_ID'])
 except:
-    player = mc.world.getPlayerId()
+    player = mc.getPlayerId()
 
 center = mc.entity.getPos(player)
 azi = mc.entity.getRotation(player) * pi/180.
