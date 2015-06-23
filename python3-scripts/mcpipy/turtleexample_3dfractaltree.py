@@ -1,9 +1,9 @@
 #Martin O'Hanlon
 #www.stuffaboutcode.com
 #Minecraft Turtle Example
-from . import minecraftturtle
-from . import mcpi.minecraft as minecraft
-from . import mcpi.block as block
+import minecraftturtle
+import mcpi.minecraft as minecraft
+import mcpi.block as block
 
 def tree(branchLen,t):
     if branchLen > 6:

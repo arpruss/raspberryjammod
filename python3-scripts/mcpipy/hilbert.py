@@ -1,8 +1,8 @@
 #
 # Code under the MIT license by Alexander Pruss
 #
-from . import lsystem
-from .mcturtle import *
+import lsystem
+from mcturtle import *
 t = Turtle()
 t.pendelay(0)
 t.turtle(None)

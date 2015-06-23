@@ -8,7 +8,7 @@
 # Draw a trefoil filled with lava
 #
 
-from .mc import *
+from mc import *
 
 def ball(x0,y0,z0,r,block_type,done):
   for x in range(-r,r):

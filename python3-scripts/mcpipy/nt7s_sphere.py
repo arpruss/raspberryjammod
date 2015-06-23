@@ -4,9 +4,9 @@
 # http://www.nt7s.com/blog/2013/02/exploring-minecraft-pi-edition/
 
 
-from . import mcpi.minecraft as minecraft
-from . import mcpi.block as block
-from . import server
+import mcpi.minecraft as minecraft
+import mcpi.block as block
+import server
 
 
 mc = minecraft.Minecraft.create(server.address)

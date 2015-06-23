@@ -1,7 +1,7 @@
 #! /usr/bin/python
-from . import mcpi.minecraft as minecraft
-from . import mcpi.block as block
-from . import server
+import mcpi.minecraft as minecraft
+import mcpi.block as block
+import server
 
 """ clearZone clears an area and sets a stone floor
     takes two x,z pairs clears everything above 0y and then sets

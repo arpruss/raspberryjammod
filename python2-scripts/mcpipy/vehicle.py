@@ -144,7 +144,7 @@ class Vehicle():
     def angleToRotation(self,angle):
         return int(round((angle-self.startAngle)/90.)) % 4
 
-    def drawVehicle(self,x,y,z,angle):
+    def drawVehicle(self,x,y,z,angle=0):
         self.curLocation = (x,y,z)
         self.curRotation = self.angleToRotation(angle)
         self.curVehicle = {}
@@ -255,7 +255,7 @@ class Vehicle():
             out[(x+pos[0],y+pos[1],z+pos[2])] = base[pos]
         return out
 
-    def moveTo(self,x,y,z,angleDegrees):
+    def moveTo(self,x,y,z,angleDegrees=0):
         rotation = self.angleToRotation(angleDegrees)
         if self.curRotation == rotation and (x,y,z) == self.curLocation:
             return 

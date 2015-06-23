@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-from . import mcpi.minecraft as minecraft
-from . import mcpi.block as block
+import mcpi.minecraft as minecraft
+import mcpi.block as block
 import time
-from . import server
+import server
 
 
 #Author:		Obsidz

@@ -7,12 +7,12 @@
 # http://www.stuffaboutcode.com/2013/02/raspberry-pi-minecraft-auto-bridge.html
 
 #import the minecraft.py module from the minecraft directory
-from . import mcpi.minecraft as minecraft
+import mcpi.minecraft as minecraft
 #import minecraft block module
-from . import mcpi.block as block
+import mcpi.block as block
 #import time, so delays can be used
 import time
-from . import server
+import server
 
 
 #function to round players float position to integer position
