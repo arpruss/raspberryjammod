@@ -13,6 +13,7 @@
 from mc import *
 import time
 import sys
+import os
 
 GRAVITIES = {
     'sun':274,

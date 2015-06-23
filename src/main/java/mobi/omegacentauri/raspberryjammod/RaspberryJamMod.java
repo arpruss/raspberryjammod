@@ -11,6 +11,8 @@ import java.net.Socket;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+import scala.collection.script.Script;
+
 import net.minecraft.block.state.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -20,6 +22,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -35,17 +38,20 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @Mod(modid = RaspberryJamMod.MODID, version = RaspberryJamMod.VERSION, name = RaspberryJamMod.NAME,
 guiFactory = "mobi.omegacentauri.raspberryjammod.GuiFactory")
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.31";
+	public static final String VERSION = "0.32";
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer mcc;
 	private PythonExternalCommand pythonExternalCommand = null;
 	private NightVisionExternalCommand nightVisionExternalCommand = null;
+	public static ScriptExternalCommand[] scriptExternalCommands = null;
 	public static Configuration configFile;
 	public static int portNumber = 4711;
 	public static boolean concurrent = true;
@@ -53,6 +59,7 @@ public class RaspberryJamMod
 	public static boolean allowRemote = true;
 	public static volatile boolean active = false;
 	public static String pythonInterpreter = "python";
+	public MCEventHandler serverEventHandler = null;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -62,6 +69,15 @@ public class RaspberryJamMod
 //		KeyBindings.init();
 
 		synchronizeConfig();
+	}
+	
+	@Mod.EventHandler
+	@SideOnly(Side.CLIENT)
+	public void Init(FMLInitializationEvent event) {
+		final ClientEventHandler eventHandler = new ClientEventHandler();
+		FMLCommonHandler.instance().bus().register(eventHandler);
+		nightVisionExternalCommand = new NightVisionExternalCommand(eventHandler);
+		net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(nightVisionExternalCommand);
 	}
 
 	public static void synchronizeConfig() {
@@ -75,17 +91,29 @@ public class RaspberryJamMod
 			configFile.save();
 	}
 
+	public static int closeAllScripts() {
+		if (scriptExternalCommands == null)
+			return 0;
+		int count = 0;
+		for (ScriptExternalCommand c : scriptExternalCommands)
+			count += c.close();
+		return count;
+	}
+	
 	@EventHandler
 	public void onServerStopping(FMLServerStoppingEvent event) {
 		active = false;
 
+		if (serverEventHandler != null) {
+			FMLCommonHandler.instance().bus().unregister(serverEventHandler);
+			serverEventHandler = null;
+		}
+
 		if (mcc != null) {
 			mcc.close();
 		}
-		if (pythonExternalCommand != null) {
-			pythonExternalCommand.close();
-			pythonExternalCommand = null;
-		}
+		closeAllScripts();
+		scriptExternalCommands = null;
 	}
 	
 	@EventHandler
@@ -96,11 +124,11 @@ public class RaspberryJamMod
 		
 		active = true;
 
-		final MCEventHandler eventHandler = new MCEventHandler();
-		FMLCommonHandler.instance().bus().register(eventHandler);
-		MinecraftForge.EVENT_BUS.register(eventHandler);
+		serverEventHandler = new MCEventHandler();
+		FMLCommonHandler.instance().bus().register(serverEventHandler);
+		MinecraftForge.EVENT_BUS.register(serverEventHandler);
 		try {
-			mcc = new APIServer(eventHandler);
+			mcc = new APIServer(serverEventHandler);
 
 			new Thread(new Runnable() {
 				@Override
@@ -122,9 +150,12 @@ public class RaspberryJamMod
 			System.out.println("Threw "+e1);
 		}
 
-		pythonExternalCommand = new PythonExternalCommand();
-		event.registerServerCommand(pythonExternalCommand);
-		nightVisionExternalCommand = new NightVisionExternalCommand(eventHandler);
-		event.registerServerCommand(nightVisionExternalCommand);
+		scriptExternalCommands = new ScriptExternalCommand[] {
+				new PythonExternalCommand(),
+				new AddPythonExternalCommand()
+		};
+		for (ScriptExternalCommand c : scriptExternalCommands) {
+			event.registerServerCommand(c);
+		}
 	}
 }

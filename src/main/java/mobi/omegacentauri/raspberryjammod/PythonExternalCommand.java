@@ -29,7 +29,7 @@ public class PythonExternalCommand extends ScriptExternalCommand {
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "python script [arguments]: run script (omit script to stop previous script)";
+		return "python script [arguments]: run script, stopping old one(s) (omit script to stop previous script)";
 	}
 
 	@Override

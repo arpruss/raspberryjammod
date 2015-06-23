@@ -36,7 +36,6 @@ public abstract class ScriptExternalCommand implements ICommand {
 	private List<Process> runningScripts;
 	final String scriptProcessorPath;
 	private World serverWorld;
-	private static final String[] allOptions = { "-add" };
 
 	public ScriptExternalCommand() {
 		runningScripts = new LinkedList<Process>(); 
@@ -63,22 +62,11 @@ public abstract class ScriptExternalCommand implements ICommand {
 		if (args.length == 0) {
 			return null;
 		}
-		
-		for (int i = 0 ; i < args.length - 1 ; i++)
-			if (! args[i].startsWith("-"))
-				return null;
 
-		int arg = args.length - 1;
-		
-		if (args[arg].startsWith("-")) {
-			List<String> list = new ArrayList<String>();
-			for (String o : allOptions) {
-				if (o.toLowerCase().startsWith(args[arg].toLowerCase())) {
-					list.add(o);
-				}
-			}
-			return list;
-		}
+                if (args.length != 1)
+                     return null;
+
+		int arg = 0;
 
 		if (! sandboxedScriptPath(args[arg]))
 			return null;
@@ -187,6 +175,10 @@ public abstract class ScriptExternalCommand implements ICommand {
 
 		return closed;
 	}
+	
+	public boolean addMode() {
+		return false;
+	}
 
 	@Override
 	public void execute(ICommandSender sender, String[] args)
@@ -204,17 +196,10 @@ public abstract class ScriptExternalCommand implements ICommand {
 			return;
 		}
 
-		int arg = 0;
-		boolean addMode = false;
-		
-		while (arg < args.length && args[arg].startsWith("-")) {
-			if (args[arg].startsWith("-a")) 
-				addMode = true;
-			arg++;
-		}
+		boolean addMode = addMode();
 		
 		if (!addMode) {
-			int c = close();
+			int c = RaspberryJamMod.closeAllScripts();
 			if (0 < c) {
 				String message;
 				if (1 < c)
@@ -225,6 +210,8 @@ public abstract class ScriptExternalCommand implements ICommand {
 			}
 		}
 
+		int arg = 0;
+		
 		if (args.length <= arg) {
 			return;
 		}

@@ -13,6 +13,7 @@
 from .mc import *
 import time
 import sys
+import os
 
 GRAVITIES = {
     'sun':274,
@@ -90,7 +91,7 @@ else:
 try:
     player = int(os.environ['MINECRAFT_PLAYER_ID'])
 except:
-    player = mc.world.getPlayerId()
+    player = mc.getPlayerId()
 
 center = mc.entity.getPos(player)
 azi = mc.entity.getRotation(player) * pi/180.

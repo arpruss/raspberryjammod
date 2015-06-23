@@ -30,16 +30,16 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 
 public class NightVisionExternalCommand implements ICommand {
-	private MCEventHandler eventHandler;
+	private ClientEventHandler eventHandler;
 
-	public NightVisionExternalCommand(MCEventHandler eventHandler) {
-		this.eventHandler = eventHandler;
+	public NightVisionExternalCommand(ClientEventHandler eventHandler2) {
+		this.eventHandler = eventHandler2;
 	}
 
 	@Override
 	public List addTabCompletionOptions(ICommandSender sender, String[] args,
 			BlockPos pos) {
-		
+
 		if (args.length == 1) {
 			List<String> options = new ArrayList<String>();
 			options.add("off");
@@ -60,33 +60,33 @@ public class NightVisionExternalCommand implements ICommand {
 	@Override
 	public void execute(ICommandSender sender, String[] args)
 			throws CommandException {
-                boolean nv;
+		boolean nv;
 
 		if (args.length == 0) {
-                    nv = ! eventHandler.getNightVision();
+			nv = ! eventHandler.getNightVision();
 		}
 		else if (args[0].toLowerCase().equals("on")) {
-                    nv = true;
-                }
-                else if (args[0].toLowerCase().equals("off")) {
-                    nv = false;
-                }
-                else {
-		    throw new CommandException("Usage: /nightvision [on|off]");
-                }
+			nv = true;
+		}
+		else if (args[0].toLowerCase().equals("off")) {
+			nv = false;
+		}
+		else {
+			throw new CommandException("Usage: /nightvision [on|off]");
+		}
 
 		eventHandler.setNightVision(nv);
 		EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
 		if (player != null) {
-  		if (nv) {
-  				player.addPotionEffect(new PotionEffect(Potion.nightVision.id, 4096));
-  				player.addChatComponentMessage(new ChatComponentText("Enabled night vision"));
-  		}
-  		else {
-  				player.removePotionEffect(Potion.nightVision.id);
-  				player.addChatComponentMessage(new ChatComponentText("Disabled night vision"));
-  		}
-  	}
+			if (nv) {
+				player.addPotionEffect(new PotionEffect(Potion.nightVision.id, 4096));
+				player.addChatComponentMessage(new ChatComponentText("Enabled night vision"));
+			}
+			else {
+				player.removePotionEffect(Potion.nightVision.id);
+				player.addChatComponentMessage(new ChatComponentText("Disabled night vision"));
+			}
+		}
 	}
 
 	@Override
@@ -113,6 +113,4 @@ public class NightVisionExternalCommand implements ICommand {
 	public boolean isUsernameIndex(String[] args, int index) {
 		return false;
 	}
-
 }
-
