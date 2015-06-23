@@ -11,6 +11,7 @@
 #
 
 from mc import *
+from vehicle import *
 import time
 import sys
 import os
@@ -57,16 +58,6 @@ def getPath(center, azi, alt, v0):
         path.append( ( t,Vec3(round(x),round(y),round(z)) ) )
     return path
 
-def drawGrenade(dictionary, pos, material):
-    if pos is None:
-        return
-    dictionary[(pos.x-1,pos.y,pos.z)] = material
-    dictionary[(pos.x+1,pos.y,pos.z)] = material
-    dictionary[(pos.x,pos.y-1,pos.z)] = material
-    dictionary[(pos.x,pos.y+1,pos.z)] = material
-    dictionary[(pos.x,pos.y,pos.z-1)] = material
-    dictionary[(pos.x,pos.y,pos.z+1)] = material
-
 def getXYZ(path, t1):
     for t,xyz in path:
         if t1<=t:
@@ -97,23 +88,24 @@ center = mc.entity.getPos(player)
 azi = mc.entity.getRotation(player) * pi/180.
 alt = -mc.entity.getPitch(player) * pi/180.
 
+GRENADE = { (-1,0,0):TNT, (1,0,0):TNT, (0,-1,0):TNT, (0,1,0):TNT, (0,0,1):TNT, (0,0,-1):TNT }
+
+grenade = Vehicle(mc, False)
+grenade.setVehicle(GRENADE)
+
 path = getPath(center, azi, alt, v0)
 
 dictionary = {}
 prev = path[0][1]
-drawGrenade(dictionary, prev, TNT)
-for key in dictionary:
-    mc.setBlock(key,dictionary[key])
+
+grenade.drawVehicle(prev.x,prev.y,prev.z)
+
 t0 = time.time()
 
 while True:
     t = time.time() - t0
     pos = getXYZ(path,t)
-    dictionary = {}
-    drawGrenade(dictionary, prev, AIR)
-    drawGrenade(dictionary, pos, TNT)
-    for key in dictionary:
-        mc.setBlock(key,dictionary[key])
+    grenade.moveTo(pos.x,pos.y,pos.z)
     prev=pos
     time.sleep(0.1)
     if t > path[-1][0]:

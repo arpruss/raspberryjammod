@@ -24,7 +24,7 @@ from math import *
 class Vehicle():
     # the following blocks do not count as part of the vehicle
     TERRAIN = set((AIR.id,WATER_FLOWING.id,WATER_STATIONARY.id,GRASS.id,DIRT.id,LAVA_FLOWING.id,
-                    LAVA_STATIONARY.id,GRASS.id,DOUBLE_TALLGRASS.id,GRASS_TALL.id,BEDROCK.id,GRAVEL.id))
+                    LAVA_STATIONARY.id,GRASS.id,DOUBLE_TALLGRASS.id,GRASS_TALL.id,BEDROCK.id,GRAVEL.id,SAND.id))
 
     # ideally, the following blocks are drawn last and erased first
     NEED_SUPPORT = set((SAPLING.id,WATER_FLOWING.id,LAVA_FLOWING.id,GRASS_TALL.id,34,FLOWER_YELLOW.id,
@@ -38,8 +38,9 @@ class Vehicle():
     stairDirectionsClockwise = [2, 1, 3, 0]
     stairToClockwise = [3, 1, 0, 2]
     STAIRS = set((STAIRS_COBBLESTONE.id, STAIRS_WOOD.id, 108, 109, 114, 128, 134, 135, 136, 156, 163, 164, 180))
+    EMPTY = {}
 
-    def __init__(self,mc,nondestructive):
+    def __init__(self,mc,nondestructive=False):
         self.mc = mc
         self.nondestructive = nondestructive
         self.highWater = -256
@@ -137,27 +138,24 @@ class Vehicle():
 
         if flash:
             import time
-            empty = {}
-            for pos in sorted(self.curVehicle, key=lambda a : Vehicle.keyFunction(self.curVehicle,empty,a)):
+            for pos in sorted(self.curVehicle, key=lambda a : Vehicle.keyFunction(self.curVehicle,Vehicle.EMPTY,a)):
                 self.safeSetBlockWithData(pos,self.curVehicle[pos])
 
     def angleToRotation(self,angle):
         return int(round((angle-self.startAngle)/90.)) % 4
 
-    def drawVehicle(self,x,y,z,angle,save=True):
+    def drawVehicle(self,x,y,z,angle):
         self.curLocation = (x,y,z)
         self.curRotation = self.angleToRotation(angle)
         self.curVehicle = {}
         self.saved = {}
-        empty = {}
-        self.mc.postToChat("rot "+str(self.curRotation))
         vehicle = Vehicle.rotate(self.baseVehicle,self.curRotation)
-        for pos in sorted(vehicle, key=lambda a : Vehicle.keyFunction(vehicle,empty,a)):
+        for pos in sorted(vehicle, key=lambda a : Vehicle.keyFunction(vehicle,Vehicle.EMPTY,a)):
             drawPos = (pos[0] + x, pos[1] + y, pos[2] + z)
-            if save and self.nondestructive:
+            if self.nondestructive:
                 self.saved[drawPos] = self.getBlockWithData(drawPos)
             self.safeSetBlockWithData(drawPos,vehicle[pos])
-            self.curVehicle[pos] = vehicle[pos]
+            self.curVehicle[drawPos] = vehicle[pos]
 
     def eraseVehicle(self):
         todo = {}
