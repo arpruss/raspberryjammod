@@ -160,12 +160,11 @@ class Vehicle():
     def eraseVehicle(self):
         todo = {}
         for pos in self.curVehicle:
-            if nondestructive and pos in saved:
-                todo[pos] = saved[pos]
+            if self.nondestructive and pos in self.saved:
+                todo[pos] = self.saved[pos]
             else:
                 todo[pos] = self.defaultFiller(pos)
-        empty = {}
-        for pos in sorted(todo, key=lambda x : Vehicle.keyFunction(todo,empty,x)):
+        for pos in sorted(todo, key=lambda x : Vehicle.keyFunction(todo,Vehicle.EMPTY,x)):
             self.safeSetBlockWithData(pos,todo[pos])
         self.saved = {}
         self.curVehicle = {}
