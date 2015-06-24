@@ -1,4 +1,4 @@
-from connection import Connection
+from connection import Connection,RequestError
 from vec3 import Vec3
 from event import BlockEvent,ChatEvent
 from block import Block
@@ -203,7 +203,13 @@ class Minecraft:
         if not self.enabledNBT:
             self.setting("include_nbt_with_data",1)
             self.enabledNBT = True
-        ans = self.conn.sendReceive_flat("world.getBlockWithData", floorFlatten(args))
+            try:
+                ans = self.conn.sendReceive_flat("world.getBlockWithData", floorFlatten(args))
+            except RequestError:
+                # retry in case we had a Fail from the setting
+                ans = self.conn.receive()
+        else:
+            ans = self.conn.sendReceive_flat("world.getBlockWithData", floorFlatten(args))
         id,data = (map(int, ans.split(",")[:2]))
         commas = 0
         for i in range(0,len(ans)):

@@ -313,7 +313,6 @@ if __name__ == '__main__':
         playerGetTilePos = lambda: minecraft.entity.getTilePos(player)
         playerGetRotation = lambda: minecraft.entity.getRotation(player)
     except:
-        player = minecraft.getPlayerId()
         playerGetTilePos = minecraft.player.getTilePos
         playerGetRotation = minecraft.player.getRotation
 
