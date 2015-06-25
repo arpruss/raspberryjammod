@@ -317,7 +317,7 @@ def animateMove(move):
                 piece.drawVehicle(piece.curLocation[0],piece.curLocation[1],piece.curLocation[2])
     drawSquare(pos1[0],pos1[1])
     drawSquare(pos2[0],pos2[1])
-    
+
 def algebraicMove(move):
     return sunfish.render(move[0])+sunfish.render(move[1])
 
