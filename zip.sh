@@ -9,5 +9,7 @@ rm -rf *.{bak,pyc} */*.{bak,pyc} __pycache__ */__pycache__ */*/__pycache__
 cd ..
 zip -9r ../python3-scripts.zip mcpipy
 cd ../python2-scripts
+rm mcpipy/*.pyc mcpipy/*/*.pyc
 zip -9r ../python2-scripts.zip mcpipy
+rm mcpipy/*.pyc mcpipy/*/*.pyc
 cd ..
