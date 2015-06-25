@@ -18,7 +18,16 @@ import sys
 try:
     import sunfish
 except:
-    print "You need sunfish.py for this to work."
+    try:
+        import urllib2
+        import os.path
+        content = urllib2.urlopen("https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py").read()
+        f=open(os.path.join(os.path.dirname(sys.argv[0]),"sunfish.py"),"w")
+        f.write(content)
+        f.close()
+        import sunfish
+    except:
+        print "Failed download: You need sunfish.py for this script."
 
 def adjustOpponentMove(m):
     if black:
