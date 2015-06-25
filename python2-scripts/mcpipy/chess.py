@@ -13,10 +13,24 @@ from text import *
 from fonts import *
 import drawing
 import time
+import sys
+
 try:
     import sunfish
 except:
-    print "You need sunfish.py for this to work."   
+    print "You need sunfish.py for this to work."
+
+def adjustOpponentMove(m):
+    if black:
+        return m
+    else:
+        return reverseMove(m)
+        
+def adjustPlayerMove(m):
+    if black:
+        return reverseMove(m)
+    else:
+        return m
 
 def reverseMove(m):
     return (119-m[0],119-m[1])
@@ -47,6 +61,7 @@ def highlightSquare(row,col):
                     corner.x+row*8+7,corner.y-1,corner.z+col*8+7,REDSTONE_BLOCK)
 
 def drawEmptyBoard():
+    mc.setBlocks(corner.x,corner.y,corner.z,corner.x+63,corner.y+MAXHEIGHT,corner.z+63,0)
     for row in range(8):
         for col in range(8):
             drawSquare(row,col)
@@ -263,10 +278,16 @@ def animateMove(move):
                 piece.drawVehicle(piece.curLocation[0],piece.curLocation[1],piece.curLocation[2])
     drawSquare(pos1[0],pos1[1])
     drawSquare(pos2[0],pos2[1])
+    
+def algebraicMove(move):
+    return sunfish.render(move[0])+sunfish.render(move[1])
 
 mc = Minecraft()
+black = len(sys.argv) > 1 and sys.argv[1][0] == 'b'
 mc.postToChat("Please wait: setting up board.")
 corner = mc.player.getTilePos()
+corner.x -= 32
+corner.z -= 32
 drawEmptyBoard()
 
 # z coordinate is cols
@@ -286,24 +307,34 @@ for row in range(8):
         c = getCoords(row,col)
         v.drawVehicle(c[0],c[1],c[2])
 
+playerMovesNext = not black
+
 while True:
-    moves = tuple(pos.genMoves())
-    move = None
-    while move not in moves:
-        mc.postToChat("Right-click the start and end points with a sword.")
-        m = inputMove()
-        move = toNumeric(m[0][0],m[0][1]), toNumeric(m[1][0],m[1][1])
-        if move not in moves:
-            mc.postToChat("Illegal move.")
-    animateMove(move)
-    pos = pos.move(move)
+    if playerMovesNext:
+        if black:
+            mc.postToChat("Black to move.")
+        else:
+            mc.postToChat("White to move.")
+        moves = tuple(pos.genMoves())
+        move = None
+        while move not in moves:
+            if move is not None:
+                mc.postToChat("Illegal move.")
+            mc.postToChat("Right-click the start and end points with a sword.")
+            m = inputMove()
+            move =  adjustPlayerMove((toNumeric(m[0][0],m[0][1]), toNumeric(m[1][0],m[1][1])))
+        mc.postToChat("Player: "+algebraicMove(adjustPlayerMove(move)))
+        animateMove(adjustPlayerMove(move))
+        pos = pos.move(move)
     mc.postToChat("Thinking...")
     move,score = sunfish.search(pos)
     if score <= -sunfish.MATE_VALUE:
         mc.postToChat("You won the game.")
         break
-    animateMove(reverseMove(move))
+    mc.postToChat("Computer: "+algebraicMove(adjustOpponentMove(move)))
+    animateMove(adjustOpponentMove(move))
     if sunfish.MATE_VALUE <= score:
         mc.postToChat("You lost the game.")
         break
     pos = pos.move(move)
+    playerMovesNext = True
