@@ -313,6 +313,7 @@ if __name__ == '__main__':
         playerGetTilePos = lambda: minecraft.entity.getTilePos(player)
         playerGetRotation = lambda: minecraft.entity.getRotation(player)
     except:
+        player = minecraft.getPlayerId()
         playerGetTilePos = minecraft.player.getTilePos
         playerGetRotation = minecraft.player.getRotation
 
@@ -320,15 +321,7 @@ if __name__ == '__main__':
 
     vehicle = Vehicle(minecraft,nondestructive)
     minecraft.postToChat("Scanning vehicle")
-
-    try:
-        angle = playerGetRotation()
-    except:
-        # we are probably on a PI which doesn't support playerGetRotation()
-        playerGetRotation = lambda: 0
-        angle = 0
-
-    vehicle.scan(vehiclePos.x,vehiclePos.y,vehiclePos.z,angle,flash)
+    vehicle.scan(vehiclePos.x,vehiclePos.y,vehiclePos.z,playerGetRotation(),flash)
     minecraft.postToChat("Number of blocks: "+str(len(vehicle.baseVehicle)))
     if bubble:
         minecraft.postToChat("Scanning for air bubble")
