@@ -218,11 +218,39 @@ def animateMovePiece(start,stop):
     piece.moveTo(b[0],b[1],b[2])
     del pieces[start]
     pieces[stop] = piece
+    
+def parse(message):
+    try:
+        if len(message) != 4:
+            raise ValueError
+        col0 = ord(message[0].lower()) - ord('a')
+        if col0 < 0 or col0 > 7:
+            raise ValueError
+        row0 = ord(message[1]) - ord('1')
+        if row0 < 0 or row0 > 7:
+            raise ValueError
+        col1 = ord(message[2].lower()) - ord('a')
+        if col1 < 0 or col1 > 7:
+            raise ValueError
+        row1 = ord(message[3]) - ord('1')
+        if row1 < 0 or row1 > 7:
+            raise ValueError
+        return (row0,col0),(row1,col1)
+    except:
+        raise ValueError
 
 def inputMove():
     moves = []
     mc.events.clearAll()
     while len(moves) < 2:
+        try:
+            chats = mc.events.pollChatPosts()
+            move = parse(chats[0].message)
+            for m in moves:
+                drawSquare(m[0],m[1])
+            return move
+        except:
+            pass
         hits = mc.events.pollBlockHits()
         if len(hits) > 0:
             c = hits[0].pos
@@ -242,6 +270,8 @@ def inputMove():
             time.sleep(0.2)
             mc.events.clearAll() # debounce
         time.sleep(0.2)
+    for m in moves:
+        drawSquare(m[0],m[1])
     return tuple(moves)
 
 def animateMove(move):
