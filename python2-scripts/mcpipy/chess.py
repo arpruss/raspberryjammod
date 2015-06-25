@@ -15,7 +15,7 @@ import drawing
 import time
 import sys
 
-LABEL_BLOCK = SEA_LANTERN
+LABEL_BLOCK = REDSTONE_BLOCK
 
 try:
     import sunfish
@@ -325,6 +325,7 @@ def algebraicMove(move):
 
 mc = Minecraft()
 black = len(sys.argv) > 1 and sys.argv[1][0] == 'b'
+demo = len(sys.argv) > 1 and sys.argv[1][0] == 'd'
 mc.postToChat("Please wait: setting up board.")
 corner = mc.player.getTilePos()
 corner.x -= 32
@@ -332,9 +333,9 @@ corner.z -= 32
 drawEmptyBoard()
 
 def myGetBlockWithData(pos):
-"""
-   On RaspberryJuice, this is a lot faster than querying the server.
-"""
+    """
+    On RaspberryJuice, this is a lot faster than querying the server.
+    """
     for boardPos in pieces:
         if pos in pieces[boardPos].curVehicle:
             return pieces[boardPos].curVehicle[pos]
@@ -353,6 +354,7 @@ for row in range(8):
             v = toVehicle(pieceBitmaps[piece.capitalize()], BLACK)
         else:
             continue
+        #uncomment the following line to optimize speed
         v.getBlockWithData = myGetBlockWithData
         pieces[(row,col)] = v
         c = getCoords(row,col)
@@ -366,14 +368,17 @@ while True:
             mc.postToChat("Black to move.")
         else:
             mc.postToChat("White to move.")
-        moves = tuple(pos.genMoves())
-        move = None
-        while move not in moves:
-            if move is not None:
-                mc.postToChat("Illegal move.")
-            mc.postToChat("Right-click the start and end points with a sword.")
-            m = inputMove()
-            move =  adjustPlayerMove((toNumeric(m[0][0],m[0][1]), toNumeric(m[1][0],m[1][1])))
+        if demo:
+            move,score = adjustPlayerMove(sunfish.search(pos))
+        else:
+            moves = tuple(pos.genMoves())
+            move = None
+            while move not in moves:
+                if move is not None:
+                    mc.postToChat("Illegal move.")
+                mc.postToChat("Right-click the start and end points with a sword.")
+                m = inputMove()
+                move =  adjustPlayerMove((toNumeric(m[0][0],m[0][1]), toNumeric(m[1][0],m[1][1])))
         mc.postToChat("Player: "+algebraicMove(adjustPlayerMove(move)))
         animateMove(adjustPlayerMove(move))
         pos = pos.move(move)
