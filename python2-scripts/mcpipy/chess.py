@@ -15,6 +15,8 @@ import drawing
 import time
 import sys
 
+LABEL_BLOCK = SEA_LANTERN
+
 try:
     import sunfish
 except:
@@ -76,14 +78,14 @@ def drawEmptyBoard():
             drawSquare(row,col)
     for col in range(8):
         c = getCoords(-1,col)
-        drawText(mc,FONTS['8x8'],Vec3(c[0]-4,corner.y-1,c[2]-4),Vec3(0,0,1),Vec3(1,0,0),"ABCDEFGH"[col],SEA_LANTERN)
+        drawText(mc,FONTS['8x8'],Vec3(c[0]-4,corner.y-1,c[2]-4),Vec3(0,0,1),Vec3(1,0,0),"ABCDEFGH"[col],LABEL_BLOCK)
         c = getCoords(8,col)
-        drawText(mc,FONTS['8x8'],Vec3(c[0]+4,corner.y-1,c[2]+4),Vec3(0,0,-1),Vec3(-1,0,0),"ABCDEFGH"[col],SEA_LANTERN)
+        drawText(mc,FONTS['8x8'],Vec3(c[0]+4,corner.y-1,c[2]+4),Vec3(0,0,-1),Vec3(-1,0,0),"ABCDEFGH"[col],LABEL_BLOCK)
     for row in range(8):
         c = getCoords(row,-1)
-        drawText(mc,FONTS['8x8'],Vec3(c[0]-4,corner.y-1,c[2]-4),Vec3(0,0,1),Vec3(1,0,0),str(row+1),SEA_LANTERN)
+        drawText(mc,FONTS['8x8'],Vec3(c[0]-4,corner.y-1,c[2]-4),Vec3(0,0,1),Vec3(1,0,0),str(row+1),LABEL_BLOCK)
         c = getCoords(row,8)
-        drawText(mc,FONTS['8x8'],Vec3(c[0]+4,corner.y-1,c[2]+4),Vec3(0,0,-1),Vec3(-1,0,0),str(row+1),SEA_LANTERN)
+        drawText(mc,FONTS['8x8'],Vec3(c[0]+4,corner.y-1,c[2]+4),Vec3(0,0,-1),Vec3(-1,0,0),str(row+1),LABEL_BLOCK)
 
 PAWN = (
     (".xx.",
@@ -329,6 +331,15 @@ corner.x -= 32
 corner.z -= 32
 drawEmptyBoard()
 
+def myGetBlockWithData(pos):
+"""
+   On RaspberryJuice, this is a lot faster than querying the server.
+"""
+    for boardPos in pieces:
+        if pos in pieces[boardPos].curVehicle:
+            return pieces[boardPos].curVehicle[pos]
+    return AIR
+
 # z coordinate is cols
 # x coordinate is rows
 pieces = {}
@@ -342,6 +353,7 @@ for row in range(8):
             v = toVehicle(pieceBitmaps[piece.capitalize()], BLACK)
         else:
             continue
+        v.getBlockWithData = myGetBlockWithData
         pieces[(row,col)] = v
         c = getCoords(row,col)
         v.drawVehicle(c[0],c[1],c[2])
