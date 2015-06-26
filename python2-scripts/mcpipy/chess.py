@@ -7,6 +7,7 @@
 #   https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py
 #
 
+from collections import OrderedDict
 from mc import *
 from vehicle import *
 from text import *
@@ -18,44 +19,49 @@ import sys
 LABEL_BLOCK = REDSTONE_BLOCK
 
 try:
-    import sunfish
+    import _sunfish as sunfish
 except:
     try:
         import urllib2
         import os.path
         content = urllib2.urlopen("https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py").read()
-        f=open(os.path.join(os.path.dirname(sys.argv[0]),"sunfish.py"),"w")
+        f=open(os.path.join(os.path.dirname(sys.argv[0]),"_sunfish.py"),"w")
+        f.write("# From: https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py\n")
+        f.write("# Covered by the GPL 2 license\n")
         f.write(content)
         f.close()
-        import sunfish
+        import _sunfish as sunfish
     except:
         print "Failed download: You need sunfish.py for this script."
-
-def adjustOpponentMove(m):
-    if black:
-        return m
-    else:
-        return reverseMove(m)
-        
-def adjustPlayerMove(m):
-    if black:
-        return reverseMove(m)
-    else:
-        return m
-
-def reverseMove(m):
-    return (119-m[0],119-m[1])
 
 def getCoords(row,col):
     return (corner.x+8*row+4,corner.y,corner.z+8*col+4)
 
-def toRowCol(n):
+def toRowCol(n, black):
     row = 7 - ((n - 20) / 10)
     col = n % 10 - 1
+    if black:
+        col = 7 - col
+        row = 7 - row
     return row,col
 
-def toNumeric(row,col):
+def toRowColMove(m, black):
+    return toRowCol(m[0],black),toRowCol(m[1],black)
+
+def toNumeric(rowCol,black):
+    if black:
+        col = 7 - rowCol[1]
+        row = 7 - rowCol[0]
+    else:
+        row, col = rowCol 
     return 20 + 10 * (7-row) + 1 + col
+
+def toNumericMove(rowColMove,black):
+    return toNumeric(rowColMove[0],black),toNumeric(rowColMove[1],black)
+
+def toAlgebraicMove(rowColMove):
+    (r0,c0),(r1,c1) = rowColMove
+    return 'abcdefgh'[c0]+str(r0+1)+'abcdefgh'[c1]+str(r1+1)
 
 def drawSquare(row,col):
     block = OBSIDIAN if (col + row) % 2 == 0 else QUARTZ_BLOCK
@@ -192,7 +198,7 @@ pieceBitmaps = {
 
 MAXHEIGHT = 8
 
-def toVehicle(bitmaps,block):
+def toVehicle(bitmaps,block,piece):
     dict = {}
     depth = len(bitmaps)
     height = len(bitmaps[0])
@@ -207,20 +213,22 @@ def toVehicle(bitmaps,block):
                     dict[(x,y,z)] = block
     v = Vehicle(mc,True)
     v.setVehicle(dict)
+    v.name = piece
     return v
 
 def animateMovePiece(start,stop):
     a = getCoords(start[0],start[1])
     b = getCoords(stop[0],stop[1])
     piece = pieces[start]
-    line = drawing.Drawing.getLine(a[0],a[1],a[2],b[0],b[1],b[2])
-    for point in line[1:]:
-        piece.moveTo(point[0],point[1],point[2])
-        time.sleep(0.1)
+    if not fast:
+        line = drawing.Drawing.getLine(a[0],a[1],a[2],b[0],b[1],b[2])
+        for point in line[1:]:
+            piece.moveTo(point[0],point[1],point[2])
+            time.sleep(0.1)
     piece.moveTo(b[0],b[1],b[2])
     del pieces[start]
     pieces[stop] = piece
-    
+
 def parse(message):
     try:
         if len(message) != 4:
@@ -240,6 +248,12 @@ def parse(message):
         return (row0,col0),(row1,col1)
     except:
         raise ValueError
+        
+def getPiece(row,col):
+    try:
+        return pieces[(row,col)].name
+    except KeyError:
+        return None
 
 def inputMove():
     moves = []
@@ -276,33 +290,34 @@ def inputMove():
         drawSquare(m[0],m[1])
     return tuple(moves)
 
-def animateMove(move):
-    pos1 = toRowCol(move[0])
-    pos2 = toRowCol(move[1])
+def animateMove(rowColMove):
+    pos1 = rowColMove[0]
+    pos2 = rowColMove[1]
     highlightSquare(pos1[0],pos1[1])
-    if pos.board[move[0]].upper() == 'K' and abs(pos1[1]-pos2[1]) > 1:
+    piece = getPiece(pos1[0],pos1[1])
+    if piece.upper() == 'K' and abs(pos1[1]-pos2[1]) > 1:
         # castling
         animateMovePiece(pos1,pos2)
         if pos2[1] > pos1[1]:
             animateMovePiece((pos1[0],7),(pos1[0],pos2[1]-1))
         else:
             animateMovePiece((pos1[0],0),(pos1[0],pos2[1]+1))
-    elif pos.board[move[0]].upper() == 'P' and abs(pos2[0]==7):
+    elif piece.upper() == 'P' and abs(pos2[0]==7):
         # promote to queen (all that's supported by the engine)
         animateMovePiece(pos1,pos2)
         piece = pieces[pos2]
         piece.eraseVehicle()
         if pos.board[move].islower():
-            pieces[pos2] = toVehicle(QUEEN, BLACK)
+            pieces[pos2] = toVehicle(QUEEN, BLACK, 'q')
         else:
-            pieces[pos2] = toVehicle(QUEEN, WHITE)
+            pieces[pos2] = toVehicle(QUEEN, WHITE, 'Q')
         c = getCoords(pos2[0],pos2[1])
         v.drawVehicle(c[0],c[1],c[2])
         return
     else:
         victim = None
         redrawPiece = False
-        if pos.board[move[0]].upper() == 'P' and pos1[1] != pos2[1] and pos2 not in pieces:
+        if piece.upper() == 'P' and pos1[1] != pos2[1] and pos2 not in pieces:
             # en Passant
             if pos2[1] > pos1[1]:
                 victim = pieces[(pos2[0],pos2[1]-1)]
@@ -320,12 +335,11 @@ def animateMove(move):
     drawSquare(pos1[0],pos1[1])
     drawSquare(pos2[0],pos2[1])
 
-def algebraicMove(move):
-    return sunfish.render(move[0])+sunfish.render(move[1])
-
 mc = Minecraft()
-black = len(sys.argv) > 1 and sys.argv[1][0] == 'b'
-demo = len(sys.argv) > 1 and sys.argv[1][0] == 'd'
+options = ''.join(sys.argv[1:])
+black = 'b' in options
+demo = 'd' in options
+fast = 'f' in options
 mc.postToChat("Please wait: setting up board.")
 corner = mc.player.getTilePos()
 corner.x -= 32
@@ -347,11 +361,11 @@ pieces = {}
 pos = sunfish.Position(sunfish.initial, 0, (True,True), (True,True), 0, 0)
 for row in range(8):
     for col in range(8):
-        piece = pos.board[toNumeric(row,col)]
+        piece = pos.board[toNumeric((row,col),False)]
         if piece in pieceBitmaps:
-            v = toVehicle(pieceBitmaps[piece], WHITE)
+            v = toVehicle(pieceBitmaps[piece], WHITE, piece)
         elif piece.capitalize() in pieceBitmaps:
-            v = toVehicle(pieceBitmaps[piece.capitalize()], BLACK)
+            v = toVehicle(pieceBitmaps[piece.capitalize()], BLACK, piece)
         else:
             continue
         #uncomment the following line to optimize speed
@@ -369,7 +383,8 @@ while True:
         else:
             mc.postToChat("White to move.")
         if demo:
-            move,score = adjustPlayerMove(sunfish.search(pos))
+            sunfish.tp = OrderedDict()
+            move,score = sunfish.search(pos)
         else:
             moves = tuple(pos.genMoves())
             move = None
@@ -377,18 +392,20 @@ while True:
                 if move is not None:
                     mc.postToChat("Illegal move.")
                 mc.postToChat("Right-click the start and end points with a sword.")
-                m = inputMove()
-                move =  adjustPlayerMove((toNumeric(m[0][0],m[0][1]), toNumeric(m[1][0],m[1][1])))
-        mc.postToChat("Player: "+algebraicMove(adjustPlayerMove(move)))
-        animateMove(adjustPlayerMove(move))
+                move = toNumericMove(inputMove(),black)
+        rowColMove = toRowColMove(move,black)
+        mc.postToChat("Player: "+ toAlgebraicMove(rowColMove))
+        animateMove(rowColMove)
         pos = pos.move(move)
     mc.postToChat("Thinking...")
+    if demo: sunfish.tp = OrderedDict()
     move,score = sunfish.search(pos)
     if score <= -sunfish.MATE_VALUE:
-        mc.postToChat("You won the game.")
+        mc.postToChat("I resign. You won the game.")
         break
-    mc.postToChat("Computer: "+algebraicMove(adjustOpponentMove(move)))
-    animateMove(adjustOpponentMove(move))
+    rowColMove = toRowColMove(move,not black)
+    mc.postToChat("Computer: "+toAlgebraicMove(rowColMove))
+    animateMove(rowColMove)
     if sunfish.MATE_VALUE <= score:
         mc.postToChat("You lost the game.")
         break
