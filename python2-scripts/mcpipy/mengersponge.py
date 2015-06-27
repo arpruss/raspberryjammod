@@ -3,6 +3,7 @@
 #
 from mc import *
 import mcpi.settings as settings
+import sys
 
 def deleteCubes(x0,y0,z0,length):
     length /= 3
@@ -20,6 +21,13 @@ def deleteCubes(x0,y0,z0,length):
                 else:
                     deleteCubes(posX,posY,posZ,length)
 
+def slice(x0,y0,z0,length):
+    for x in range(0,length):
+        for y in range(0,length):
+            for z in range(0,length):
+                if x+y+z >= 1.5*length:
+                    mc.setBlock(x0+x,y0+y,z0+z,AIR)
+
 mc = Minecraft()
 playerPos = mc.player.getPos()
 if settings.isPE:
@@ -29,3 +37,6 @@ else:
 mc.setBlocks(playerPos.x,playerPos.y,playerPos.z,
              playerPos.x+length-1,playerPos.y+length-1,playerPos.z+length-1,WOOL_PURPLE)
 deleteCubes(playerPos.x,playerPos.y,playerPos.z,length)
+if len(sys.argv)>1 and sys.argv[1][0] == 's':
+    mc.postToChat("Slicing")
+    slice(playerPos.x,playerPos.y,playerPos.z,length)
