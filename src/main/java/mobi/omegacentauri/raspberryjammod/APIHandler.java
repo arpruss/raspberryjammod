@@ -275,6 +275,7 @@ public class APIHandler {
 				fail("Unknown player");
 			}
 			else {
+				// unofficial API to get current player ID
 				sendLine(clientPlayer.getEntityId());
 			}
 		}

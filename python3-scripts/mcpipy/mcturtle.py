@@ -23,7 +23,7 @@ class Turtle:
              self.mc = mc
         else:
              self.mc = minecraft.Minecraft()
-        self.block = BEDROCK
+        self.block = GOLD_BLOCK
         self.width = 1
         self.pen = True
         self.directionIn()
@@ -31,10 +31,20 @@ class Turtle:
         self.delayTime = 0.05
         self.nib = [(0,0,0)]
         self.turtleType = PLAYER
-        self.playerId = self.mc.getPlayerId()
-        self.turtleId = self.playerId
+        self.turtleId = None
         self.fan = None
         self.stack = []
+        self.setEntityCommands()
+
+    def setEntityCommands(self):
+        if self.turtleId == None:
+            self.setPos = self.mc.player.setPos
+            self.setPitch = self.mc.player.setPitch
+            self.setRotation = self.mc.player.setRotation
+        else:
+            self.setPos = lambda *pos: self.mc.entity.setPos(self.turtleId,*pos)
+            self.setPitch = lambda angle: self.mc.entity.setPitch(self.turtleId,angle)
+            self.setRotation = lambda angle: self.mc.entity.setRotation(self.turtleId,angle)
 
     def save(self):
         dict = {}
@@ -67,11 +77,12 @@ class Turtle:
             self.mc.removeEntity(self.turtleId)
         self.turtleType = turtleType
         if turtleType == PLAYER:
-            self.turtleId = self.playerId
+            self.turtleId = None
         elif turtleType:
             self.turtleId = self.mc.spawnEntity(turtleType,
                                                 self.position.x,self.position.y,self.position.z,
                                                 "{NoAI:1}")
+        self.setEntityCommands()
         self.positionOut()
         self.directionOut()
 
@@ -157,7 +168,7 @@ class Turtle:
 
     def positionOut(self):
         if self.turtleType:
-            self.mc.entity.setPos(self.turtleId,self.position)
+            self.setPos(self.position)
 
     def delay(self):
         if self.delayTime > 0:
@@ -276,10 +287,10 @@ class Turtle:
             heading = self.getHeading()
             xz = sqrt(heading[0]*heading[0] + heading[2]*heading[2])
             pitch = atan2(-heading[1], xz) * Turtle.TO_DEGREES
-            self.mc.entity.setPitch(self.turtleId,pitch)
+            self.setPitch(pitch)
             if xz >= 1e-9:
                 rotation = atan2(-heading[0], heading[2]) * Turtle.TO_DEGREES
-                self.mc.entity.setRotation(self.turtleId,rotation)
+                self.setRotation(rotation)
 
     def pendelay(self, t):
         """Set pen delay in seconds (t: float)"""

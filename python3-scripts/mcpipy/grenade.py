@@ -81,12 +81,17 @@ else:
 
 try:
     player = int(os.environ['MINECRAFT_PLAYER_ID'])
+    getPos = lambda: mc.entity.getPos(player)
+    getRotation = lambda: mc.entity.getRotation(player)
+    getPitch = lambda: mc.entity.getPitch(player)
 except:
-    player = mc.getPlayerId()
+    getPos = mc.player.getPos
+    getRotation = mc.player.getRotation
+    getPitch = mc.player.getPitch
 
-center = mc.entity.getPos(player)
-azi = mc.entity.getRotation(player) * pi/180.
-alt = -mc.entity.getPitch(player) * pi/180.
+center = getPos()
+azi = getRotation() * pi/180.
+alt = -getPitch() * pi/180.
 
 GRENADE = { (-1,0,0):TNT, (1,0,0):TNT, (0,-1,0):TNT, (0,1,0):TNT, (0,0,1):TNT, (0,0,-1):TNT }
 

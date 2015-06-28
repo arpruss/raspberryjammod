@@ -1,6 +1,10 @@
 #
 # Code under the MIT license by Alexander Pruss
 #
+#
+# Requires Raspberry Jam
+#
+
 
 import mcpi.minecraft as minecraft
 import time
