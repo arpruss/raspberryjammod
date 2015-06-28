@@ -14,7 +14,6 @@ from mc import *
 from vehicle import *
 import time
 import sys
-import os
 
 GRAVITIES = {
     'sun':274,
@@ -79,19 +78,9 @@ if 3 <= len(sys.argv):
 else:
     g = GRAVITIES['earth']
 
-try:
-    player = int(os.environ['MINECRAFT_PLAYER_ID'])
-    getPos = lambda: mc.entity.getPos(player)
-    getRotation = lambda: mc.entity.getRotation(player)
-    getPitch = lambda: mc.entity.getPitch(player)
-except:
-    getPos = mc.player.getPos
-    getRotation = mc.player.getRotation
-    getPitch = mc.player.getPitch
-
-center = getPos()
-azi = getRotation() * pi/180.
-alt = -getPitch() * pi/180.
+center = mc.player.getPos()
+azi = mc.player.getRotation() * pi/180.
+alt = -mc.player.getPitch() * pi/180.
 
 GRENADE = { (-1,0,0):TNT, (1,0,0):TNT, (0,-1,0):TNT, (0,1,0):TNT, (0,0,1):TNT, (0,0,-1):TNT }
 

@@ -3,6 +3,7 @@ from .vec3 import Vec3
 from .event import BlockEvent,ChatEvent
 from .block import Block
 import math
+from os import environ
 from .util import flatten,floorFlatten
 
 """ Minecraft PI low level api v0.1_1
@@ -94,32 +95,33 @@ class CmdEntity(CmdPositioner):
 
 class CmdPlayer(CmdPositioner):
     """Methods for the host (Raspberry Pi) player"""
-    def __init__(self, connection):
-        CmdPositioner.__init__(self, connection, "player")
+    def __init__(self, connection, playerId=()):
+        CmdPositioner.__init__(self, connection, "player" if playerId is () else "entity")
+        self.id = playerId
         self.conn = connection
 
     def getDirection(self):
-        return CmdPositioner.getDirection(self, [])
+        return CmdPositioner.getDirection(self, self.id)
     def getPitch(self):
-        return CmdPositioner.getPitch(self, [])
+        return CmdPositioner.getPitch(self, self.id)
     def getRotation(self):
-        return CmdPositioner.getRotation(self, [])
+        return CmdPositioner.getRotation(self, self.id)
     def setPitch(self, *args):
-        return CmdPositioner.setPitch(self, [], args)
+        return CmdPositioner.setPitch(self, self.id, args)
     def setRotation(self, *args):
-        return CmdPositioner.setRotation(self, [], args)
+        return CmdPositioner.setRotation(self, self.id, args)
     def setDirection(self, *args):
-        return CmdPositioner.setDirection(self, [], args)
+        return CmdPositioner.setDirection(self, self.id, args)
     def getRotation(self):
-        return CmdPositioner.getRotation(self, [])
+        return CmdPositioner.getRotation(self, self.id)
     def getPos(self):
-        return CmdPositioner.getPos(self, [])
+        return CmdPositioner.getPos(self, self.id)
     def setPos(self, *args):
-        return CmdPositioner.setPos(self, [], args)
+        return CmdPositioner.setPos(self, self.id, args)
     def getTilePos(self):
-        return CmdPositioner.getTilePos(self, [])
+        return CmdPositioner.getTilePos(self, self.id)
     def setTilePos(self, *args):
-        return CmdPositioner.setTilePos(self, [], args)
+        return CmdPositioner.setTilePos(self, self.id, args)
 
 class CmdCamera:
     def __init__(self, connection):
@@ -166,7 +168,7 @@ class CmdEvents:
 class Minecraft:
     """The main class to interact with a running instance of Minecraft Pi."""
 
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, autoId=True):
         if connection:
             self.conn = connection
         else:
@@ -174,9 +176,17 @@ class Minecraft:
 
         self.camera = CmdCamera(self.conn)
         self.entity = CmdEntity(self.conn)
-        self.player = CmdPlayer(self.conn)
+        if autoId:
+            try:
+                 playerId = int(environ['MINECRAFT_PLAYER_ID'])
+                 self.player = CmdPlayer(self.conn,playerId=playerId)
+            except:
+                 self.player = CmdPlayer(self.conn)
+        else:
+            self.player = CmdPlayer(self.conn)
         self.events = CmdEvents(self.conn)
         self.enabledNBT = False
+
 
     def spawnEntity(self, *args):
         """Spawn entity (type,x,y,z,tags) and get its id => id:int"""

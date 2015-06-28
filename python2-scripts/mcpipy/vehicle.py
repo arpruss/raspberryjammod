@@ -291,7 +291,6 @@ class Vehicle():
 if __name__ == '__main__':
     import time
     import sys
-    import os
 
     bubble = False
     nondestructive = False
@@ -308,19 +307,11 @@ if __name__ == '__main__':
 
     minecraft = Minecraft()
 
-    try:
-        player = int(os.environ['MINECRAFT_PLAYER_ID'])
-        playerGetTilePos = lambda: minecraft.entity.getTilePos(player)
-        playerGetRotation = lambda: minecraft.entity.getRotation(player)
-    except:
-        playerGetTilePos = minecraft.player.getTilePos
-        playerGetRotation = minecraft.player.getRotation
-
-    vehiclePos = playerGetTilePos()
+    vehiclePos = minecraft.player.getTilePos()
 
     vehicle = Vehicle(minecraft,nondestructive)
     minecraft.postToChat("Scanning vehicle")
-    vehicle.scan(vehiclePos.x,vehiclePos.y,vehiclePos.z,playerGetRotation(),flash)
+    vehicle.scan(vehiclePos.x,vehiclePos.y,vehiclePos.z,minecraft.player.getRotation(),flash)
     minecraft.postToChat("Number of blocks: "+str(len(vehicle.baseVehicle)))
     if bubble:
         minecraft.postToChat("Scanning for air bubble")
@@ -333,6 +324,6 @@ if __name__ == '__main__':
         minecraft.postToChat("Now walk around.")
 
     while True:
-        pos = playerGetTilePos()
-        vehicle.moveTo(pos.x,pos.y,pos.z,playerGetRotation())
+        pos = minecraft.player.getTilePos()
+        vehicle.moveTo(pos.x,pos.y,pos.z,minecraft.player.getRotation())
         time.sleep(0.25)
