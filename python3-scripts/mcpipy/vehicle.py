@@ -5,9 +5,13 @@
 """
  Make a moving vehicle out of whatever blocks the player is standing near.
 
- Add a 'b' argument if you have and want an airtight bubble in the vehicle for going underwater
- Add an 'n' argument if you want (somewhat) non-destructive mode
- Add an 'q' argument if you don't want the vehicle to flash red as it is scanned
+ python [options [name]]
+ options can include:
+   b: want an airtight bubble in the vehicle for going underwater
+   n: non-destructive mode
+   q: don't want the vehicle to flash as it is scanned
+   l: load vehicle from vehicles/name.py
+   s: save vehicle to vehicles/name.py
 
  The vehicle detection algorithm works as follows:
    first, search for nearest non-terrain block within distance SCAN_DISTANCE of the player
@@ -20,6 +24,7 @@
 from mcpi.minecraft import *
 from mcpi.block import *
 from math import *
+import re
 
 class Vehicle():
     # the following blocks do not count as part of the vehicle
@@ -55,7 +60,7 @@ class Vehicle():
         self.curRotation = 0
         self.curLocation = None
         self.saved = {}
-        self.startAngle = 0
+        self.baseAngle = 0
 
     @staticmethod
     def keyFunction(dict,erase,pos):
@@ -81,6 +86,26 @@ class Vehicle():
                         return (x0+x,y0+y,z0+z)
         return None
 
+    def save(self,filename):
+        f = open(filename,"w")
+        f.write("baseAngle,highWater,baseVehicle="+repr((self.baseAngle,self.highWater,self.baseVehicle))+"\n")
+        f.close()
+
+    @staticmethod
+    def safeEval(string):
+        if "__" in string:
+            raise ValueError
+        return eval(string)
+
+    def load(self,filename):
+        with open(filename) as f:
+            data = ''.join(f.readlines())
+            result = re.search("=\\s*(.*)",data)
+            if result is None:
+                raise ValueError
+            self.baseAngle,self.highWater,self.baseVehicle = Vehicle.safeEval(result.group(1))
+        self.curLocation = None
+
     def safeSetBlockWithData(self,pos,block):
         """
         Draw block, making sure buttons are not depressed. This is to fix a glitch where launching 
@@ -94,7 +119,7 @@ class Vehicle():
         positions = {}
         self.curLocation = (x0,y0,z0)
         self.curRotation = 0
-        self.startAngle = angle
+        self.baseAngle = angle
 
         seed = self.getSeed(x0,y0,z0)
         if seed is None:
@@ -142,9 +167,9 @@ class Vehicle():
                 self.safeSetBlockWithData(pos,self.curVehicle[pos])
 
     def angleToRotation(self,angle):
-        return int(round((angle-self.startAngle)/90.)) % 4
+        return int(round((angle-self.baseAngle)/90.)) % 4
 
-    def drawVehicle(self,x,y,z,angle=0):
+    def draw(self,x,y,z,angle=0):
         self.curLocation = (x,y,z)
         self.curRotation = self.angleToRotation(angle)
         self.curVehicle = {}
@@ -157,7 +182,7 @@ class Vehicle():
             self.safeSetBlockWithData(drawPos,vehicle[pos])
             self.curVehicle[drawPos] = vehicle[pos]
 
-    def eraseVehicle(self):
+    def erase(self):
         todo = {}
         for pos in self.curVehicle:
             if self.nondestructive and pos in self.saved:
@@ -171,7 +196,7 @@ class Vehicle():
 
     def setVehicle(self,dict,startAngle=None):
         if not startAngle is None:
-            self.startAngle = startAngle
+            self.baseAngle = startAngle
         self.baseVehicle = dict
 
     def setHighWater(self,y):
@@ -291,39 +316,121 @@ class Vehicle():
 if __name__ == '__main__':
     import time
     import sys
+    import os
+    
+    def save(name):
+        dir = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
+        try:
+            os.mkdir(dir)
+        except:
+            pass
+        vehicle.save(os.path.join(dir,name+".py"))
+        minecraft.postToChat('Vehicle saved as "'+name+'".')
+
+    def load(name):
+        dir = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
+        vehicle.load(os.path.join(dir,name+".py"))
+        minecraft.postToChat('Vehicle "'+name+'" loaded.')
+
+    def chatHelp():
+        minecraft.postToChat("verase: erase vehicle and exit")
+        minecraft.postToChat("vsave filename: save vehicle")
+        minecraft.postToChat("vload filename: load vehicle")
+        minecraft.postToChat("vdriver [EntityName]: set driver to entity (omit for player) [Jam only]")
 
     bubble = False
     nondestructive = False
     flash = True
+    loadName = None
+    saveName = None
 
     if len(sys.argv)>1:
-        for x in ''.join(sys.argv[1:]):
+        for x in sys.argv[1]:
             if x == 'b':
                 bubble = True
             elif x == 'n':
                 nondestructive = True
             elif x == 'q':
                 flash = False
+            elif x == 's':
+                saveName = sys.argv[2]
+            elif x == 'l' and len(sys.argv)>2:
+                loadName = sys.argv[2]
 
     minecraft = Minecraft()
 
-    vehiclePos = minecraft.player.getTilePos()
+    getRotation = minecraft.player.getRotation
+    getTilePos = minecraft.player.getTilePos
+
+    vehiclePos = getTilePos()
 
     vehicle = Vehicle(minecraft,nondestructive)
-    minecraft.postToChat("Scanning vehicle")
-    vehicle.scan(vehiclePos.x,vehiclePos.y,vehiclePos.z,minecraft.player.getRotation(),flash)
-    minecraft.postToChat("Number of blocks: "+str(len(vehicle.baseVehicle)))
-    if bubble:
-        minecraft.postToChat("Scanning for air bubble")
-        vehicle.addBubble()
-
-    if len(vehicle.baseVehicle) == 0:
-        minecraft.postToChat("Make a vehicle and then stand on or in it when starting this script.")
-        exit()
+    if loadName:
+        load(loadName)
     else:
-        minecraft.postToChat("Now walk around.")
+        minecraft.postToChat("Scanning vehicle")
+        vehicle.scan(vehiclePos.x,vehiclePos.y,vehiclePos.z,getRotation(),flash)
+        minecraft.postToChat("Number of blocks: "+str(len(vehicle.baseVehicle)))
+        if bubble:
+            minecraft.postToChat("Scanning for air bubble")
+            vehicle.addBubble()
+        if len(vehicle.baseVehicle) == 0:
+            minecraft.postToChat("Make a vehicle and then stand on or in it when starting this script.")
+            exit()
+    if saveName:
+        save(saveName)
+    minecraft.postToChat("Now walk around.")
+
+    entity = None
+    try:
+        minecraft.events.pollChatPosts()
+    except:
+        pass
 
     while True:
-        pos = minecraft.player.getTilePos()
-        vehicle.moveTo(pos.x,pos.y,pos.z,minecraft.player.getRotation())
+        pos = getTilePos()
+        vehicle.moveTo(pos.x,pos.y,pos.z,getRotation())
+        try:
+            chats = minecraft.events.pollChatPosts()
+            for post in chats:
+                args = post.message.split()
+                if len(args)>0:
+                    if args[0] == 'vhelp':
+                        chatHelp()
+                    if args[0] == 'verase':
+                        vehicle.erase()
+                        exit()
+                    elif args[0] == 'vsave':
+                        if len(args) > 1:
+                            save(args[1])
+                        else:
+                            chatHelp()
+                    elif args[0] == 'vload':
+                        if len(args) > 1:
+                            try:
+                                save("_backup")
+                                minecraft.postToChat('Old vehicle saved as "_backup".')
+                                load(args[1])
+                                vehicle.erase()
+                            except:
+                                minecraft.postToChat("Error loading "+args[1])
+                        else:
+                            chatHelp()
+                    elif args[0] == 'vdriver':
+                        if entity != None:
+                            minecraft.removeEntity(entity)
+                            entity = None
+                        if len(args) > 1:
+                            try:
+                                entity = minecraft.spawnEntity(args[1],pos.x,pos.y,pos.z)
+                                getRotation = lambda: minecraft.entity.getRotation(entity)
+                                getTilePos = lambda: minecraft.entity.getTilePos(entity)
+                            except:
+                                minecraft.postToChat('Error spawning '+args[1])
+                        else:
+                            getRotation = minecraft.player.getRotation
+                            getTilePos = minecraft.player.getTilePos
+
+        except RequestError:
+            pass
         time.sleep(0.25)

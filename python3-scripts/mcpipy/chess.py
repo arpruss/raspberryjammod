@@ -306,13 +306,13 @@ def animateMove(rowColMove):
         # promote to queen (all that's supported by the engine)
         animateMovePiece(pos1,pos2)
         piece = pieces[pos2]
-        piece.eraseVehicle()
+        piece.erase()
         if pos.board[move].islower():
             pieces[pos2] = toVehicle(QUEEN, BLACK, 'q')
         else:
             pieces[pos2] = toVehicle(QUEEN, WHITE, 'Q')
         c = getCoords(pos2[0],pos2[1])
-        v.drawVehicle(c[0],c[1],c[2])
+        v.draw(c[0],c[1],c[2])
         return
     else:
         victim = None
@@ -328,10 +328,10 @@ def animateMove(rowColMove):
             redrawPiece = True
         animateMovePiece(pos1,pos2)
         if not victim is None:
-            victim.eraseVehicle()
+            victim.erase()
             if redrawPiece:
                 piece = pieces[pos2]
-                piece.drawVehicle(piece.curLocation[0],piece.curLocation[1],piece.curLocation[2])
+                piece.draw(piece.curLocation[0],piece.curLocation[1],piece.curLocation[2])
     drawSquare(pos1[0],pos1[1])
     drawSquare(pos2[0],pos2[1])
 
@@ -372,7 +372,7 @@ for row in range(8):
         v.getBlockWithData = myGetBlockWithData
         pieces[(row,col)] = v
         c = getCoords(row,col)
-        v.drawVehicle(c[0],c[1],c[2])
+        v.draw(c[0],c[1],c[2])
 
 playerMovesNext = not black
 

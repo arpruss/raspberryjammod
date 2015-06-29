@@ -35,7 +35,7 @@ class Block:
         if self.nbt is None:
             return "Block(%d, %d)"%(self.id, self.data)
         else:
-            return "Block(%d, %d, %s)"%(self.id, self.data, self.nbt)
+            return "Block(%d, %d, %s)"%(self.id, self.data, repr(self.nbt))
 
 
 
