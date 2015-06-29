@@ -92,7 +92,7 @@ path = getPath(center, azi, alt, v0)
 dictionary = {}
 prev = path[0][1]
 
-grenade.drawVehicle(prev.x,prev.y,prev.z)
+grenade.draw(prev.x,prev.y,prev.z)
 
 t0 = time.time()
 
