@@ -52,11 +52,6 @@ class CmdPositioner:
         s = self.conn.sendReceive(self.pkg + ".getPos", id)
         return Vec3(*list(map(float, s.split(","))))
 
-    def getPos(self, id):
-        """Get entity position (entityId:int) => Vec3"""
-        s = self.conn.sendReceive(self.pkg + ".getPos", id)
-        return Vec3(*list(map(float, s.split(","))))
-
     def setPos(self, id, *args):
         """Set entity position (entityId:int, x,y,z)"""
         self.conn.send(self.pkg + ".setPos", id, args)
@@ -73,7 +68,7 @@ class CmdPositioner:
         """Set entity pitch (entityId:int, angle)"""
         self.conn.send(self.pkg + ".setPitch", id, args)
 
-    def getTilePos(self, id):
+    def getTilePos(self, id, *args):
         """Get entity tile position (entityId:int) => Vec3"""
         s = self.conn.sendReceive(self.pkg + ".getTile", id)
         return Vec3(*list(map(int, s.split(","))))
@@ -96,7 +91,7 @@ class CmdEntity(CmdPositioner):
 class CmdPlayer(CmdPositioner):
     """Methods for the host (Raspberry Pi) player"""
     def __init__(self, connection, playerId=()):
-        CmdPositioner.__init__(self, connection, "player" if playerId is () else "entity")
+        CmdPositioner.__init__(self, connection, "player" if playerId==() else "entity")
         self.id = playerId
         self.conn = connection
 

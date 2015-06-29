@@ -181,6 +181,10 @@ class Vehicle():
                 self.saved[drawPos] = self.getBlockWithData(drawPos)
             self.safeSetBlockWithData(drawPos,vehicle[pos])
             self.curVehicle[drawPos] = vehicle[pos]
+            
+    def blankBehind(self):
+        for pos in self.saved:
+            self.saved[pos] = self.defaultFiller(pos)
 
     def erase(self):
         todo = {}
@@ -411,7 +415,6 @@ if __name__ == '__main__':
                                 save("_backup")
                                 minecraft.postToChat('Old vehicle saved as "_backup".')
                                 load(args[1])
-                                vehicle.erase()
                             except:
                                 minecraft.postToChat("Error loading "+args[1])
                         else:
@@ -430,7 +433,6 @@ if __name__ == '__main__':
                         else:
                             getRotation = minecraft.player.getRotation
                             getTilePos = minecraft.player.getTilePos
-
         except RequestError:
             pass
         time.sleep(0.25)

@@ -181,6 +181,10 @@ class Vehicle():
                 self.saved[drawPos] = self.getBlockWithData(drawPos)
             self.safeSetBlockWithData(drawPos,vehicle[pos])
             self.curVehicle[drawPos] = vehicle[pos]
+            
+    def blankBehind(self):
+        for pos in self.saved:
+            self.saved[pos] = self.defaultFiller(pos)
 
     def erase(self):
         todo = {}
