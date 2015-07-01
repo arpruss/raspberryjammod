@@ -57,6 +57,7 @@ public class RaspberryJamMod
 	public static boolean concurrent = true;
 	public static boolean leftClickToo = true;
 	public static boolean allowRemote = true;
+	public static boolean globalChatMessages = true;
 	public static volatile boolean active = false;
 	public static String pythonInterpreter = "python";
 	public MCEventHandler serverEventHandler = null;
@@ -86,6 +87,7 @@ public class RaspberryJamMod
 		allowRemote = configFile.getBoolean("Remote Connections", Configuration.CATEGORY_GENERAL, true, "Remote connections");
 		leftClickToo = configFile.getBoolean("Detect Sword Left-Click", Configuration.CATEGORY_GENERAL, false, "Detect sword left-click");
 		pythonInterpreter = configFile.getString("Python Interpreter", Configuration.CATEGORY_GENERAL, "python", "Python interpreter");
+		globalChatMessages = configFile.getBoolean("Messages Go To All", Configuration.CATEGORY_GENERAL, true, "Messages go to all");
 
 		if (configFile.hasChanged())
 			configFile.save();

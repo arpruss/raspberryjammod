@@ -249,7 +249,15 @@ public class APIHandler {
 			entityGetTile(clientPlayer);
 		}
 		else if (cmd.equals(CHAT)) {
-			Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(args));
+			if (RaspberryJamMod.globalChatMessages) {
+				List<EntityPlayer> players = serverWorld.playerEntities;
+				for (EntityPlayer p : players ) {
+					p.addChatComponentMessage(new ChatComponentText(args));
+				}
+			}
+			else {
+				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(args));
+			}
 //			clientPlayer.sendChatMessage(args);
 		}
 		else if (cmd.equals(WORLDGETPLAYERIDS)) {

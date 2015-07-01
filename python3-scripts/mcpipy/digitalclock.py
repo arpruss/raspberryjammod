@@ -9,7 +9,7 @@ import time
 import sys
 import fonts
 
-foreground = SEA_LANTERN
+foreground = SEA_LANTERN # this needs Minecraft 1.8
 background = AIR
 
 try:

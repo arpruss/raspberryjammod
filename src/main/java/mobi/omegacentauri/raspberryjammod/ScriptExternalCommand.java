@@ -21,6 +21,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
 import net.minecraft.server.MinecraftServer;
@@ -184,8 +185,6 @@ public abstract class ScriptExternalCommand implements ICommand {
 	public void execute(ICommandSender sender, String[] args)
 			throws CommandException {
 		
-		System.out.println("execute");
-		
 		World serverWorld = MinecraftServer.getServer().getEntityWorld();
 		
 		if (! RaspberryJamMod.allowRemote &&
@@ -195,7 +194,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 					ChatComponentText("Blocked possible remote script launch by "+sender.getCommandSenderEntity()));
 			return;
 		}
-
+		
 		boolean addMode = addMode();
 		
 		if (!addMode) {
@@ -234,11 +233,13 @@ public abstract class ScriptExternalCommand implements ICommand {
 		ProcessBuilder pb = new ProcessBuilder(cmd);
 		//		pb.redirectErrorStream(true);
 		pb.directory(script.getParentFile());
+		
 		Map<String, String> environment = pb.environment();
-		environment.put("MINECRAFT_PLAYER_NAME", sender.getName());
-		Entity player = serverWorld.getPlayerEntityByName(sender.getName());
-		if (player != null) {
-			environment.put("MINECRAFT_PLAYER_ID", ""+player.getEntityId());
+		EntityPlayer player = null;
+		Entity senderEntity = sender.getCommandSenderEntity();
+		if (senderEntity instanceof EntityPlayer) {
+			environment.put("MINECRAFT_PLAYER_NAME", senderEntity.getName());
+			environment.put("MINECRAFT_PLAYER_ID", ""+senderEntity.getEntityId());
 		}
 
 		//		pb.inheritIO();
@@ -247,14 +248,14 @@ public abstract class ScriptExternalCommand implements ICommand {
 			System.out.println("Running "+script);
 			Process runningScript = pb.start();
 			runningScripts.add(runningScript);
-			gobble(runningScript.getInputStream(), "");
-			gobble(runningScript.getErrorStream(), "[ERR] ");
+			gobble(runningScript.getInputStream(), player, "");
+			gobble(runningScript.getErrorStream(), player, "[ERR] ");
 		} catch (IOException e) {
 			throw new CommandException("Error "+e);
 		}
 	}
 
-	private void gobble(final InputStream stream, final String label) {
+	private void gobble(final InputStream stream, final EntityPlayer entity, final String label) {
 		Thread t = new Thread() {
 
 			@Override
@@ -267,7 +268,10 @@ public abstract class ScriptExternalCommand implements ICommand {
 				try {
 					while ( null != ( line = br.readLine()) ) {
 						line.trim();
-						Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(label + line));
+						if (entity == null)
+							Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(label + line));
+						else 
+							entity.addChatComponentMessage(new ChatComponentText(label + line));
 					}
 				} catch (IOException e) {
 				}
