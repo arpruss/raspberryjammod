@@ -29,7 +29,9 @@ def wall(x1,y1,z1, x2,y2,z2, baseHeight, altHeight, distribution):
             height = altHeight
         else:
             height = baseHeight
-        rectangularPrism(x,y1,z,x,y1+height,z,distribution)
+        h = mc.getHeight(x,z)
+        y0 = min(h,y1)
+        rectangularPrism(x,y0,z,x,y1+height,z,distribution)
         if x >= x2 and z >= z2:
             return
         if x < x2:
