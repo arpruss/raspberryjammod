@@ -13,10 +13,15 @@
 #    90 : 90, 180 and 270 degrees in the plane
 #    180 : 180 degrees in the plane
 #
+#  Alternately you can do translational symmetry with:
+#    t N x y z : translate N times by vector (x,y,z)
+#
 # Code by Alexander Pruss under MIT license.
 #
 
 from mcpi.minecraft import Minecraft
+import mcpi.block as block
+from functools import partial
 import sys
 import time
 
@@ -59,58 +64,67 @@ def addVec(a,b):
 x180 = mulMat(x90,x90)
 
 if __name__ == "__main__":
-    def copy(v):
-        block = mc.getBlockWithNBT(v)
-        for mat in transforms:
-            v2 = addVec(mulMatVec(mat,subVec(v,center)),center)
-            mc.setBlockWithNBT(v2,block)
-
-
-    if len(sys.argv) <= 1:
-        transforms = set( [xn,xe] )
-    else:
-        transforms = set()
-        for opt in sys.argv[1:]:
-            if opt == 'n':
-                transforms.add(xn)
-            elif opt == 'e':
-                transforms.add(xe)
-            elif opt == 'u':
-                transforms.add(xu)
-            elif opt == 'nw':
-                transforms.add(xnw)
-            elif opt == 'ne':
-                transforms.add(xne)
-            elif opt == '90':
-                transforms.add(x90)
-            elif opt == '180':
-                transforms.add(x180)
+    def copy(v,airOnly=False):
+        b = mc.getBlockWithNBT(v)
+        if airOnly and b.id != block.AIR.id:
+            return
+        v1 = addVec(v,(0.5,0.5,0.5))
+        for t in transforms:
+            mc.setBlockWithNBT(t(v1),b)
 
     mc = Minecraft()
 
     playerPos = mc.player.getPos()
 
-    center = tuple(0.5 * round(2 * x) - 0.5 for x in playerPos)
+    transforms = []
+    if len(sys.argv) > 5 and sys.argv[1][0] == 't':
+        n = int(sys.argv[2])
+        transforms = []
+        x,y,z = float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5])
+        for k in range(1,n+1):
+            transforms.append(lambda v,k=k : addVec(v,(k*x,k*y,k*z)))
+    else:
+        if len(sys.argv) <= 1:
+            matrices = set( [xn,xe] )
+        else:
+            matrices = set([xid])
+            for opt in sys.argv[1:]:
+                if opt == 'n':
+                    matrices.add(xn)
+                elif opt == 'e':
+                    matrices.add(xe)
+                elif opt == 'u':
+                    matrices.add(xu)
+                elif opt == 'nw':
+                    matrices.add(xnw)
+                elif opt == 'ne':
+                    matrices.add(xne)
+                elif opt == '90':
+                    matrices.add(x90)
+                elif opt == '180':
+                    matrices.add(x180)
+            if len(matrices) == 0:
+                mc.postToChat("No recognized symmetries.")
+                exit()
 
-    if len(transforms) == 0:
-        mc.postToChat("No recognized symmetries.")
-        exit()
+        matrices.add(xid)
+        old = set()
+
+        while len(old) < len(matrices):
+            old = matrices
+            matrices = set()
+            for a in old:
+                for b in old:
+                    matrices.add(mulMat(a,b))
+        matrices.remove(xid)
+        for m in matrices:
+            transforms.append(lambda v,m=m : addVec(mulMatVec(m,subVec(v,center)),center))
+
+    center = tuple(0.5 * round(2 * x) for x in playerPos)
 
     mc.conn.send("events.setting","restrict_to_sword",0)
 
-    transforms.add(xid)
-    old = set()
-
-    while len(old) < len(transforms):
-        old = transforms
-        transforms = set()
-        for a in old:
-            for b in old:
-                transforms.add(mulMat(a,b))
-
-    mc.postToChat("Will be drawing {} copies".format(len(transforms)))
-
-    transforms.remove(xid)
+    mc.postToChat("Will be drawing {} copies".format(1+len(transforms)))
 
     mc.events.clearAll()
 
@@ -119,6 +133,6 @@ if __name__ == "__main__":
         time.sleep(0.25)
         for h in hits:
             v = tuple(x for x in h.pos)
-            copy(v)
+            copy(v,airOnly=True)
             copy(addVec(v,faces[h.face]))
             
