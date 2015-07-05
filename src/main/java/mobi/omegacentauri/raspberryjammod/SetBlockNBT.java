@@ -16,15 +16,15 @@ public class SetBlockNBT extends SetBlockState {
 	NBTTagCompound nbt;
 	
 	// Note: This modifies the nbt tag compound
-	public SetBlockNBT(BlockPos pos, short id, short meta, NBTTagCompound nbt) {
+	public SetBlockNBT(Location pos, short id, short meta, NBTTagCompound nbt) {
 		super(pos,id,meta);
 		this.nbt = nbt;
 	}
 	
 	@Override
-	public void execute(World world) {
-		world.setBlockState(pos, Block.getBlockById((int)id).getStateFromMeta((int)meta), 2);
-		TileEntity tileEntity = world.getTileEntity(pos);
+	public void execute() {
+		pos.world.setBlockState(pos, Block.getBlockById((int)id).getStateFromMeta((int)meta), 2);
+		TileEntity tileEntity = pos.world.getTileEntity(pos);
 		if (tileEntity != null) {
 			nbt.setInteger("x", pos.getX());
 			nbt.setInteger("y", pos.getY());

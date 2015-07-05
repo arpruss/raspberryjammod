@@ -4,6 +4,7 @@ import java.beans.EventSetDescriptor;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -11,6 +12,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
@@ -37,7 +40,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class MCEventHandler {
-	private List<SetBlockState> blockActionQueue = new ArrayList<SetBlockState>();		
+	private List<ServerAction> serverActionQueue = new ArrayList<ServerAction>();		
 	private List<HitDescription> hits = new LinkedList<HitDescription>();
 	private List<ChatDescription> chats = new LinkedList<ChatDescription>();
 	private static final int MAX_HITS = 512;
@@ -48,6 +51,8 @@ public class MCEventHandler {
 	private ServerChatEvent chatEvents;
 	private static final int MAX_CHATS = 512;
 	private int clientTickCount = 0;
+	public volatile Integer dimensionSwitch = null;
+	public Entity dimensionSwitchEntity;
 
 	public void setStopChanges(boolean stopChanges) {
 		this.stopChanges = stopChanges;
@@ -183,60 +188,60 @@ public class MCEventHandler {
 		if (!pause) {
 			World world = MinecraftServer.getServer().getEntityWorld();
 			
-			synchronized(blockActionQueue) {
-				for (SetBlockState entry: blockActionQueue) {
+			synchronized(serverActionQueue) {
+				for (ServerAction entry: serverActionQueue) {
 					if (! RaspberryJamMod.active)
 						break;
-					entry.execute(world);
+					entry.execute();
 				}
-				blockActionQueue.clear();
+				serverActionQueue.clear();
 			}
 		}
 	}
 
-	public void queueBlockAction(SetBlockState s) {
-		synchronized(blockActionQueue) {
-			blockActionQueue.add(s);
+	public void queueServerAction(ServerAction s) {
+		synchronized(serverActionQueue) {
+			serverActionQueue.add(s);
 		}
 	}
 
-	public BlockState getBlockState(World world, BlockPos pos) {
+	public BlockState getBlockState(Location pos) {
 		int x = pos.getX();
 		int y = pos.getY();
 		int z = pos.getZ();
 	
-		synchronized(blockActionQueue) {
-			for (int i = blockActionQueue.size() - 1 ; i >= 0 ; i--) {
-				SetBlockState entry = blockActionQueue.get(i);
-				if (entry.contains(x,y,z)) {
-					return new BlockState(entry.id, entry.meta);
+		synchronized(serverActionQueue) {
+			for (int i = serverActionQueue.size() - 1 ; i >= 0 ; i--) {
+				ServerAction entry = serverActionQueue.get(i);
+				if (entry.contains(pos.world,x,y,z)) {
+					return entry.getBlockState();
 				}
 			}
 		}
 		
-		return new BlockState(world.getBlockState(pos));
+		return new BlockState(pos.world.getBlockState(pos));
 	}
 
-	public String describeBlockState(World world, BlockPos pos) {
+	public String describeBlockState(Location pos) {
 		int x = pos.getX();
 		int y = pos.getY();
 		int z = pos.getZ();
 	
-		synchronized(blockActionQueue) {
-			for (int i = blockActionQueue.size() - 1 ; i >= 0 ; i--) {
-				SetBlockState entry = blockActionQueue.get(i);
-				if (entry.contains(x,y,z)) {
+		synchronized(serverActionQueue) {
+			for (int i = serverActionQueue.size() - 1 ; i >= 0 ; i--) {
+				ServerAction entry = serverActionQueue.get(i);
+				if (entry.contains(pos.world,x,y,z)) {
 					return entry.describe();
 				}
 			}
 		}
 
-		IBlockState state = world.getBlockState(pos);
+		IBlockState state = pos.world.getBlockState(pos);
 		Block block = state.getBlock();
 		int meta = block.getMetaFromState(state);
 		String describe = ""+block.getIdFromBlock(block)+","+meta+",";
 
-		TileEntity tileEntity = world.getTileEntity(pos);
+		TileEntity tileEntity = pos.world.getTileEntity(pos);
 		if (tileEntity == null)
 			return describe;
 		NBTTagCompound tag = new NBTTagCompound();
@@ -245,21 +250,21 @@ public class MCEventHandler {
 		return describe+tag.toString();
 	}
 
-	public int getBlockId(World world, BlockPos pos) {
+	public int getBlockId(Location pos) {
 		int x = pos.getX();
 		int y = pos.getY();
 		int z = pos.getZ();
 	
-		synchronized(blockActionQueue) {
-			for (int i = blockActionQueue.size() - 1 ; i >= 0 ; i--) {
-				SetBlockState entry = blockActionQueue.get(i);
-				if (entry.contains(x,y,z)) {
-					return (int)entry.id;
+		synchronized(serverActionQueue) {
+			for (int i = serverActionQueue.size() - 1 ; i >= 0 ; i--) {
+				ServerAction entry = serverActionQueue.get(i);
+				if (entry.contains(pos.world, x,y,z)) {
+					return (int)entry.getBlockId();
 				}
 			}
 		}
 		
-		return Block.getIdFromBlock(world.getBlockState(pos).getBlock());
+		return Block.getIdFromBlock(pos.world.getBlockState(pos).getBlock());
 	}
 
 	static class ChatDescription {
@@ -316,6 +321,4 @@ public class MCEventHandler {
 	public boolean getNightVision() {
 		return nightVision;
 	}
-
-
 }

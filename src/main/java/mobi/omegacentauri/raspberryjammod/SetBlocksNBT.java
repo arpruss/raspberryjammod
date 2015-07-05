@@ -12,13 +12,13 @@ import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;
 public class SetBlocksNBT extends SetBlocksState {
 	NBTTagCompound nbt;
 	
-	public SetBlocksNBT(BlockPos corner1, BlockPos corner2, short id, short meta, NBTTagCompound nbt) {
+	public SetBlocksNBT(Location corner1, Location corner2, short id, short meta, NBTTagCompound nbt) {
 		super(corner1, corner2, id, meta);
 		this.nbt = nbt;
 	}
 	
 	@Override
-	public void execute(World world) {
+	public void execute() {
 		int y1 = pos.getY();
 		int z1 = pos.getZ();
 		IBlockState state = Block.getBlockById(id).getStateFromMeta(meta);
@@ -31,9 +31,9 @@ public class SetBlocksNBT extends SetBlocksState {
 
 					BlockPos here = new BlockPos(x,y,z);
 					
-					world.setBlockState(here, state, 2);
+					pos.world.setBlockState(here, state, 2);
 
-					TileEntity tileEntity = world.getTileEntity(here);
+					TileEntity tileEntity = pos.world.getTileEntity(here);
 					if (tileEntity != null) {
 						nbt.setInteger("x", here.getX());
 						nbt.setInteger("y", here.getY());
@@ -49,8 +49,9 @@ public class SetBlocksNBT extends SetBlocksState {
 	}
 	
 	@Override
-	public boolean contains(int x, int y, int z) {
-		return x <= x2 && y <= y2 && z <= z2 && pos.getX() <= x && pos.getY() <= y && pos.getZ() <= z;
+	public boolean contains(World w, int x, int y, int z) {
+		return x <= x2 && y <= y2 && z <= z2 && pos.getX() <= x && pos.getY() <= y && pos.getZ() <= z &&
+				w == pos.world;
 	}
 
 	@Override

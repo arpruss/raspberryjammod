@@ -10,7 +10,7 @@ public class SetBlocksState extends SetBlockState {
 	int y2;
 	int z2;
 	
-	public SetBlocksState(BlockPos corner1, BlockPos corner2, short id, short meta) {
+	public SetBlocksState(Location corner1, Location corner2, short id, short meta) {
 		super(id, meta);
 		
 		int x1 = corner1.getX();
@@ -20,14 +20,14 @@ public class SetBlocksState extends SetBlockState {
 		int y2 = corner2.getY();
 		int z2 = corner2.getZ();
 		
-		pos = new BlockPos(Math.min(x1, x2), Math.min(y1, y2), Math.min(z1, z2));
+		pos = new Location(corner1.world, Math.min(x1, x2), Math.min(y1, y2), Math.min(z1, z2));
 		this.x2 = Math.max(x1,x2);
 		this.y2 = Math.max(y1,y2);
 		this.z2 = Math.max(z1,z2);
 	}
 	
 	@Override
-	public void execute(World world) {
+	public void execute() {
 		int y1 = pos.getY();
 		int z1 = pos.getZ();
 		int intId = (int)id;
@@ -41,23 +41,23 @@ public class SetBlocksState extends SetBlockState {
 						break;
 
 					BlockPos here = new BlockPos(x,y,z);
-					IBlockState oldState = world.getBlockState(here);
+					IBlockState oldState = pos.world.getBlockState(here);
 					Block oldBlock = oldState.getBlock();
 
-					if (world.getTileEntity(here) != null) {
-						world.removeTileEntity(here);
+					if (pos.world.getTileEntity(here) != null) {
+						pos.world.removeTileEntity(here);
 					}
 
 					if (Block.getIdFromBlock(oldBlock) != intId ||
 							oldBlock.getMetaFromState(oldState) != intMeta) {
-						world.setBlockState(here, state, 3);
+						pos.world.setBlockState(here, state, 3);
 					}
 				}
 		
 	}
 	
 	@Override
-	public boolean contains(int x, int y, int z) {
-		return x <= x2 && y <= y2 && z <= z2 && pos.getX() <= x && pos.getY() <= y && pos.getZ() <= z;
+	public boolean contains(World w, int x, int y, int z) {
+		return x <= x2 && y <= y2 && z <= z2 && pos.getX() <= x && pos.getY() <= y && pos.getZ() <= z && w == pos.world;
 	}
 }
