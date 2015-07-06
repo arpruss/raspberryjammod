@@ -1,4 +1,4 @@
-import settings
+from . import settings
 
 class Block:
     """Minecraft PI block description. Can be sent to Minecraft.setBlock/s"""

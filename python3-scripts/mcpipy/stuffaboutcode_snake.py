@@ -220,5 +220,5 @@ if __name__ == "__main__":
             #move the snake
             playing = snake.move()
     except KeyboardInterrupt:
-        print "stopped"
+        print("stopped")
     

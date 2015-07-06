@@ -98,7 +98,7 @@ while tryCount < MAX_TRIES:
     positions.append((x,z))
     tryCount = 0
     t.goto(x,cy,z)
-    print x,cy,z
+    print(x,cy,z)
     t.push()
     t.roll(random.uniform(0,30))
     tree()

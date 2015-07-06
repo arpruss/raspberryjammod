@@ -16,7 +16,7 @@ def playProgram(s, dictionary):
 
 
 def transform(c, t):
-    if isinstance(t, basestring):
+    if isinstance(t, str):
         return t
     else:
         r = random.random()

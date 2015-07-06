@@ -105,23 +105,23 @@ def toBulb(centerMC,centerBulb,scale,x,y,z):
 def draw():
     count = 0
     
-    rangeX = range(cornerMC.x, cornerMC.x+size)
-    rangeY = range(cornerMC.y, cornerMC.y+size)
-    rangeZ = range(cornerMC.z, cornerMC.z+size)
+    rangeX = list(range(cornerMC.x, cornerMC.x+size))
+    rangeY = list(range(cornerMC.y, cornerMC.y+size))
+    rangeZ = list(range(cornerMC.z, cornerMC.z+size))
     
     if not half is None:
         if half == 'w':
-            rangeX = range(cornerMC.x, cornerMC.x+size/2)
+            rangeX = list(range(cornerMC.x, cornerMC.x+size/2))
         elif half == 'e':
-            rangeX = range(cornerMC.x+size/2, cornerMC.x+size)
+            rangeX = list(range(cornerMC.x+size/2, cornerMC.x+size))
         elif half == 'n':
-            rangeZ = range(cornerMC.z, cornerMC.z+size/2)
+            rangeZ = list(range(cornerMC.z, cornerMC.z+size/2))
         elif half == 's':
-            rangeZ = range(cornerMC.z+size/2, cornerMC.z+size)
+            rangeZ = list(range(cornerMC.z+size/2, cornerMC.z+size))
         elif half == 'u':
-            rangeY = range(cornerMC.y+size/2, cornerMC.y+size)
+            rangeY = list(range(cornerMC.y+size/2, cornerMC.y+size))
         elif half == 'd':
-            rangeY = range(cornerMC.y, cornerMC.y+size/2)
+            rangeY = list(range(cornerMC.y, cornerMC.y+size/2))
 
     for mcX in rangeX:
         for mcY in rangeY:

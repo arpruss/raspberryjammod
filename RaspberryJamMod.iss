@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RaspberryJamMod"
-#define MyAppVersion "0.32"
+#define MyAppVersion "0.40"
 #define MyAppPublisher "Omega Centauri Software"
 #define MyAppURL "http://github.com/arpruss/raspberryjammod"
 
