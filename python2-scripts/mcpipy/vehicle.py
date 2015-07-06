@@ -24,6 +24,7 @@
 from mcpi.minecraft import *
 from mcpi.block import *
 from math import *
+from sys import maxsize
 import re
 
 class Vehicle():
@@ -48,7 +49,7 @@ class Vehicle():
     def __init__(self,mc,nondestructive=False):
         self.mc = mc
         self.nondestructive = nondestructive
-        self.highWater = -256
+        self.highWater = -maxsize-1
         self.baseVehicle = {}
         if hasattr(Minecraft, 'getBlockWithNBT'):
             self.getBlockWithData = self.mc.getBlockWithNBT
@@ -204,7 +205,7 @@ class Vehicle():
         self.baseVehicle = dict
 
     def setHighWater(self,y):
-        self.highWater = -256;
+        self.highWater = y;
 
     def addBubble(self):
         positions = set()

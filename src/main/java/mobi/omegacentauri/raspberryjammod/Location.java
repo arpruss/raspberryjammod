@@ -7,13 +7,11 @@ import net.minecraft.world.World;
 
 public class Location extends BlockPos {
 	World world;
-	
-	// > -2000: world 0, center at 0
-	// > -4000: world 1, center at -3000
-	// > -6000: world 2, center at -5000
+	static final int WORLD_SPACING = 2000;
+	static final int WORLD_SPACING_HALF = WORLD_SPACING/2;
 	
 	static public World getWorldByEncodedAltitude(World[] serverWorlds, double y) {
-		int i = (int)Math.floor(-y / 2000);
+		int i = (int)Math.floor((WORLD_SPACING_HALF-y) / WORLD_SPACING);
 		if (i < 0)
 			i = 0;
 		if (i >= serverWorlds.length)
@@ -22,20 +20,20 @@ public class Location extends BlockPos {
 	}
 	
 	static public double decodeAltitude(double y) {
-		if (y > -2000)
+		if (y > -WORLD_SPACING_HALF)
 			return y;
-		double i = Math.floor(-y / 2000);
-		return y + 2000 * i + 1000;
+		double i = Math.floor((WORLD_SPACING_HALF-y) / WORLD_SPACING);
+		return y + WORLD_SPACING * i;
 	}
 	
 	static public double encodeAltitude(int worldIndex, double y) {
 		if (worldIndex == 0) {
-			if (y > -2000)
+			if (y > -WORLD_SPACING_HALF)
 				return y;
 			else
-				return -1999;
+				return 1-WORLD_SPACING_HALF;
 		}
-		return y - 1000 - 2000 * worldIndex;
+		return y - WORLD_SPACING * worldIndex;
 	}
 
 	Location(World world, int x, int y, int z) {
