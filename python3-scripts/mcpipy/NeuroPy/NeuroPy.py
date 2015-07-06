@@ -27,7 +27,7 @@
 ##SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import serial
-import _thread
+import thread
 
 class NeuroPy(object):
     """NeuroPy libraby, to get data from neurosky mindwave.
@@ -82,7 +82,7 @@ class NeuroPy(object):
             http://www.instructables.com/id/Mindflex-EEG-with-raw-data-over-Bluetooth/
             """
             self.srl.write(b'\x00\xF8\x00\x00\x00\xE0')
-        _thread.start_new_thread(self.__packetParser,(self.srl,))
+        thread.start_new_thread(self.__packetParser,(self.srl,))
 
     def __packetParser(self,srl):
         "packetParser runs continously in a separate thread to parse packets from mindwave and update the corresponding variables"
@@ -184,7 +184,7 @@ class NeuroPy(object):
     @attention.setter
     def attention(self,value):
         self.__attention=value
-        if "attention" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("attention"): #if callback has been set, execute the function
             self.callBacksDictionary["attention"](self.__attention)
             
     #meditation
@@ -195,7 +195,7 @@ class NeuroPy(object):
     @meditation.setter
     def meditation(self,value):
         self.__meditation=value
-        if "meditation" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("meditation"): #if callback has been set, execute the function
             self.callBacksDictionary["meditation"](self.__meditation)
             
     #rawValue
@@ -206,7 +206,7 @@ class NeuroPy(object):
     @rawValue.setter
     def rawValue(self,value):
         self.__rawValue=value
-        if "rawValue" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("rawValue"): #if callback has been set, execute the function
             self.callBacksDictionary["rawValue"](self.__rawValue)
 
     #delta
@@ -217,7 +217,7 @@ class NeuroPy(object):
     @delta.setter
     def delta(self,value):
         self.__delta=value
-        if "delta" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("delta"): #if callback has been set, execute the function
             self.callBacksDictionary["delta"](self.__delta)
 
     #theta
@@ -228,7 +228,7 @@ class NeuroPy(object):
     @theta.setter
     def theta(self,value):
         self.__theta=value
-        if "theta" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("theta"): #if callback has been set, execute the function
             self.callBacksDictionary["theta"](self.__theta)
 
     #lowAlpha
@@ -239,7 +239,7 @@ class NeuroPy(object):
     @lowAlpha.setter
     def lowAlpha(self,value):
         self.__lowAlpha=value
-        if "lowAlpha" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("lowAlpha"): #if callback has been set, execute the function
             self.callBacksDictionary["lowAlpha"](self.__lowAlpha)
 
     #highAlpha
@@ -250,7 +250,7 @@ class NeuroPy(object):
     @highAlpha.setter
     def highAlpha(self,value):
         self.__highAlpha=value
-        if "highAlpha" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("highAlpha"): #if callback has been set, execute the function
             self.callBacksDictionary["highAlpha"](self.__highAlpha)
 
 
@@ -262,7 +262,7 @@ class NeuroPy(object):
     @lowBeta.setter
     def lowBeta(self,value):
         self.__lowBeta=value
-        if "lowBeta" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("lowBeta"): #if callback has been set, execute the function
             self.callBacksDictionary["lowBeta"](self.__lowBeta)
 
     #highBeta
@@ -273,7 +273,7 @@ class NeuroPy(object):
     @highBeta.setter
     def highBeta(self,value):
         self.__highBeta=value
-        if "highBeta" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("highBeta"): #if callback has been set, execute the function
             self.callBacksDictionary["highBeta"](self.__highBeta)
 
     #lowGamma
@@ -284,7 +284,7 @@ class NeuroPy(object):
     @lowGamma.setter
     def lowGamma(self,value):
         self.__lowGamma=value
-        if "lowGamma" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("lowGamma"): #if callback has been set, execute the function
             self.callBacksDictionary["lowGamma"](self.__lowGamma)
 
     #midGamma
@@ -295,7 +295,7 @@ class NeuroPy(object):
     @midGamma.setter
     def midGamma(self,value):
         self.__midGamma=value
-        if "midGamma" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("midGamma"): #if callback has been set, execute the function
             self.callBacksDictionary["midGamma"](self.__midGamma)
     
     #poorSignal
@@ -306,7 +306,7 @@ class NeuroPy(object):
     @poorSignal.setter
     def poorSignal(self,value):
         self.__poorSignal=value
-        if "poorSignal" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("poorSignal"): #if callback has been set, execute the function
             self.callBacksDictionary["poorSignal"](self.__poorSignal)
     
     #blinkStrength
@@ -317,5 +317,5 @@ class NeuroPy(object):
     @blinkStrength.setter
     def blinkStrength(self,value):
         self.__blinkStrength=value
-        if "blinkStrength" in self.callBacksDictionary: #if callback has been set, execute the function
+        if self.callBacksDictionary.has_key("blinkStrength"): #if callback has been set, execute the function
             self.callBacksDictionary["blinkStrength"](self.__blinkStrength)

@@ -23,7 +23,7 @@ def inputLine(prompt):
         chats = mc.events.pollChatPosts()
         for c in chats:
             if c.entityId == playerId:
-                print(c.message)
+                print c.message
                 if c.message == 'quit':
                     return 'quit()'
                 elif c.message == ' ':

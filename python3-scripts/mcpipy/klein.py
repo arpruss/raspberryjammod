@@ -10,9 +10,9 @@ def draw_surface(xf,yf,zf,a0,a1,asteps,b0,b1,bsteps,ox,oy,oz,scalex,scaley,scale
   cfy = compile(yf,'<string>','eval')
   cfz = compile(zf,'<string>','eval')
 
-  for i in range(asteps):
+  for i in xrange(asteps):
      a = (a0 * (asteps-1-i) + a1 * i) / asteps
-     for j in range(bsteps):
+     for j in xrange(bsteps):
         b = (b0 * (bsteps-1-j) + b1 * j) / bsteps
         x = eval(cfx)
         y = eval(cfy)

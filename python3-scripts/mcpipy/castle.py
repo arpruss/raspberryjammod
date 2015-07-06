@@ -4,6 +4,18 @@
 
 from mc import *
 import random
+import sys
+
+def getHeightBelow(x,y,z):
+    if isPE:
+        return min(mc.getHeight(x,z),y)
+    else:
+        y0 = y - 255
+        while y > y0:
+           if mc.getBlock(x,y,z) != AIR.id:
+               return y
+           y -= 1
+        return min(mc.getHeight(x,z),y)
 
 def rectangularPrism(x1,y1,z1, x2,y2,z2, distribution):
     for x in range(min(x1,x2),max(x1,x2)+1):
@@ -29,7 +41,7 @@ def wall(x1,y1,z1, x2,y2,z2, baseHeight, altHeight, distribution):
             height = altHeight
         else:
             height = baseHeight
-        y0 = min(mc.getHeight(x,z),y1)
+        y0 = getHeightBelow(x,y1,z)
         rectangularPrism(x,y0,z,x,y1+height,z,distribution)
         if x >= x2 and z >= z2:
             return
@@ -44,7 +56,7 @@ def moatSide(x1,y1,z1, x2,y2,z2, depth):
     z = z1
 
     while True:
-        y0 = min(mc.getHeight(x,z),y1)
+        y0 = getHeightBelow(x,y1,z)
         mc.setBlocks(x,y0-depth+1,z,x,y0,z,WATER_STATIONARY)
         if x >= x2 and z >= z2:
             return
@@ -83,7 +95,7 @@ distribution = ((.05,MOSS_STONE), (.1,Block(STONE_BRICK.id, 1)), (.2,Block(STONE
                 (.651,Block(STONE_BRICK.id, 0)))
 
 wallSize = 51
-groundY = 1+mc.getHeight(pos.x, pos.z)
+groundY = 1+getHeightBelow(pos.x, pos.y, pos.z)
 
 # outer walls
 mc.postToChat("Outer walls")
@@ -104,12 +116,13 @@ keepWidth = wallSize / 6 * 3
 tower(keepStartX,groundY, keepStartZ,keepWidth, 16, 17, 15, distribution)
 
 # moat
-mc.postToChat("Moat")
-moatStartX = pos.x - 12
-moatStartZ = pos.z - 12
-moatInnerSize = wallSize+24
-
-for i in range(6):
-    moatSquare(moatStartX-i,groundY-1,moatStartZ-i,moatInnerSize+2*i,2)
+if len(sys.argv) <= 1 or sys.argv[1][0] != 'n':
+    mc.postToChat("Moat")
+    moatStartX = pos.x - 12
+    moatStartZ = pos.z - 12
+    moatInnerSize = wallSize+24
+    
+    for i in range(6):
+        moatSquare(moatStartX-i,groundY-1,moatStartZ-i,moatInnerSize+2*i,2)
 
 mc.postToChat("Castle done")

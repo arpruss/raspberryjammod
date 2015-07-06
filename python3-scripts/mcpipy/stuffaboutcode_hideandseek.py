@@ -48,7 +48,7 @@ if __name__ == "__main__":
     randomBlockPos.x = random.randrange(randomBlockPos.x - 50, randomBlockPos.x + 50)
     randomBlockPos.y = random.randrange(randomBlockPos.y - 5, randomBlockPos.y + 5)
     randomBlockPos.z = random.randrange(randomBlockPos.z - 50, randomBlockPos.z + 50)
-    print(randomBlockPos)
+    print randomBlockPos
   
     #Create hidden diamond block
     mc.setBlock(randomBlockPos.x, randomBlockPos.y, randomBlockPos.z, block.DIAMOND_BLOCK)

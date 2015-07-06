@@ -61,10 +61,10 @@ def draw_sierpinski_triangle(minecraft):
                TRIANGLE_HEIGHT,
                random_in_range())
 
-    for i in range(MAX_ITERATIONS):
+    for i in xrange(MAX_ITERATIONS):
 
         if i % PRINT_FREQ == 0:
-            print(("Drew %s blocks" % i))
+            print("Drew %s blocks" % i)
 
         # Pick a random vertex to "walk" toward.
 
