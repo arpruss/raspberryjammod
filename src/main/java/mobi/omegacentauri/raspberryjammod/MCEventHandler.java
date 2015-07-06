@@ -13,6 +13,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.item.ItemStack;
@@ -90,7 +91,7 @@ public class MCEventHandler {
 		
 		if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK ||
 			(RaspberryJamMod.leftClickToo && event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)) {
-			if (! restrictToSword || holdingSword()) {
+			if (! restrictToSword || holdingSword(event.entityPlayer)) {
 				synchronized(hits) {
 					if (hits.size() >= MAX_HITS)
 						hits.remove(0);
@@ -103,8 +104,8 @@ public class MCEventHandler {
 		}
 	}
 
-	private boolean holdingSword() {
-		ItemStack item = Minecraft.getMinecraft().thePlayer.getHeldItem();
+	private boolean holdingSword(EntityPlayer player) {
+		ItemStack item = player.getHeldItem();
 		if (item != null) {
 			return item.getItem() instanceof ItemSword;
 //			String name = item.getUnlocalizedName();

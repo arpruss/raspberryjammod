@@ -187,11 +187,10 @@ public abstract class ScriptExternalCommand implements ICommand {
 		
 		World serverWorld = MinecraftServer.getServer().getEntityWorld();
 		
-		if (! RaspberryJamMod.allowRemote &&
+		if (! RaspberryJamMod.allowRemote && (! RaspberryJamMod.integrated || 
 				serverWorld.playerEntities.size() > 1 &&
-				! sender.getName().equals(Minecraft.getMinecraft().thePlayer.getName())) {
-			Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new 
-					ChatComponentText("Blocked possible remote script launch by "+sender.getCommandSenderEntity()));
+				! sender.getName().equals(Minecraft.getMinecraft().thePlayer.getName()))) {
+			APIHandler.globalMessage("Blocked possible remote script launch by "+sender.getCommandSenderEntity());
 			return;
 		}
 		
@@ -205,7 +204,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 					message = "Stopped the "+c+" running scripts.";
 				else
 					message = "Stopped the running script.";
-				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(message));
+				APIHandler.globalMessage(message);
 			}
 		}
 
@@ -269,7 +268,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 					while ( null != ( line = br.readLine()) ) {
 						line.trim();
 						if (entity == null)
-							Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(label + line));
+							APIHandler.globalMessage(label + line);
 						else 
 							entity.addChatComponentMessage(new ChatComponentText(label + line));
 					}

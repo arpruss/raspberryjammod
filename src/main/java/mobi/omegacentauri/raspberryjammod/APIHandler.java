@@ -21,7 +21,6 @@ import java.util.Scanner;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
@@ -117,26 +116,46 @@ public class APIHandler {
 
 	void process(String clientSentence) {
 		Scanner scan = null;
+		
 		serverWorlds = MinecraftServer.getServer().worldServers;
+		
 		if (serverWorlds == null) {
 			fail("Worlds not available");
 			return;
 		}
-		mc = Minecraft.getMinecraft();
-		if (mc == null) {
-			fail("Minecraft not available");
-			return;
-		}
+
 		if (! havePlayer) {
-			if (mc.thePlayer == null) {
-				fail("Player not available");
-				return;
+			if (RaspberryJamMod.integrated) {
+				mc = Minecraft.getMinecraft();
+				
+				if (mc == null) {
+					fail("Minecraft client not yet available");
+				}
+				
+				if (mc.thePlayer == null) {
+					fail("Client player not available");
+					return;
+				}
+				playerId = mc.thePlayer.getEntityId();
+				for (World w : serverWorlds) {
+					Entity e = w.getEntityByID(playerId);
+					if (e != null)
+						playerMP = (EntityPlayerMP)e;
+				}
 			}
-			playerId = mc.thePlayer.getEntityId();
-			for (World w : serverWorlds) {
-				Entity e = w.getEntityByID(playerId);
-				if (e != null)
-					playerMP = (EntityPlayerMP)e;
+			else {
+				playerMP = null;
+				int firstId = 0;
+				
+				for (World w : serverWorlds) {
+					for (EntityPlayerMP p : (List<EntityPlayerMP>)w.playerEntities) {
+						int id = p.getEntityId();
+						if (playerMP == null || id < firstId) {
+							firstId = id;
+							playerMP = p;
+						}
+					}
+				}
 			}
 			if (playerMP == null) {
 				fail("Player not found");
@@ -273,11 +292,7 @@ public class APIHandler {
 		}
 		else if (cmd.equals(CHAT)) {
 			if (RaspberryJamMod.globalChatMessages) {
-				for (World w : serverWorlds) {
-					for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities ) {
-						p.addChatComponentMessage(new ChatComponentText(args));
-					}
-				}
+				globalMessage(args);
 			}
 			else {
 				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(args));
@@ -449,6 +464,9 @@ public class APIHandler {
 			sendLine(playerMP.getSpectatingEntity().getEntityId());
 		}
 		else if (cmd.equals(CAMERASETFOLLOW) || cmd.equals(CAMERASETNORMAL)) {
+			if (! RaspberryJamMod.integrated)
+				return;
+			
 			mc.gameSettings.debugCamEnable = false;
 			boolean follow = cmd.equals(CAMERASETFOLLOW);
 
@@ -474,6 +492,9 @@ public class APIHandler {
 			}
 		}
 		else if (cmd.equals("camera.setDebug")) {
+			if (! RaspberryJamMod.integrated)
+				return;
+			
 			mc.gameSettings.debugCamEnable = true;
 		}
 	}
@@ -485,6 +506,10 @@ public class APIHandler {
 		Entity e = getServerEntityByID(id);
 		if (e != null)
 			entitySetDirection(e, x, y, z);
+		
+		if (!RaspberryJamMod.integrated)
+			return;
+		
 		e = mc.theWorld.getEntityByID(id);
 		if (e != null)
 			entitySetDirection(e, x, y, z);
@@ -529,6 +554,10 @@ public class APIHandler {
 		Entity e = getServerEntityByID(id);
 		if (e != null)
 			e.rotationPitch = angle;
+		
+		if (!RaspberryJamMod.integrated)
+			return;
+		
 		e = mc.theWorld.getEntityByID(id);
 		if (e != null)
 			e.rotationPitch = angle;
@@ -540,6 +569,10 @@ public class APIHandler {
 			e.rotationYaw = angle;
 			e.setRotationYawHead(angle);
 		}
+
+		if (!RaspberryJamMod.integrated)
+			return;
+		
 		e = mc.theWorld.getEntityByID(id);
 		if (e != null) {
 			e.rotationYaw = angle;
@@ -598,6 +631,9 @@ public class APIHandler {
 			e.setPositionAndUpdate(pos.xCoord,pos.yCoord,pos.zCoord);
 			e.setRotationYawHead(serverYaw);
 	
+			if (!RaspberryJamMod.integrated)
+				return;
+			
 			e = mc.theWorld.getEntityByID(id);
 			if (e != null) {
 				e.rotationYaw = serverYaw;
@@ -620,6 +656,10 @@ public class APIHandler {
 				e.setPositionAndUpdate(pos.getX()+0.5, pos.getY(), (double)pos.getZ()+0.5);
 				e.setRotationYawHead(serverYaw);
 			}
+
+			if (!RaspberryJamMod.integrated)
+				return;
+			
 			e = mc.theWorld.getEntityByID(id);
 			if (e != null) {
 				e.rotationYaw = serverYaw;
@@ -697,6 +737,15 @@ public class APIHandler {
 		fail("Cannot find entity "+id);
 		return null;
 	}
+
+	static void globalMessage(String message) {
+		for (World w : MinecraftServer.getServer().worldServers) {
+			for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities ) {
+				p.addChatComponentMessage(new ChatComponentText(message));
+			}
+		}
+	}
+
 
 //	static EntityPlayerMP getServerPlayer() {
 //		EntityPlayerSP playerSP = Minecraft.getMinecraft().thePlayer;

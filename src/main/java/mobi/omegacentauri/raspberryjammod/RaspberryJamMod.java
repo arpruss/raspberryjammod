@@ -60,10 +60,19 @@ public class RaspberryJamMod
 	public static boolean globalChatMessages = true;
 	public static volatile boolean active = false;
 	public static String pythonInterpreter = "python";
+	public static boolean integrated = true;
 	public MCEventHandler serverEventHandler = null;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
+		integrated = true;
+		try {
+			Class.forName("net.minecraft.client.Minecraft");
+		}
+		catch (ClassNotFoundException e) {
+			integrated = false;
+		}
+
 		configFile = new Configuration(event.getSuggestedConfigurationFile());
 		configFile.load();
 		System.out.println("configFile = "+configFile.getConfigFile().getPath());
