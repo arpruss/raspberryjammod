@@ -625,6 +625,8 @@ public class APIHandler {
 			double z = scan.nextDouble();
 			Vec3w pos = Location.decodeVec3w(serverWorlds, x, y, z);
 			if (pos.world != e.getEntityWorld()) {
+//				e.setWorld(pos.world);
+				System.out.println("World change unsupported");
 				// TODO: implement moving between worlds
 				return;
 			}
@@ -676,7 +678,17 @@ public class APIHandler {
 		Entity e = getServerEntityByID(id);
 		if (e != null) {
 			World w = e.getEntityWorld();
-			BlockPos spawn = w.getSpawnPoint();
+			Vec3 pos0 = e.getPositionVector();
+
+			while (w != e.getEntityWorld()) {
+				// Rare concurrency issue: entity switched worlds between getting w and pos0.
+				// To be somewhat safe, let's sleep for approximately a server tick and get
+				// everything again. 
+				try { Thread.sleep(50); } catch(Exception exc) {}
+				w = e.getEntityWorld();
+				pos0 = e.getPositionVector();
+			}
+			
 			Vec3 pos = Location.encodeVec3(serverWorlds, w, e.getPositionVector());
 			sendLine(""+trunc(pos.xCoord)+","+trunc(pos.yCoord)+","+trunc(pos.zCoord));
 		}
@@ -690,9 +702,17 @@ public class APIHandler {
 		Entity e = getServerEntityByID(id);
 		if (e != null) {
 			World w = e.getEntityWorld();
-			BlockPos spawn = w.getSpawnPoint();
-			Vec3 spawnPoint = new Vec3(spawn.getX(), spawn.getY(), spawn.getZ());
-			Vec3 pos = Location.encodeVec3(serverWorlds, w, e.getPositionVector());
+			Vec3 pos0 = e.getPositionVector();
+			while (w != e.getEntityWorld()) {
+				// Rare concurrency issue: entity switched worlds between getting w and pos0.
+				// To be somewhat safe, let's sleep for approximately a server tick and get
+				// everything again. 
+				try { Thread.sleep(50); } catch(Exception exc) {}
+				w = e.getEntityWorld();
+				pos0 = e.getPositionVector();
+			}
+			
+			Vec3 pos = Location.encodeVec3(serverWorlds, w, pos0);
 			sendLine(pos);
 		}
 	}
