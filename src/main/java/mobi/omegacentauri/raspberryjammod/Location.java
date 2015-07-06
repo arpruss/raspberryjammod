@@ -10,6 +10,12 @@ public class Location extends BlockPos {
 	static final int WORLD_SPACING = 2000;
 	static final int WORLD_SPACING_HALF = WORLD_SPACING/2;
 	
+	// Altitudes for world number i are >-WORLD_SPACING_HALF-WORLD_SPACING*i and
+	// <= WORLD_SPACING_HALF-WORLD_SPACING*i, with altitude 0 being at -WORLD_SPACING*i.
+	// For instance, world 0 (the overworld in the stock setup) is from -WORLD_SPACING_HALF (not
+	// inclusive) to WORLD_SPACING_HALF (inclusive), with world 1 right below that, and so on.
+	// This allows most old scripts to work fine in multiworld settings.
+	
 	static public World getWorldByEncodedAltitude(World[] serverWorlds, double y) {
 		int i = (int)Math.floor((WORLD_SPACING_HALF-y) / WORLD_SPACING);
 		if (i < 0)
