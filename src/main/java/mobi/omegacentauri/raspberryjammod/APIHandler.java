@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -102,29 +104,46 @@ public class APIHandler {
 	private int connectionsActive = 0;
 	DataOutputStream writer = null;
 	private boolean includeNBTWithData = false;
+	private boolean havePlayer;
+	private int playerId;
+	private EntityPlayerMP playerMP;
 
 	public APIHandler(MCEventHandler eventHandler, DataOutputStream writer) throws IOException {
 		this.eventHandler = eventHandler;
 		this.writer = writer;
+		this.havePlayer = false;
+		this.playerMP = null;
 	}
 
 	void process(String clientSentence) {
 		Scanner scan = null;
-		mc = Minecraft.getMinecraft();
-		if (mc == null) {
-			fail("Minecraft not available");
-			return;
-		}
 		serverWorlds = MinecraftServer.getServer().worldServers;
 		if (serverWorlds == null) {
 			fail("Worlds not available");
 			return;
 		}
-		if (mc.thePlayer == null) {
-			fail("Player not available");
+		mc = Minecraft.getMinecraft();
+		if (mc == null) {
+			fail("Minecraft not available");
 			return;
 		}
-		int clientPlayerId = mc.thePlayer.getEntityId();
+		if (! havePlayer) {
+			if (mc.thePlayer == null) {
+				fail("Player not available");
+				return;
+			}
+			playerId = mc.thePlayer.getEntityId();
+			for (World w : serverWorlds) {
+				Entity e = w.getEntityByID(playerId);
+				if (e != null)
+					playerMP = (EntityPlayerMP)e;
+			}
+			if (playerMP == null) {
+				fail("Player not found");
+				return;
+			}
+			havePlayer = true;
+		}
 
 		try {	
 			int paren = clientSentence.indexOf('(');
@@ -137,7 +156,7 @@ public class APIHandler {
 			scan.useDelimiter(",");
 
 			synchronized (eventHandler) {
-				runCommand(clientPlayerId, cmd, args, scan);
+				runCommand(cmd, args, scan);
 			}
 
 			scan.close();
@@ -145,6 +164,7 @@ public class APIHandler {
 		}
 		catch(Exception e) {
 			System.out.println(""+e);
+			e.printStackTrace(System.out);
 		}
 		finally {
 			if (scan != null)
@@ -153,9 +173,8 @@ public class APIHandler {
 	}
 
 
-	private void runCommand(int clientPlayerId,
-			String cmd, String args, Scanner scan) throws InputMismatchException, NoSuchElementException, 
-			IndexOutOfBoundsException {
+	private void runCommand(String cmd, String args, Scanner scan) 
+			throws InputMismatchException, NoSuchElementException, IndexOutOfBoundsException {
 
 		if (cmd.equals(GETBLOCK)) {
 			Location pos = getBlockLocation(scan);
@@ -247,10 +266,10 @@ public class APIHandler {
 			eventHandler.queueServerAction(setState);
 		}
 		else if (cmd.equals(PLAYERGETPOS)) {
-			entityGetPos(clientPlayerId);
+			entityGetPos(playerId);
 		}
 		else if (cmd.equals(PLAYERGETTILE)) {
-			entityGetTile(clientPlayerId);
+			entityGetTile(playerId);
 		}
 		else if (cmd.equals(CHAT)) {
 			if (RaspberryJamMod.globalChatMessages) {
@@ -265,14 +284,20 @@ public class APIHandler {
 			}
 		}
 		else if (cmd.equals(WORLDGETPLAYERIDS)) {
-			// TODO : put local player first
-			String ids = "";
+			// TODO : ensure local player is first (lowest number?!)
+			List<Integer> players = new ArrayList<Integer>();
 			for (World w : serverWorlds) {
 				for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities) {
-					if (ids.length() > 0)
-						ids += "|";
-					ids += p.getEntityId();
+					players.add(p.getEntityId());
 				}
+			}
+			Collections.sort(players);
+			
+			String ids = "";
+			for (Integer id : players) {
+				if (ids.length() > 0)
+					ids += "|";
+				ids += id;
 			}
 			sendLine(ids);
 		}
@@ -291,34 +316,34 @@ public class APIHandler {
 			}
 			else {
 				// unofficial API to get current player ID
-				sendLine(clientPlayerId);
+				sendLine(playerId);
 			}
 		}
 		else if (cmd.equals(PLAYERSETTILE)) {
-			entitySetTile(clientPlayerId, scan);
+			entitySetTile(playerId, scan);
 		}
 		else if (cmd.equals(PLAYERSETPOS)) {
-			entitySetPos(clientPlayerId, scan);
+			entitySetPos(playerId, scan);
 		}
 		else if (cmd.equals(PLAYERSETDIMENSION)) {
-			entitySetDimension(clientPlayerId, scan.nextInt());
+			entitySetDimension(playerId, scan.nextInt());
 		}
 		else if (cmd.equals(PLAYERGETDIRECTION)) {
-			entityGetDirection(clientPlayerId);
+			entityGetDirection(playerId);
 		}
 		else if (cmd.equals(PLAYERGETROTATION)) {
-			entityGetRotation(clientPlayerId);
+			entityGetRotation(playerId);
 		}
 		else if (cmd.equals(PLAYERSETROTATION)) {
-			mc.thePlayer.rotationYaw = scan.nextFloat();
+			entitySetRotation(playerId, scan.nextFloat());
 		}
 		else if (cmd.equals(PLAYERSETPITCH)) {
-			mc.thePlayer.rotationPitch = scan.nextFloat();
+			entitySetPitch(playerId, scan.nextFloat());
 		}
 		else if (cmd.equals(WORLDDELETEENTITY)) {
-			Entity e = getEntityByID(scan.nextInt());
-			e.getEntityWorld().removeEntity(e);
-//			serverWorld.removeEntity(serverWorld.getEntityByID(scan.nextInt()));
+			Entity e = getServerEntityByID(scan.nextInt());
+			if (e != null)
+				e.getEntityWorld().removeEntity(e);
 		}
 		else if (cmd.equals(WORLDSPAWNENTITY)) {
 			String entityId = scan.next();
@@ -353,10 +378,10 @@ public class APIHandler {
 			}
 		}
 		else if (cmd.equals(PLAYERSETDIRECTION)) {
-			entitySetDirection(clientPlayerId, scan);
+			entitySetDirection(playerId, scan);
 		}
 		else if (cmd.equals(PLAYERGETPITCH)) {
-			entityGetPitch(clientPlayerId);
+			entityGetPitch(playerId);
 		}
 		else if (cmd.equals(ENTITYGETPOS)) {
 			entityGetPos(scan.nextInt());
@@ -369,34 +394,14 @@ public class APIHandler {
 		}
 		else if (cmd.equals(ENTITYSETROTATION)) {
 			int id = scan.nextInt();
-			float angle = scan.nextFloat();
-			Entity e = getEntityByID(id);
-			if (e != null) {
-				e.rotationYaw = angle;
-				e.setRotationYawHead(angle);
-			}
-			else
-				fail("No such entity");
-			e = mc.theWorld.getEntityByID(id);
-			if (e != null) {
-				e.rotationYaw = angle;
-				e.setRotationYawHead(angle);
-			}
+			entitySetRotation(id, scan.nextFloat());
 		}
 		else if (cmd.equals(ENTITYGETPITCH)) {
 			entityGetPitch(scan.nextInt());
 		}
 		else if (cmd.equals(ENTITYSETPITCH)) {
 			int id = scan.nextInt();
-			float angle = scan.nextFloat();
-			Entity e = getEntityByID(id);
-			if (e != null)
-				e.rotationPitch = angle;
-			else
-				fail("No such entity");
-			e = mc.theWorld.getEntityByID(id);
-			if (e != null)
-				e.rotationPitch = angle;
+			entitySetPitch(id, scan.nextFloat());
 		}
 		else if (cmd.equals(ENTITYGETDIRECTION)) {
 			entityGetDirection(scan.nextInt());
@@ -441,17 +446,10 @@ public class APIHandler {
 				eventHandler.setRestrictToSword(scan.nextInt() != 0);
 		}
 		else if (cmd.equals(CAMERAGETENTITYID)) {
-			EntityPlayerMP playerMP = (EntityPlayerMP)getEntityByID(clientPlayerId);
-			if (playerMP == null) {
-				fail("Cannot find player");
-			}
-			else {
-				sendLine(playerMP.getSpectatingEntity().getEntityId());
-			}
+			sendLine(playerMP.getSpectatingEntity().getEntityId());
 		}
 		else if (cmd.equals(CAMERASETFOLLOW) || cmd.equals(CAMERASETNORMAL)) {
 			mc.gameSettings.debugCamEnable = false;
-			EntityPlayerMP playerMP = (EntityPlayerMP)getEntityByID(clientPlayerId);
 			boolean follow = cmd.equals(CAMERASETFOLLOW);
 
 			if (playerMP != null) {
@@ -459,7 +457,7 @@ public class APIHandler {
 					playerMP.setSpectatingEntity(null);
 				}
 				else {
-					Entity entity = getEntityByID(scan.nextInt());
+					Entity entity = getServerEntityByID(scan.nextInt());
 					if (entity != null) {
 						playerMP.setSpectatingEntity(entity);
 					}
@@ -484,11 +482,9 @@ public class APIHandler {
 		double x  = scan.nextDouble();
 		double y = scan.nextDouble();
 		double z = scan.nextDouble();
-		Entity e = getEntityByID(id);
+		Entity e = getServerEntityByID(id);
 		if (e != null)
 			entitySetDirection(e, x, y, z);
-		else
-			fail("No such entity");
 		e = mc.theWorld.getEntityByID(id);
 		if (e != null)
 			entitySetDirection(e, x, y, z);
@@ -506,13 +502,9 @@ public class APIHandler {
 	}
 	
 	private void entitySetDimension(int id, int dimension) {
-		Entity e = getEntityByID(id);
-		if (e != null) {
+		Entity e = getServerEntityByID(id);
+		if (e != null) 
 			eventHandler.queueServerAction(new SetDimension(e, dimension));
-		}
-		else {
-			fail("Entity not found");
-		}
 	}
 
 	private void entitySetDirection(Entity e, double x, double y, double z) {
@@ -532,14 +524,33 @@ public class APIHandler {
 		System.err.println("Error: "+string);
 		sendLine("Fail");
 	}
+	
+	private void entitySetPitch(int id, float angle) {
+		Entity e = getServerEntityByID(id);
+		if (e != null)
+			e.rotationPitch = angle;
+		e = mc.theWorld.getEntityByID(id);
+		if (e != null)
+			e.rotationPitch = angle;
+	}
 
-	private void entityGetRotation(int id) {
-		Entity e = getEntityByID(id);
-		if (e == null) {
-			fail("No such entity.");
-			return;
+	private void entitySetRotation(int id, float angle) {
+		Entity e = getServerEntityByID(id);
+		if (e != null) {
+			e.rotationYaw = angle;
+			e.setRotationYawHead(angle);
 		}
-		sendLine(normalizeAngle(e.rotationYaw));
+		e = mc.theWorld.getEntityByID(id);
+		if (e != null) {
+			e.rotationYaw = angle;
+			e.setRotationYawHead(angle);
+		}
+	}
+	
+	private void entityGetRotation(int id) {
+		Entity e = getServerEntityByID(id);
+		if (e != null) 
+			sendLine(normalizeAngle(e.rotationYaw));
 	}
 
 	private float normalizeAngle(float angle) {
@@ -552,78 +563,68 @@ public class APIHandler {
 	}
 
 	private void entityGetPitch(int id) {
-		Entity e = getEntityByID(id);
-		if (e == null) {
-			fail("Entity not found.");
-			return;
-		}
-		sendLine(normalizeAngle(e.rotationPitch));
+		Entity e = getServerEntityByID(id);
+		if (e != null) 
+			sendLine(normalizeAngle(e.rotationPitch));
 	}
 
 	private void entityGetDirection(int id) {
-		Entity e = getEntityByID(id);
-		if (e == null) {
-			fail("Entity not found.");
-			return;
+		Entity e = getServerEntityByID(id);
+		if (e != null) {
+			//sendLine(e.getLookVec());
+			double pitch = e.rotationPitch * Math.PI / 180.;
+			double yaw = e.rotationYaw * Math.PI / 180.;
+			double x = Math.cos(-pitch) * Math.sin(-yaw);
+			double z = Math.cos(-pitch) * Math.cos(-yaw);
+			double y = Math.sin(-pitch);
+			sendLine(new Vec3(x,y,z));
 		}
-		//sendLine(e.getLookVec());
-		double pitch = e.rotationPitch * Math.PI / 180.;
-		double yaw = e.rotationYaw * Math.PI / 180.;
-		double x = Math.cos(-pitch) * Math.sin(-yaw);
-		double z = Math.cos(-pitch) * Math.cos(-yaw);
-		double y = Math.sin(-pitch);
-		sendLine(new Vec3(x,y,z));
 	}
 
 	private void entitySetPos(int id, Scanner scan) {
-		Entity e = getEntityByID(id);
-		if (e == null) {
-			fail("Entity not found");
-			return;
-		}
-
-		float serverYaw = 0f;
-		serverYaw = e.rotationYaw;
-
-		double x = scan.nextDouble();
-		double y = scan.nextDouble();
-		double z = scan.nextDouble();
-		Vec3w pos = Location.decodeVec3w(serverWorlds, x, y, z);
-		if (pos.world != e.getEntityWorld()) {
-			// TODO: implement moving between worlds
-			return;
-		}
-		e.setPositionAndUpdate(pos.xCoord,pos.yCoord,pos.zCoord);
-		e.setRotationYawHead(serverYaw);
-
-		e = mc.theWorld.getEntityByID(id);
+		Entity e = getServerEntityByID(id);
 		if (e != null) {
-			e.rotationYaw = serverYaw;
-			e.setRotationYawHead(serverYaw);
-		}
-	}
-
-	private void entitySetTile(int id, Scanner scan) {
-		Entity e = getEntityByID(id);
-		if (e == null) {
-			fail("Entity not found");
-			return;
-		}
-		float serverYaw = 0f;
-		if (e != null) {
+			float serverYaw = 0f;
 			serverYaw = e.rotationYaw;
-			Location pos = getBlockLocation(scan);
+	
+			double x = scan.nextDouble();
+			double y = scan.nextDouble();
+			double z = scan.nextDouble();
+			Vec3w pos = Location.decodeVec3w(serverWorlds, x, y, z);
 			if (pos.world != e.getEntityWorld()) {
 				// TODO: implement moving between worlds
 				return;
 			}
-			e.setPositionAndUpdate(pos.getX()+0.5, pos.getY(), (double)pos.getZ()+0.5);
+			e.setPositionAndUpdate(pos.xCoord,pos.yCoord,pos.zCoord);
 			e.setRotationYawHead(serverYaw);
+	
+			e = mc.theWorld.getEntityByID(id);
+			if (e != null) {
+				e.rotationYaw = serverYaw;
+				e.setRotationYawHead(serverYaw);
+			}
 		}
-		e = mc.theWorld.getEntityByID(id);
+	}
+
+	private void entitySetTile(int id, Scanner scan) {
+		Entity e = getServerEntityByID(id);
 		if (e != null) {
-			e.rotationYaw = serverYaw;
-			e.setRotationYawHead(serverYaw);
+			float serverYaw = 0f;
+			if (e != null) {
+				serverYaw = e.rotationYaw;
+				Location pos = getBlockLocation(scan);
+				if (pos.world != e.getEntityWorld()) {
+					// TODO: implement moving between worlds
+					return;
+				}
+				e.setPositionAndUpdate(pos.getX()+0.5, pos.getY(), (double)pos.getZ()+0.5);
+				e.setRotationYawHead(serverYaw);
+			}
+			e = mc.theWorld.getEntityByID(id);
+			if (e != null) {
+				e.rotationYaw = serverYaw;
+				e.setRotationYawHead(serverYaw);
+			}
 		}
 	}
 
@@ -632,16 +633,13 @@ public class APIHandler {
 	}
 
 	private void entityGetTile(int id) {
-		Entity e = getEntityByID(id);
-		if (e == null) {
-			fail("No such entity");
-			return;
+		Entity e = getServerEntityByID(id);
+		if (e != null) {
+			World w = e.getEntityWorld();
+			BlockPos spawn = w.getSpawnPoint();
+			Vec3 pos = Location.encodeVec3(serverWorlds, w, e.getPositionVector());
+			sendLine(""+trunc(pos.xCoord)+","+trunc(pos.yCoord)+","+trunc(pos.zCoord));
 		}
-		World w = e.getEntityWorld();
-		BlockPos spawn = w.getSpawnPoint();
-		Vec3 spawnPoint = new Vec3(spawn.getX(), spawn.getY(), spawn.getZ());
-		Vec3 pos = Location.encode(serverWorlds, w, e.getPositionVector().subtract(spawnPoint));
-		sendLine(""+trunc(pos.xCoord)+","+trunc(pos.yCoord)+","+trunc(pos.zCoord));
 	}
 
 	private void sendLine(BlockPos pos) {
@@ -649,15 +647,14 @@ public class APIHandler {
 	}
 
 	private void entityGetPos(int id) {
-		Entity e = getEntityByID(id);
-		if (e == null) {
-			fail("Cannot find entity");
+		Entity e = getServerEntityByID(id);
+		if (e != null) {
+			World w = e.getEntityWorld();
+			BlockPos spawn = w.getSpawnPoint();
+			Vec3 spawnPoint = new Vec3(spawn.getX(), spawn.getY(), spawn.getZ());
+			Vec3 pos = Location.encodeVec3(serverWorlds, w, e.getPositionVector());
+			sendLine(pos);
 		}
-		World w = e.getEntityWorld();
-		BlockPos spawn = w.getSpawnPoint();
-		Vec3 spawnPoint = new Vec3(spawn.getX(), spawn.getY(), spawn.getZ());
-		Vec3 pos = Location.encode(serverWorlds, w, e.getPositionVector().subtract(spawnPoint));
-		sendLine(pos);
 	}
 
 	private void sendLine(double x) {
@@ -689,23 +686,22 @@ public class APIHandler {
 	}
 	
 
-	EntityPlayerMP getServerPlayer(EntityPlayerSP playerSP) {
-		return (EntityPlayerMP)getEntityByID(playerSP.getEntityId());
-	}
-  	
-	Entity getEntityByID(int id) {
+	Entity getServerEntityByID(int id) {
+		if (id == playerId)
+			return playerMP;
 		for (World w : serverWorlds) {
 			Entity e = w.getEntityByID(id);
 			if (e != null)
 				return e;
 		}
+		fail("Cannot find entity "+id);
 		return null;
 	}
 
-	static EntityPlayerMP getServerPlayer() {
-		EntityPlayerSP playerSP = Minecraft.getMinecraft().thePlayer;
-		if (playerSP == null)
-			return null;
-		return (EntityPlayerMP)MinecraftServer.getServer().getEntityWorld().getEntityByID(playerSP.getEntityId());
-	}
+//	static EntityPlayerMP getServerPlayer() {
+//		EntityPlayerSP playerSP = Minecraft.getMinecraft().thePlayer;
+//		if (playerSP == null)
+//			return null;
+//		return (EntityPlayerMP)MinecraftServer.getServer().getEntityWorld().getEntityByID(playerSP.getEntityId());
+//	}
 }

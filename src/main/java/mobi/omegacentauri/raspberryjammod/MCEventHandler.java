@@ -25,6 +25,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.util.Vec3i;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.MouseEvent;
@@ -84,6 +85,9 @@ public class MCEventHandler {
 
 	@SubscribeEvent
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
+		if (event.entityPlayer == null || event.entityPlayer.getEntityWorld().isRemote)
+			return;
+		
 		if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK ||
 			(RaspberryJamMod.leftClickToo && event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)) {
 			if (! restrictToSword || holdingSword()) {
@@ -281,7 +285,9 @@ public class MCEventHandler {
 		private String description;
 		
 		public HitDescription(PlayerInteractEvent event) {
-			BlockPos pos = event.pos.subtract(MinecraftServer.getServer().getEntityWorld().getSpawnPoint());
+			Vec3i pos = Location.encodeVec3i(MinecraftServer.getServer().worldServers, 
+					event.entityPlayer.getEntityWorld(),
+					event.pos.getX(), event.pos.getY(), event.pos.getZ());
 			description = ""+pos.getX()+","+pos.getY()+","+pos.getZ()+","+numericFace(event.face)+","+event.entity.getEntityId();
 		}
 

@@ -2,6 +2,7 @@ package mobi.omegacentauri.raspberryjammod;
 
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.Vec3;
+import net.minecraft.util.Vec3i;
 import net.minecraft.world.World;
 
 public class Location extends BlockPos {
@@ -59,12 +60,24 @@ public class Location extends BlockPos {
 		return new Vec3w(w, x+spawnPos.getX(), (int)decodeAltitude(y)+spawnPos.getY(), z+spawnPos.getZ());
 	}
 
-	public static Vec3 encode(World[] serverWorlds, World w, Vec3 pos) {
+	public static Vec3 encodeVec3(World[] serverWorlds, World w, Vec3 pos) {
 		for (int i = 0 ; i < serverWorlds.length ; i++) {
 			if (serverWorlds[i] == w) {
-				return new Vec3(pos.xCoord, encodeAltitude(i, pos.yCoord), pos.zCoord);
+				BlockPos spawnPos = w.getSpawnPoint();
+				return new Vec3(pos.xCoord-spawnPos.getX(), encodeAltitude(i, pos.yCoord-spawnPos.getY()), 
+						pos.zCoord-spawnPos.getZ());
 			}
 		}
 		return pos;
+	}
+
+	public static Vec3i encodeVec3i(World[] serverWorlds, World w, int x, int y, int z) {
+		for (int i = 0 ; i < serverWorlds.length ; i++) {
+			if (serverWorlds[i] == w) {
+				BlockPos spawnPos = w.getSpawnPoint();
+				return new Vec3i(x-spawnPos.getX(), encodeAltitude(i, y-spawnPos.getY()), z-spawnPos.getZ());
+			}
+		}
+		return new Vec3i(x,y,z);
 	}
 }
