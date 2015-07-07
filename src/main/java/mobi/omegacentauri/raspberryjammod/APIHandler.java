@@ -47,8 +47,8 @@ public class APIHandler {
 	// camera.setNormal(id) and camera.setFollow(id) uses spectating, and so it moves the
 	// player along with the entity that was set as camera
 	private static final String CHAT = "chat.post";
-	public static final String SETBLOCK = "world.setBlock";
-	public static final String SETBLOCKS = "world.setBlocks"; 
+	private static final String SETBLOCK = "world.setBlock";
+	private static final String SETBLOCKS = "world.setBlocks"; 
 	private static final String GETBLOCK = "world.getBlock";
 	private static final String GETBLOCKWITHDATA = "world.getBlockWithData";
 	private static final String GETHEIGHT = "world.getHeight"; 
@@ -62,29 +62,6 @@ public class APIHandler {
 	private static final String WORLDGETPLAYERID = "world.getPlayerId"; 
 	private static final String WORLDSETTING = "world.setting";
 
-	private static final String PLAYERSETTILE = "player.setTile"; 
-	private static final String PLAYERSETPOS = "player.setPos"; 
-	private static final String PLAYERSETROTATION = "player.setRotation";   	
-	private static final Object PLAYERSETPITCH = "player.setPitch"; 
-	private static final Object PLAYERSETDIRECTION = "player.setDirection"; 
-	private static final String PLAYERGETDIRECTION = "player.getDirection";
-	private static final String PLAYERGETROTATION = "player.getRotation";
-	private static final String PLAYERGETPITCH = "player.getPitch";
-	private static final String PLAYERGETPOS = "player.getPos";
-	private static final String PLAYERSETDIMENSION = "player.setDimension";
-	private static final String PLAYERGETTILE = "player.getTile";
-	private static final String ENTITYGETDIRECTION = "entity.getDirection";
-	private static final String ENTITYGETROTATION = "entity.getRotation";
-	private static final String ENTITYGETPITCH = "entity.getPitch";
-	private static final String ENTITYSETDIRECTION = "entity.setDirection";
-	private static final String ENTITYSETDIMENSION = "entity.setDimension";
-	private static final String ENTITYSETROTATION = "entity.setRotation";
-	private static final String ENTITYSETPITCH = "entity.setPitch";
-	private static final String ENTITYGETPOS = "entity.getPos";
-	private static final String ENTITYGETTILE = "entity.getTile";
-	private static final String ENTITYSETTILE = "entity.setTile";
-	private static final String ENTITYSETPOS = "entity.setPos";
-
 	private static final String EVENTSBLOCKHITS = "events.block.hits";
 	private static final String EVENTSCHATPOSTS = "events.chat.posts";
 	private static final String EVENTSCLEAR = "events.clear";
@@ -93,6 +70,20 @@ public class APIHandler {
 	private static final String CAMERASETFOLLOW = "camera.setFollow";
 	private static final String CAMERASETNORMAL = "camera.setNormal";
 	private static final String CAMERAGETENTITYID = "camera.getEntityId";
+	private static final String CAMERASETDEBUG = "camera.setDebug";
+
+	// player.* or entity.*
+	private static final String GETDIRECTION = "getDirection";
+	private static final String GETPITCH = "getPitch";
+	private static final String GETPOS = "getPos";
+	private static final String GETROTATION = "getRotation";
+	private static final String GETTILE = "getTile";
+	private static final String SETDIMENSION = "setDimension";
+	private static final String SETDIRECTION = "setDirection";
+	private static final String SETPITCH = "setPitch";
+	private static final String SETPOS = "setPos";
+	private static final String SETROTATION = "setRotation";
+	private static final String SETTILE = "setTile";
 
 	private static final float TOO_SMALL = (float) 1e-9;
 
@@ -195,7 +186,29 @@ public class APIHandler {
 	private void runCommand(String cmd, String args, Scanner scan) 
 			throws InputMismatchException, NoSuchElementException, IndexOutOfBoundsException {
 
-		if (cmd.equals(GETBLOCK)) {
+		if (cmd.equals(SETBLOCK)) {
+			Location pos = getBlockLocation(scan);
+			short id = scan.nextShort();
+			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
+			String tagString = getRest(scan);
+
+			SetBlockState setState;
+
+			if (tagString.contains("{")) {
+				try {
+					setState = new SetBlockNBT(pos, id, meta, JsonToNBT.func_180713_a(tagString));
+				} catch (NBTException e) {
+					System.err.println("Cannot parse NBT");
+					setState = new SetBlockState(pos, id, meta);
+				}
+			}
+			else {
+				setState = new SetBlockState(pos, id, meta);
+			}
+
+			eventHandler.queueServerAction(setState);
+		}
+		else if (cmd.equals(GETBLOCK)) {
 			Location pos = getBlockLocation(scan);
 			int id = eventHandler.getBlockId(pos);
 
@@ -238,28 +251,6 @@ public class APIHandler {
 			float value = scan.nextFloat();
 			Block.getBlockById(id).setLightLevel(value);
 		}
-		else if (cmd.equals(SETBLOCK)) {
-			Location pos = getBlockLocation(scan);
-			short id = scan.nextShort();
-			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
-			String tagString = getRest(scan);
-
-			SetBlockState setState;
-
-			if (tagString.contains("{")) {
-				try {
-					setState = new SetBlockNBT(pos, id, meta, JsonToNBT.func_180713_a(tagString));
-				} catch (NBTException e) {
-					System.err.println("Cannot parse NBT");
-					setState = new SetBlockState(pos, id, meta);
-				}
-			}
-			else {
-				setState = new SetBlockState(pos, id, meta);
-			}
-
-			eventHandler.queueServerAction(setState);
-		}
 		else if (cmd.equals(SETBLOCKS)) {
 			Location pos1 = getBlockLocation(scan);
 			Location pos2 = getBlockLocation(scan);
@@ -284,11 +275,11 @@ public class APIHandler {
 
 			eventHandler.queueServerAction(setState);
 		}
-		else if (cmd.equals(PLAYERGETPOS)) {
-			entityGetPos(playerId);
+		else if (cmd.startsWith("player.")) {
+			entityCommand(playerId, cmd.substring(7), scan);
 		}
-		else if (cmd.equals(PLAYERGETTILE)) {
-			entityGetTile(playerId);
+		else if (cmd.startsWith("entity.")) {
+			entityCommand(scan.nextInt(), cmd.substring(7), scan);
 		}
 		else if (cmd.equals(CHAT)) {
 			if (RaspberryJamMod.globalChatMessages) {
@@ -334,27 +325,6 @@ public class APIHandler {
 				sendLine(playerId);
 			}
 		}
-		else if (cmd.equals(PLAYERSETTILE)) {
-			entitySetTile(playerId, scan);
-		}
-		else if (cmd.equals(PLAYERSETPOS)) {
-			entitySetPos(playerId, scan);
-		}
-		else if (cmd.equals(PLAYERSETDIMENSION)) {
-			entitySetDimension(playerId, scan.nextInt());
-		}
-		else if (cmd.equals(PLAYERGETDIRECTION)) {
-			entityGetDirection(playerId);
-		}
-		else if (cmd.equals(PLAYERGETROTATION)) {
-			entityGetRotation(playerId);
-		}
-		else if (cmd.equals(PLAYERSETROTATION)) {
-			entitySetRotation(playerId, scan.nextFloat());
-		}
-		else if (cmd.equals(PLAYERSETPITCH)) {
-			entitySetPitch(playerId, scan.nextFloat());
-		}
 		else if (cmd.equals(WORLDDELETEENTITY)) {
 			Entity e = getServerEntityByID(scan.nextInt());
 			if (e != null)
@@ -391,51 +361,6 @@ public class APIHandler {
 				pos.world.spawnEntityInWorld(entity);
 				sendLine(entity.getEntityId());
 			}
-		}
-		else if (cmd.equals(PLAYERSETDIRECTION)) {
-			entitySetDirection(playerId, scan);
-		}
-		else if (cmd.equals(PLAYERGETPITCH)) {
-			entityGetPitch(playerId);
-		}
-		else if (cmd.equals(ENTITYGETPOS)) {
-			entityGetPos(scan.nextInt());
-		}
-		else if (cmd.equals(ENTITYGETTILE)) {
-			entityGetTile(scan.nextInt());
-		}
-		else if (cmd.equals(ENTITYGETROTATION)) {
-			entityGetRotation(scan.nextInt());
-		}
-		else if (cmd.equals(ENTITYSETROTATION)) {
-			int id = scan.nextInt();
-			entitySetRotation(id, scan.nextFloat());
-		}
-		else if (cmd.equals(ENTITYGETPITCH)) {
-			entityGetPitch(scan.nextInt());
-		}
-		else if (cmd.equals(ENTITYSETPITCH)) {
-			int id = scan.nextInt();
-			entitySetPitch(id, scan.nextFloat());
-		}
-		else if (cmd.equals(ENTITYGETDIRECTION)) {
-			entityGetDirection(scan.nextInt());
-		}
-		else if (cmd.equals(ENTITYSETDIRECTION)) {
-			int id = scan.nextInt();
-			entitySetDirection(id, scan);
-		}
-		else if (cmd.equals(ENTITYSETTILE)) {
-			int id = scan.nextInt();
-			entitySetTile(id, scan);
-		}
-		else if (cmd.equals(ENTITYSETPOS)) {
-			int id = scan.nextInt();
-			entitySetPos(id, scan);
-		}
-		else if (cmd.equals(ENTITYSETDIMENSION)) {			
-			int id = scan.nextInt();
-			entitySetDimension(id, scan.nextInt());
 		}
 		else if (cmd.equals(EVENTSCLEAR)) {
 			eventHandler.clearAll();
@@ -491,11 +416,47 @@ public class APIHandler {
 				mc.entityRenderer.loadEntityShader(mc.getRenderViewEntity());
 			}
 		}
-		else if (cmd.equals("camera.setDebug")) {
+		else if (cmd.equals(CAMERASETDEBUG)) {
 			if (! RaspberryJamMod.integrated)
 				return;
 			
 			mc.gameSettings.debugCamEnable = true;
+		}
+	}
+
+	private void entityCommand(int id, String cmd, Scanner scan) {
+		if (cmd.equals(GETPOS)) {
+			entityGetPos(id);
+		}
+		else if (cmd.equals(GETTILE)) {
+			entityGetTile(id);
+		}
+		else if (cmd.equals(GETROTATION)) {
+			entityGetRotation(id);
+		}
+		else if (cmd.equals(SETROTATION)) {
+			entitySetRotation(id, scan.nextFloat());
+		}
+		else if (cmd.equals(GETPITCH)) {
+			entityGetPitch(id);
+		}
+		else if (cmd.equals(SETPITCH)) {
+			entitySetPitch(id, scan.nextFloat());
+		}
+		else if (cmd.equals(GETDIRECTION)) {
+			entityGetDirection(id);
+		}
+		else if (cmd.equals(SETDIRECTION)) {
+			entitySetDirection(id, scan);
+		}
+		else if (cmd.equals(SETTILE)) {
+			entitySetTile(id, scan);
+		}
+		else if (cmd.equals(SETPOS)) {
+			entitySetPos(id, scan);
+		}
+		else if (cmd.equals(SETDIMENSION)) {			
+			entitySetDimension(id, scan.nextInt());
 		}
 	}
 
