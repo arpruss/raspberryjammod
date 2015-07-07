@@ -153,6 +153,9 @@ if __name__ == "__main__":
 
     center = tuple(0.5 * round(2 * x) for x in playerPos)
 
+#    if (len(matrices) > 0):
+#        mc.conn.send("world.spawnParticle", "footstep", center, 0.0,0.0,0.0, 0, 1)
+
     mc.conn.send("events.setting","restrict_to_sword",0)
 
     mc.postToChat("Will be drawing {} copies".format(1+len(transforms)))
@@ -166,4 +169,3 @@ if __name__ == "__main__":
             v = tuple(x for x in h.pos)
             copy(v,airOnly=True)
             copy(addVec(v,faces[h.face]))
-            

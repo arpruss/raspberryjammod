@@ -34,10 +34,12 @@ import net.minecraft.network.play.server.S43PacketCamera;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.Vec3;
 import net.minecraft.util.Vec3i;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
 
@@ -53,6 +55,7 @@ public class APIHandler {
 	private static final String GETBLOCKWITHDATA = "world.getBlockWithData";
 	private static final String GETHEIGHT = "world.getHeight"; 
 	private static final String WORLDSPAWNENTITY = "world.spawnEntity";
+	private static final String WORLDSPAWNPARTICLE = "world.spawnParticle";
 	private static final String WORLDDELETEENTITY = "world.removeEntity";
 	private static final String WORLDGETPLAYERIDS = "world.getPlayerIds"; 	
 	private static final String WORLDGETPLAYERID = "world.getPlayerId"; 
@@ -358,6 +361,40 @@ public class APIHandler {
 				entity.setPositionAndUpdate(pos.xCoord, pos.yCoord, pos.zCoord);
 				pos.world.spawnEntityInWorld(entity);
 				sendLine(entity.getEntityId());
+			}
+		}
+		else if (cmd.equals(WORLDSPAWNPARTICLE)) {
+			String particleName = scan.next();
+			double x0 = scan.nextDouble();
+			double y0 = scan.nextDouble();
+			double z0 = scan.nextDouble();
+			Vec3w pos = Location.decodeVec3w(serverWorlds, x0, y0, z0);
+			double dx = scan.nextDouble();
+			double dy = scan.nextDouble();
+			double dz = scan.nextDouble();
+			double speed = scan.nextDouble();
+			int count = scan.nextInt();
+
+			int[] extras = null;
+			EnumParticleTypes particle = null;
+			for (EnumParticleTypes e : EnumParticleTypes.values()) {
+				if (e.getParticleName().equals(particleName)) {
+					particle = e;
+					extras = new int[e.getArgumentCount()];
+					try {
+						for (int i = 0 ; i < extras.length; i++)
+							extras[i] = scan.nextInt();
+					}
+					catch (Exception exc) {}
+					break;
+				}
+			}
+			if (particle == null) {
+				fail("Cannot find particle type");
+			}
+			else {
+				((WorldServer)pos.world).spawnParticle(particle, false, pos.xCoord, pos.yCoord, pos.zCoord, count, 
+						dx, dy, dz, speed, extras);
 			}
 		}
 		else if (cmd.equals(EVENTSCLEAR)) {
