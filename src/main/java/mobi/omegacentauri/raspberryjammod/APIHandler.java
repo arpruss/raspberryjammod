@@ -52,15 +52,15 @@ public class APIHandler {
 	private static final String GETBLOCK = "world.getBlock";
 	private static final String GETBLOCKWITHDATA = "world.getBlockWithData";
 	private static final String GETHEIGHT = "world.getHeight"; 
-
-	private static final String GETLIGHTLEVEL = "block.getLightLevel";
-	private static final String SETLIGHTLEVEL = "block.setLightLevel";
-
 	private static final String WORLDSPAWNENTITY = "world.spawnEntity";
 	private static final String WORLDDELETEENTITY = "world.removeEntity";
 	private static final String WORLDGETPLAYERIDS = "world.getPlayerIds"; 	
 	private static final String WORLDGETPLAYERID = "world.getPlayerId"; 
 	private static final String WORLDSETTING = "world.setting";
+
+	private static final String GETLIGHTLEVEL = "block.getLightLevel"; // EXPERIMENTAL AND UNSUPPORTED
+	private static final String SETLIGHTLEVEL = "block.setLightLevel"; // EXPERIMENTAL AND UNSUPPORTED
+
 
 	private static final String EVENTSBLOCKHITS = "events.block.hits";
 	private static final String EVENTSCHATPOSTS = "events.chat.posts";
@@ -70,7 +70,7 @@ public class APIHandler {
 	private static final String CAMERASETFOLLOW = "camera.setFollow";
 	private static final String CAMERASETNORMAL = "camera.setNormal";
 	private static final String CAMERAGETENTITYID = "camera.getEntityId";
-	private static final String CAMERASETDEBUG = "camera.setDebug";
+	private static final String CAMERASETDEBUG = "camera.setDebug"; // EXPERIMENTAL AND UNSUPPORTED
 
 	// player.* or entity.*
 	private static final String GETDIRECTION = "getDirection";
@@ -78,7 +78,7 @@ public class APIHandler {
 	private static final String GETPOS = "getPos";
 	private static final String GETROTATION = "getRotation";
 	private static final String GETTILE = "getTile";
-	private static final String SETDIMENSION = "setDimension";
+	private static final String SETDIMENSION = "setDimension"; // EXPERIMENTAL AND UNSUPPORTED
 	private static final String SETDIRECTION = "setDirection";
 	private static final String SETPITCH = "setPitch";
 	private static final String SETPOS = "setPos";
@@ -174,7 +174,6 @@ public class APIHandler {
 		}
 		catch(Exception e) {
 			System.out.println(""+e);
-			e.printStackTrace(System.out);
 		}
 		finally {
 			if (scan != null)
@@ -282,15 +281,14 @@ public class APIHandler {
 			entityCommand(scan.nextInt(), cmd.substring(7), scan);
 		}
 		else if (cmd.equals(CHAT)) {
-			if (RaspberryJamMod.globalChatMessages) {
+			if (! RaspberryJamMod.integrated || RaspberryJamMod.globalChatMessages) {
 				globalMessage(args);
 			}
 			else {
-				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(args));
+				mc.thePlayer.addChatComponentMessage(new ChatComponentText(args));
 			}
 		}
 		else if (cmd.equals(WORLDGETPLAYERIDS)) {
-			// TODO : ensure local player is first (lowest number?!)
 			List<Integer> players = new ArrayList<Integer>();
 			for (World w : serverWorlds) {
 				for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities) {
@@ -726,12 +724,4 @@ public class APIHandler {
 			}
 		}
 	}
-
-
-//	static EntityPlayerMP getServerPlayer() {
-//		EntityPlayerSP playerSP = Minecraft.getMinecraft().thePlayer;
-//		if (playerSP == null)
-//			return null;
-//		return (EntityPlayerMP)MinecraftServer.getServer().getEntityWorld().getEntityByID(playerSP.getEntityId());
-//	}
 }
