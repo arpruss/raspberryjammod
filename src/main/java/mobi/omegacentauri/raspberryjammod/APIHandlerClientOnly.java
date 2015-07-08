@@ -7,7 +7,9 @@ import java.util.Scanner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 
 // This class is meant to provide most of the APIHandler facility while one is connected to a
 // server. Of course, any block changes won't get written back to the server.
@@ -59,10 +61,38 @@ public class APIHandlerClientOnly extends APIHandler {
 
 	@Override
 	protected void spawnParticle(Scanner scan) {
-	}
+		String particleName = scan.next();
+		double x0 = scan.nextDouble();
+		double y0 = scan.nextDouble();
+		double z0 = scan.nextDouble();
+		Vec3w pos = Location.decodeVec3w(serverWorlds, x0, y0, z0);
+		double dx = scan.nextDouble();
+		double dy = scan.nextDouble();
+		double dz = scan.nextDouble();
+		double speed = scan.nextDouble();
+		int count = scan.nextInt();
 
-	@Override
-	protected void removeEntity(int id) {
+		int[] extras = null;
+		EnumParticleTypes particle = null;
+		for (EnumParticleTypes e : EnumParticleTypes.values()) {
+			if (e.getParticleName().equals(particleName)) {
+				particle = e;
+				extras = new int[e.getArgumentCount()];
+				try {
+					for (int i = 0 ; i < extras.length; i++)
+						extras[i] = scan.nextInt();
+				}
+				catch (Exception exc) {}
+				break;
+			}
+		}
+		if (particle == null) {
+			fail("Cannot find particle type");
+		}
+		else {
+			for (int i = 0 ; i < count ; i++)
+				pos.world.spawnParticle(particle, false, pos.xCoord, pos.yCoord, pos.zCoord, dx, dy, dz, extras);
+		}
 	}
 
 	@Override

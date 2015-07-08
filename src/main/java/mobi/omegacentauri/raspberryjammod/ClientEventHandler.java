@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.Entity;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
@@ -36,6 +37,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -45,6 +47,7 @@ public class ClientEventHandler {
 	private int clientTickCount = 0;
 	private MCEventHandlerClientOnly eventHandler = null;
 	private APIServer apiServer;
+	private boolean registeredCommands = false;
 
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
@@ -66,10 +69,16 @@ public class ClientEventHandler {
 	public boolean getNightVision() {
 		return nightVision;
 	}
-
-	@SubscribeEvent
+	
 	@SideOnly(Side.CLIENT)
-	public void onWorldLoadEvent(WorldEvent.Load event) {
+	@SubscribeEvent
+	public void onPlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
+		Entity mcPlayer = Minecraft.getMinecraft().thePlayer;
+		if (mcPlayer != null && event.player.getEntityId() != mcPlayer.getEntityId()) {
+			System.out.println("different player");
+			return;
+		}
+		System.out.println("World loaded "+RaspberryJamMod.clientOnlyAPI);
 		if (! RaspberryJamMod.clientOnlyAPI)
 			return;
 
@@ -79,6 +88,15 @@ public class ClientEventHandler {
 		eventHandler = new MCEventHandlerClientOnly();
 		FMLCommonHandler.instance().bus().register(eventHandler);
 		MinecraftForge.EVENT_BUS.register(eventHandler);
+		if (! registeredCommands) {
+			RaspberryJamMod.scriptExternalCommands = new ScriptExternalCommand[] {
+					new PythonExternalCommand(true),
+					new AddPythonExternalCommand(true)
+			};
+			for (ScriptExternalCommand c : RaspberryJamMod.scriptExternalCommands) {
+				net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(c);
+			}
+		}
 
 		try {
 			// the eventhandler is unregistered, so it doesn't do much
@@ -97,6 +115,7 @@ public class ClientEventHandler {
 						}
 						finally {
 							System.out.println("Closing RaspberryJamMod client-only API");
+							RaspberryJamMod.closeAllScripts();
 							if (apiServer != null) {
 								apiServer.close();
 								apiServer = null;
@@ -110,18 +129,28 @@ public class ClientEventHandler {
 		catch (Exception e) {}
 	}
 	
-	@SubscribeEvent
-	@SideOnly(Side.CLIENT)
-	public void onWorldUnloadEvent(WorldEvent.Unload event) {
+	private void closeAsNeeded(boolean force) {
 		if (eventHandler != null) {
 			RaspberryJamMod.serverActive = false;
 			FMLCommonHandler.instance().bus().unregister(eventHandler);
 			eventHandler = null;
 		}
-		if (! RaspberryJamMod.clientOnlyAPI && apiServer != null) {
+		if ((force || ! RaspberryJamMod.clientOnlyAPI) && apiServer != null) {
+			RaspberryJamMod.closeAllScripts();
 			apiServer.close();
 			apiServer = null;
 		}
+	}
+	
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void onPlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
+		Entity mcPlayer = Minecraft.getMinecraft().thePlayer;
+		if (mcPlayer != null && event.player.getEntityId() != mcPlayer.getEntityId()) {
+			System.out.println("different player");
+			return;
+		}
+		closeAsNeeded(true);
 	}	
 
 }

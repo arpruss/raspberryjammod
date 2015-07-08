@@ -22,23 +22,9 @@ public class MCEventHandlerServer extends MCEventHandler {
 			chats.add(cd);
 		}
 	}
-
+	
 	@SubscribeEvent
 	public void onServerTick(TickEvent.ServerTickEvent event) {
-		if (!pause) {
-			synchronized(serverActionQueue) {
-				for (ServerAction entry: serverActionQueue) {
-					if (! RaspberryJamMod.serverActive)
-						break;
-					entry.execute();
-				}
-				serverActionQueue.clear();
-			}
-		}
-		else if (! RaspberryJamMod.serverActive) {
-			synchronized(serverActionQueue) {
-				serverActionQueue.clear();
-			}
-		}
+		runQueue();
 	}
 }

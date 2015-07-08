@@ -3,8 +3,10 @@ package mobi.omegacentauri.raspberryjammod;
 import java.io.IOException;
 
 import mobi.omegacentauri.raspberryjammod.MCEventHandler.ChatDescription;
+import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -21,8 +23,21 @@ public class MCEventHandlerClientOnly extends MCEventHandler {
 	}
 
 	@SubscribeEvent
+	public void onChatEvent(ClientChatReceivedEvent event) {
+		System.out.println("ClientChatEvent on client side: "+event.message.toString());
+		ChatDescription cd = new ChatDescription(Minecraft.getMinecraft().thePlayer.getEntityId(), 
+				event.message.toString());
+		synchronized(chats) {
+			if (chats.size() >= MAX_CHATS)
+				chats.remove(0);
+			chats.add(cd);
+		}
+	}
+	
+	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onChatEvent(ServerChatEvent event) {
+		System.out.println("ServerChatEvent on client side: "+event.message);
 		ChatDescription cd = new ChatDescription(event.player.getEntityId(), event.message);
 		synchronized(chats) {
 			if (chats.size() >= MAX_CHATS)
@@ -34,20 +49,6 @@ public class MCEventHandlerClientOnly extends MCEventHandler {
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onClientTick(TickEvent.ClientTickEvent event) {
-		if (!pause) {
-			synchronized(serverActionQueue) {
-				for (ServerAction entry: serverActionQueue) {
-					if (! RaspberryJamMod.serverActive)
-						break;
-					entry.execute();
-				}
-				serverActionQueue.clear();
-			}
-		}
-		else if (! RaspberryJamMod.serverActive) {
-			synchronized(serverActionQueue) {
-				serverActionQueue.clear();
-			}
-		}
+		runQueue();
 	}
 }

@@ -165,6 +165,24 @@ public class MCEventHandler {
 			serverActionQueue.add(s);
 		}
 	}
+	
+	public void runQueue() {
+		if (!pause) {
+			synchronized(serverActionQueue) {
+				for (ServerAction entry: serverActionQueue) {
+					if (! RaspberryJamMod.serverActive)
+						break;
+					entry.execute();
+				}
+				serverActionQueue.clear();
+			}
+		}
+		else if (! RaspberryJamMod.serverActive) {
+			synchronized(serverActionQueue) {
+				serverActionQueue.clear();
+			}
+		}
+	}
 
 	public BlockState getBlockState(Location pos) {
 		int x = pos.getX();

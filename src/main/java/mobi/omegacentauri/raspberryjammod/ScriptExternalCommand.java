@@ -194,6 +194,9 @@ public abstract class ScriptExternalCommand implements ICommand {
 	public void execute(ICommandSender sender, String[] args)
 			throws CommandException {
 		
+		if (clientSide != RaspberryJamMod.clientOnlyAPI) 
+			return;
+		
 		World serverWorld = MinecraftServer.getServer().getEntityWorld();
 		
 		if (! RaspberryJamMod.allowRemote && (! RaspberryJamMod.integrated || 

@@ -28,7 +28,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -103,7 +102,7 @@ public class RaspberryJamMod
 		leftClickToo = configFile.getBoolean("Detect Sword Left-Click", Configuration.CATEGORY_GENERAL, false, "Detect sword left-click");
 		pythonInterpreter = configFile.getString("Python Interpreter", Configuration.CATEGORY_GENERAL, "python", "Python interpreter");
 		globalChatMessages = configFile.getBoolean("Messages Go To All", Configuration.CATEGORY_GENERAL, true, "Messages go to all");
-		clientOnlyAPI = configFile.getBoolean("Read-only API", Configuration.CATEGORY_GENERAL, false, "Read-only API");
+		clientOnlyAPI = configFile.getBoolean("Read-Only Client-Based API", Configuration.CATEGORY_GENERAL, false, "Read-only API");
 //		clientOnlyPortNumber = configFile.getInt("Port Number for Client-Only API", Configuration.CATEGORY_GENERAL, 0, 0, 65535, "Client-only API port number (normally 0)");
 
 		if (configFile.hasChanged())
@@ -137,7 +136,7 @@ public class RaspberryJamMod
 	
 	@EventHandler
 	public void onServerStarting(FMLServerStartingEvent event) {
-		System.out.println("Raspberry Jam Mod started");
+		System.out.println("Server started event");
 		
 		synchronizeConfig();
 		
