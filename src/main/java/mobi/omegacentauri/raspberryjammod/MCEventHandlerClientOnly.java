@@ -14,55 +14,12 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class MCEventHandlerClientOnly extends MCEventHandler {
 	private APIServer apiServer;
-	private boolean active;
 
 	public MCEventHandlerClientOnly() {
 		super();
 		doRemote = true;
 	}
 
-	@SubscribeEvent
-	@SideOnly(Side.CLIENT)
-	public void onWorldLoadEvent(WorldEvent.Load event) {
-		try{
-			// the eventhandler is unregistered, so it doesn't do much
-			System.out.println("RaspberryJamMod client only API");
-			active = true;
-			apiServer = new APIServer(this, RaspberryJamMod.clientOnlyPortNumber, false);
-	
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						apiServer.communicate();
-					} catch(IOException e) {
-						System.out.println("RaspberryJamMod error "+e);
-					}
-					finally {
-						System.out.println("Closing RaspberryJamMod client-only API");
-						if (apiServer != null) {
-							apiServer.close();
-							apiServer = null;
-						}
-					}
-				}
-	
-			}).start();
-		}
-		catch (Exception e) {}
-	}
-	
-	@SubscribeEvent
-	@SideOnly(Side.CLIENT)
-	public void onWorldUnloadEvent(WorldEvent.Unload event) {
-		active = false;
-		
-		if (apiServer != null) {
-			apiServer.close();
-			apiServer = null;
-		}
-	}
-	
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onChatEvent(ServerChatEvent event) {
@@ -80,14 +37,14 @@ public class MCEventHandlerClientOnly extends MCEventHandler {
 		if (!pause) {
 			synchronized(serverActionQueue) {
 				for (ServerAction entry: serverActionQueue) {
-					if (! active)
+					if (! RaspberryJamMod.serverActive)
 						break;
 					entry.execute();
 				}
 				serverActionQueue.clear();
 			}
 		}
-		else if (! active) {
+		else if (! RaspberryJamMod.serverActive) {
 			synchronized(serverActionQueue) {
 				serverActionQueue.clear();
 			}

@@ -50,10 +50,10 @@ public class APIServer {
 	private List<Socket> socketList;
 	private boolean controlServer;
 
-	public APIServer(MCEventHandler eventHandler, int portNumber, boolean controlServer) throws IOException {
+	public APIServer(MCEventHandler eventHandler, int portNumber, boolean clientSide) throws IOException {
 		socketList = new ArrayList<Socket>();
 		this.eventHandler = eventHandler;
-		this.controlServer = controlServer;
+		this.controlServer = ! clientSide;
 		if (RaspberryJamMod.allowRemote) {
 			serverSocket = new ServerSocket(portNumber);
 		}

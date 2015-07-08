@@ -291,12 +291,7 @@ public class APIHandler {
 			entityCommand(scan.nextInt(), cmd.substring(7), scan);
 		}
 		else if (cmd.equals(CHAT)) {
-			if (! RaspberryJamMod.integrated || RaspberryJamMod.globalChatMessages) {
-				globalMessage(args);
-			}
-			else {
-				mc.thePlayer.addChatComponentMessage(new ChatComponentText(args));
-			}
+			chat(args);
 		}
 		else if (cmd.equals(WORLDGETPLAYERIDS)) {
 			List<Integer> players = new ArrayList<Integer>();
@@ -334,41 +329,10 @@ public class APIHandler {
 			}
 		}
 		else if (cmd.equals(WORLDDELETEENTITY)) {
-			Entity e = getServerEntityByID(scan.nextInt());
-			if (e != null)
-				e.getEntityWorld().removeEntity(e);
+			removeEntity(scan.nextInt());
 		}
 		else if (cmd.equals(WORLDSPAWNENTITY)) {
-			String entityId = scan.next();
-			double x0 = scan.nextDouble();
-			double y0 = scan.nextDouble();
-			double z0 = scan.nextDouble();
-			Vec3w pos = Location.decodeVec3w(serverWorlds, x0, y0, z0);
-			String tagString = getRest(scan);
-			Entity entity;
-			if (tagString.length() > 0) {
-				NBTTagCompound tags;
-				try {
-					tags = JsonToNBT.func_180713_a(tagString);
-				} catch (NBTException e) {
-					fail("Cannot parse tags");
-					return;
-				}
-				tags.setString("id", entityId);
-				entity = EntityList.createEntityFromNBT(tags, pos.world);
-			}
-			else {
-				entity = EntityList.createEntityByName(entityId, pos.world);
-			}
-
-			if (entity == null) {
-				fail("Cannot create entity");
-			}
-			else {
-				entity.setPositionAndUpdate(pos.xCoord, pos.yCoord, pos.zCoord);
-				pos.world.spawnEntityInWorld(entity);
-				sendLine(entity.getEntityId());
-			}
+			spawnEntity(scan);
 		}
 		else if (cmd.equals(WORLDSPAWNPARTICLE)) {
 			spawnParticle(scan);
@@ -398,6 +362,54 @@ public class APIHandler {
 		}
 		else if (cmd.startsWith("camera.")) {
 			cameraCommand(cmd.substring(7), scan);
+		}
+	}
+	
+	protected void removeEntity(int id) {
+		Entity e = getServerEntityByID(id);
+		if (e != null)
+			e.getEntityWorld().removeEntity(e);
+	}
+
+	protected void spawnEntity(Scanner scan) {
+		String entityId = scan.next();
+		double x0 = scan.nextDouble();
+		double y0 = scan.nextDouble();
+		double z0 = scan.nextDouble();
+		Vec3w pos = Location.decodeVec3w(serverWorlds, x0, y0, z0);
+		String tagString = getRest(scan);
+		Entity entity;
+		if (tagString.length() > 0) {
+			NBTTagCompound tags;
+			try {
+				tags = JsonToNBT.func_180713_a(tagString);
+			} catch (NBTException e) {
+				fail("Cannot parse tags");
+				return;
+			}
+			tags.setString("id", entityId);
+			entity = EntityList.createEntityFromNBT(tags, pos.world);
+		}
+		else {
+			entity = EntityList.createEntityByName(entityId, pos.world);
+		}
+
+		if (entity == null) {
+			fail("Cannot create entity");
+		}
+		else {
+			entity.setPositionAndUpdate(pos.xCoord, pos.yCoord, pos.zCoord);
+			pos.world.spawnEntityInWorld(entity);
+			sendLine(entity.getEntityId());
+		}
+	}
+
+	protected void chat(String msg) {
+		if (! RaspberryJamMod.integrated || RaspberryJamMod.globalChatMessages) {
+			globalMessage(msg);
+		}
+		else {
+			mc.thePlayer.addChatComponentMessage(new ChatComponentText(msg));
 		}
 	}
 	
@@ -437,11 +449,6 @@ public class APIHandler {
 	}
 	
 	protected void cameraCommand(String cmd, Scanner scan) {
-		if (playerMP == null) {
-			fail("playerMP not available");
-			return;
-		}
-		
 		if (cmd.equals(GETENTITYID)) {
 			sendLine(playerMP.getSpectatingEntity().getEntityId());
 		}

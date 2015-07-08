@@ -2,9 +2,11 @@ package mobi.omegacentauri.raspberryjammod;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Scanner;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 
 // This class is meant to provide most of the APIHandler facility while one is connected to a
@@ -35,7 +37,9 @@ public class APIHandlerClientOnly extends APIHandler {
 			fail("Client player not available");
 			return false;
 		}
+		
 		playerId = mc.thePlayer.getEntityId();
+		playerMP = null;
 		havePlayer = true;
 		return true;
 	}
@@ -46,5 +50,22 @@ public class APIHandlerClientOnly extends APIHandler {
 		if (e == null)
 			fail("Cannot find entity "+id);
 		return e;
+	}
+	
+	@Override
+	protected void chat(String msg) {
+		mc.thePlayer.addChatComponentMessage(new ChatComponentText(msg));
+	}
+
+	@Override
+	protected void spawnParticle(Scanner scan) {
+	}
+
+	@Override
+	protected void removeEntity(int id) {
+	}
+
+	@Override
+	protected void cameraCommand(String cmd, Scanner scan) {
 	}
 }

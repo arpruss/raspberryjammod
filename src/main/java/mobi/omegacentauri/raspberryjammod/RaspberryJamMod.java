@@ -28,6 +28,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -56,7 +57,6 @@ public class RaspberryJamMod
 	public static ScriptExternalCommand[] scriptExternalCommands = null;
 	public static Configuration configFile;
 	public static int portNumber = 4711;
-	public static int clientOnlyPortNumber = 4712;
 	public static boolean concurrent = true;
 	public static boolean leftClickToo = true;
 	public static boolean allowRemote = true;
@@ -64,6 +64,7 @@ public class RaspberryJamMod
 	public static String pythonInterpreter = "python";
 	public static boolean integrated = true;
 	public static volatile boolean serverActive = false;
+	static boolean clientOnlyAPI = false;
 	private MCEventHandler serverEventHandler = null;
 	private MCEventHandlerClientOnly clientOnlyEventHandler = null;
 
@@ -93,12 +94,6 @@ public class RaspberryJamMod
 		FMLCommonHandler.instance().bus().register(eventHandler);
 		nightVisionExternalCommand = new NightVisionExternalCommand(eventHandler);
 		net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(nightVisionExternalCommand);
-//		if (clientOnlyPortNumber != 0 && clientOnlyPortNumber != portNumber) {
-//			System.out.println("Registering client only event handler");
-//			clientOnlyEventHandler = new MCEventHandlerClientOnly();
-//			FMLCommonHandler.instance().bus().register(clientOnlyEventHandler);
-//			MinecraftForge.EVENT_BUS.register(clientOnlyEventHandler);
-//		}
 	}
 	
 	public static void synchronizeConfig() {
@@ -108,6 +103,7 @@ public class RaspberryJamMod
 		leftClickToo = configFile.getBoolean("Detect Sword Left-Click", Configuration.CATEGORY_GENERAL, false, "Detect sword left-click");
 		pythonInterpreter = configFile.getString("Python Interpreter", Configuration.CATEGORY_GENERAL, "python", "Python interpreter");
 		globalChatMessages = configFile.getBoolean("Messages Go To All", Configuration.CATEGORY_GENERAL, true, "Messages go to all");
+		clientOnlyAPI = configFile.getBoolean("Read-only API", Configuration.CATEGORY_GENERAL, false, "Read-only API");
 //		clientOnlyPortNumber = configFile.getInt("Port Number for Client-Only API", Configuration.CATEGORY_GENERAL, 0, 0, 65535, "Client-only API port number (normally 0)");
 
 		if (configFile.hasChanged())
@@ -145,7 +141,7 @@ public class RaspberryJamMod
 		
 		synchronizeConfig();
 		
-		if (portNumber == 0)
+		if (clientOnlyAPI)
 			return;
 
 		serverActive = true;
@@ -154,7 +150,7 @@ public class RaspberryJamMod
 		FMLCommonHandler.instance().bus().register(serverEventHandler);
 		MinecraftForge.EVENT_BUS.register(serverEventHandler);
 		try {
-			fullAPIServer = new APIServer(serverEventHandler, portNumber, true);
+			fullAPIServer = new APIServer(serverEventHandler, portNumber, false);
 
 			new Thread(new Runnable() {
 				@Override
@@ -177,8 +173,8 @@ public class RaspberryJamMod
 		}
 
 		scriptExternalCommands = new ScriptExternalCommand[] {
-				new PythonExternalCommand(),
-				new AddPythonExternalCommand()
+				new PythonExternalCommand(false),
+				new AddPythonExternalCommand(false)
 		};
 		for (ScriptExternalCommand c : scriptExternalCommands) {
 			event.registerServerCommand(c);

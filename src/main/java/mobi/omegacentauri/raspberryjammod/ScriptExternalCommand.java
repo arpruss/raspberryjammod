@@ -37,8 +37,10 @@ public abstract class ScriptExternalCommand implements ICommand {
 	private List<Process> runningScripts;
 	final String scriptProcessorPath;
 	private World serverWorld;
+	protected boolean clientSide;
 
-	public ScriptExternalCommand() {
+	public ScriptExternalCommand(boolean clientSide) {
+		this.clientSide = clientSide;
 		runningScripts = new LinkedList<Process>(); 
 		String path = getScriptProcessorPath();
 		if (path.contains("/") || path.contains(System.getProperty("file.separator")))
@@ -180,6 +182,13 @@ public abstract class ScriptExternalCommand implements ICommand {
 	public boolean addMode() {
 		return false;
 	}
+	
+	private void globalMessage(String msg) {
+		if (clientSide)
+			Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(msg));
+		else
+			APIHandler.globalMessage(msg);
+	}
 
 	@Override
 	public void execute(ICommandSender sender, String[] args)
@@ -190,7 +199,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 		if (! RaspberryJamMod.allowRemote && (! RaspberryJamMod.integrated || 
 				serverWorld.playerEntities.size() > 1 &&
 				! sender.getName().equals(Minecraft.getMinecraft().thePlayer.getName()))) {
-			APIHandler.globalMessage("Blocked possible remote script launch by "+sender.getCommandSenderEntity());
+			globalMessage("Blocked possible remote script launch by "+sender.getCommandSenderEntity());
 			return;
 		}
 		
@@ -204,7 +213,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 					message = "Stopped the "+c+" running scripts.";
 				else
 					message = "Stopped the running script.";
-				APIHandler.globalMessage(message);
+				globalMessage(message);
 			}
 		}
 
@@ -241,7 +250,6 @@ public abstract class ScriptExternalCommand implements ICommand {
 			environment.put("MINECRAFT_PLAYER_ID", ""+senderEntity.getEntityId());
 		}
 
-		//		pb.inheritIO();
 		pb.command(cmd);
 		try {
 			System.out.println("Running "+script);
@@ -268,7 +276,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 					while ( null != ( line = br.readLine()) ) {
 						line.trim();
 						if (entity == null)
-							APIHandler.globalMessage(label + line);
+							globalMessage(label + line);
 						else 
 							entity.addChatComponentMessage(new ChatComponentText(label + line));
 					}

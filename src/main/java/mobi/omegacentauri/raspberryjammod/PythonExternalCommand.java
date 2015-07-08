@@ -10,20 +10,20 @@ import net.minecraft.util.BlockPos;
 
 public class PythonExternalCommand extends ScriptExternalCommand {
 
-	public PythonExternalCommand() {
-		super();
+	public PythonExternalCommand(boolean clientSide) {
+		super(clientSide);
 	}
 	
 	@Override
 	public String getName() {
-		return "python";
+		return clientSide ? "lpython" : "python";
 	}
 
 	@Override
 	public List getAliases() {
 		List<String> aliases = new ArrayList<String>();
 		aliases.add(getName());
-		aliases.add("py");
+		aliases.add(clientSide ? "lpy" : "py");
 		return aliases;
 	}
 
