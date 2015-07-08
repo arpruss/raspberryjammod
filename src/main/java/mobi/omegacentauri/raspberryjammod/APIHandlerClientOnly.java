@@ -31,14 +31,12 @@ public class APIHandlerClientOnly extends APIHandler {
 
 		serverWorlds = new World[] { mc.theWorld };
 		
-		if (! havePlayer) {
-			if (mc.thePlayer == null) {
-				fail("Client player not available");
-				return false;
-			}
-			playerId = mc.thePlayer.getEntityId();
-			havePlayer = true;
+		if (mc.thePlayer == null) {
+			fail("Client player not available");
+			return false;
 		}
+		playerId = mc.thePlayer.getEntityId();
+		havePlayer = true;
 		return true;
 	}
 
@@ -49,5 +47,4 @@ public class APIHandlerClientOnly extends APIHandler {
 			fail("Cannot find entity "+id);
 		return e;
 	}
-
 }

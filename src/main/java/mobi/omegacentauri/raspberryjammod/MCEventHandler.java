@@ -42,19 +42,16 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class MCEventHandler {
-	private List<ServerAction> serverActionQueue = new ArrayList<ServerAction>();		
+	protected List<ServerAction> serverActionQueue = new ArrayList<ServerAction>();		
 	private List<HitDescription> hits = new LinkedList<HitDescription>();
-	private List<ChatDescription> chats = new LinkedList<ChatDescription>();
+	protected List<ChatDescription> chats = new LinkedList<ChatDescription>();
 	private static final int MAX_HITS = 512;
 	private volatile boolean stopChanges = false;
 	private volatile boolean restrictToSword = true;
-	private volatile boolean nightVision = false;
-	private volatile boolean pause = false;
+	protected volatile boolean pause = false;
 	private ServerChatEvent chatEvents;
-	private static final int MAX_CHATS = 512;
-	private int clientTickCount = 0;
-	public volatile Integer dimensionSwitch = null;
-	public Entity dimensionSwitchEntity;
+	protected static final int MAX_CHATS = 512;
+	protected boolean doRemote;
 
 	public void setStopChanges(boolean stopChanges) {
 		this.stopChanges = stopChanges;
@@ -74,16 +71,6 @@ public class MCEventHandler {
 //        }
 //    }
 	
-	@SubscribeEvent
-	public void onChatEvent(ServerChatEvent event) {
-		ChatDescription cd = new ChatDescription(event.player.getEntityId(), event.message);
-		synchronized(chats) {
-			if (chats.size() >= MAX_CHATS)
-				chats.remove(0);
-			chats.add(cd);
-		}
-	}
-
 	@SubscribeEvent
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
 		if (event.entityPlayer == null || event.entityPlayer.getEntityWorld().isRemote)
@@ -173,34 +160,6 @@ public class MCEventHandler {
 		chats.clear();
 	}
 	
-	@SubscribeEvent
-	public void onClientTick(TickEvent.ClientTickEvent event) {
-		if (nightVision && clientTickCount % 1024 == 0) {
-			EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-			
-			if (player != null) {
-				player.addPotionEffect(new PotionEffect(Potion.nightVision.id, 4096));
-			}
-		}
-		clientTickCount++;
-	}
-
-	@SubscribeEvent
-	public void onServerTick(TickEvent.ServerTickEvent event) {
-		if (!pause) {
-			World world = MinecraftServer.getServer().getEntityWorld();
-			
-			synchronized(serverActionQueue) {
-				for (ServerAction entry: serverActionQueue) {
-					if (! RaspberryJamMod.active)
-						break;
-					entry.execute();
-				}
-				serverActionQueue.clear();
-			}
-		}
-	}
-
 	public void queueServerAction(ServerAction s) {
 		synchronized(serverActionQueue) {
 			serverActionQueue.add(s);
@@ -316,13 +275,5 @@ public class MCEventHandler {
 
 	public void setPause(boolean b) {
 		pause = b;
-	}
-
-	public void setNightVision(boolean b) {
-		nightVision = b;
-	}
-
-	public boolean getNightVision() {
-		return nightVision;
 	}
 }
