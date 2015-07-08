@@ -48,58 +48,58 @@ public class APIHandler {
 	// camera.setFixed() unsupported
 	// camera.setNormal(id) and camera.setFollow(id) uses spectating, and so it moves the
 	// player along with the entity that was set as camera
-	private static final String CHAT = "chat.post";
-	private static final String SETBLOCK = "world.setBlock";
-	private static final String SETBLOCKS = "world.setBlocks"; 
-	private static final String GETBLOCK = "world.getBlock";
-	private static final String GETBLOCKWITHDATA = "world.getBlockWithData";
-	private static final String GETHEIGHT = "world.getHeight"; 
-	private static final String WORLDSPAWNENTITY = "world.spawnEntity";
-	private static final String WORLDSPAWNPARTICLE = "world.spawnParticle";
-	private static final String WORLDDELETEENTITY = "world.removeEntity";
-	private static final String WORLDGETPLAYERIDS = "world.getPlayerIds"; 	
-	private static final String WORLDGETPLAYERID = "world.getPlayerId"; 
-	private static final String WORLDSETTING = "world.setting";
+	protected static final String CHAT = "chat.post";
+	protected static final String SETBLOCK = "world.setBlock";
+	protected static final String SETBLOCKS = "world.setBlocks"; 
+	protected static final String GETBLOCK = "world.getBlock";
+	protected static final String GETBLOCKWITHDATA = "world.getBlockWithData";
+	protected static final String GETHEIGHT = "world.getHeight"; 
+	protected static final String WORLDSPAWNENTITY = "world.spawnEntity";
+	protected static final String WORLDSPAWNPARTICLE = "world.spawnParticle";
+	protected static final String WORLDDELETEENTITY = "world.removeEntity";
+	protected static final String WORLDGETPLAYERIDS = "world.getPlayerIds"; 	
+	protected static final String WORLDGETPLAYERID = "world.getPlayerId"; 
+	protected static final String WORLDSETTING = "world.setting";
 
-	private static final String GETLIGHTLEVEL = "block.getLightLevel"; // EXPERIMENTAL AND UNSUPPORTED
-	private static final String SETLIGHTLEVEL = "block.setLightLevel"; // EXPERIMENTAL AND UNSUPPORTED
+	protected static final String GETLIGHTLEVEL = "block.getLightLevel"; // EXPERIMENTAL AND UNSUPPORTED
+	protected static final String SETLIGHTLEVEL = "block.setLightLevel"; // EXPERIMENTAL AND UNSUPPORTED
 
 
-	private static final String EVENTSBLOCKHITS = "events.block.hits";
-	private static final String EVENTSCHATPOSTS = "events.chat.posts";
-	private static final String EVENTSCLEAR = "events.clear";
-	private static final String EVENTSSETTING = "events.setting";
+	protected static final String EVENTSBLOCKHITS = "events.block.hits";
+	protected static final String EVENTSCHATPOSTS = "events.chat.posts";
+	protected static final String EVENTSCLEAR = "events.clear";
+	protected static final String EVENTSSETTING = "events.setting";
 
-	private static final String CAMERASETFOLLOW = "camera.setFollow";
-	private static final String CAMERASETNORMAL = "camera.setNormal";
-	private static final String CAMERAGETENTITYID = "camera.getEntityId";
-	private static final String CAMERASETDEBUG = "camera.setDebug"; // EXPERIMENTAL AND UNSUPPORTED
+	// camera.*
+	protected static final String SETFOLLOW = "setFollow";
+	protected static final String SETNORMAL = "setNormal";
+	protected static final String GETENTITYID = "getEntityId";
+	protected static final String SETDEBUG = "setDebug"; // EXPERIMENTAL AND UNSUPPORTED
 
 	// player.* or entity.*
-	private static final String GETDIRECTION = "getDirection";
-	private static final String GETPITCH = "getPitch";
-	private static final String GETPOS = "getPos";
-	private static final String GETROTATION = "getRotation";
-	private static final String GETTILE = "getTile";
-	private static final String SETDIMENSION = "setDimension"; // EXPERIMENTAL AND UNSUPPORTED
-	private static final String SETDIRECTION = "setDirection";
-	private static final String SETPITCH = "setPitch";
-	private static final String SETPOS = "setPos";
-	private static final String SETROTATION = "setRotation";
-	private static final String SETTILE = "setTile";
+	protected static final String GETDIRECTION = "getDirection";
+	protected static final String GETPITCH = "getPitch";
+	protected static final String GETPOS = "getPos";
+	protected static final String GETROTATION = "getRotation";
+	protected static final String GETTILE = "getTile";
+	protected static final String SETDIMENSION = "setDimension"; // EXPERIMENTAL AND UNSUPPORTED
+	protected static final String SETDIRECTION = "setDirection";
+	protected static final String SETPITCH = "setPitch";
+	protected static final String SETPOS = "setPos";
+	protected static final String SETROTATION = "setRotation";
+	protected static final String SETTILE = "setTile";
 
-	private static final float TOO_SMALL = (float) 1e-9;
+	protected static final float TOO_SMALL = (float) 1e-9;
 
-	private World[] serverWorlds;
-	private MCEventHandler eventHandler;
-	private boolean listening = true;
-	private Minecraft mc;
-	private int connectionsActive = 0;
-	DataOutputStream writer = null;
-	private boolean includeNBTWithData = false;
-	private boolean havePlayer;
-	private int playerId;
-	private EntityPlayerMP playerMP;
+	protected World[] serverWorlds;
+	protected MCEventHandler eventHandler;
+	protected boolean listening = true;
+	protected Minecraft mc;
+	protected DataOutputStream writer = null;
+	protected boolean includeNBTWithData = false;
+	protected boolean havePlayer;
+	protected int playerId;
+	protected EntityPlayerMP playerMP;
 
 	public APIHandler(MCEventHandler eventHandler, DataOutputStream writer) throws IOException {
 		this.eventHandler = eventHandler;
@@ -107,15 +107,13 @@ public class APIHandler {
 		this.havePlayer = false;
 		this.playerMP = null;
 	}
-
-	void process(String clientSentence) {
-		Scanner scan = null;
-		
+	
+	protected boolean setup() {
 		serverWorlds = MinecraftServer.getServer().worldServers;
 		
 		if (serverWorlds == null) {
 			fail("Worlds not available");
-			return;
+			return false;
 		}
 
 		if (! havePlayer) {
@@ -128,7 +126,7 @@ public class APIHandler {
 				
 				if (mc.thePlayer == null) {
 					fail("Client player not available");
-					return;
+					return false;
 				}
 				playerId = mc.thePlayer.getEntityId();
 				for (World w : serverWorlds) {
@@ -153,10 +151,18 @@ public class APIHandler {
 			}
 			if (playerMP == null) {
 				fail("Player not found");
-				return;
+				return false;
 			}
 			havePlayer = true;
 		}
+		return true;
+	}
+
+	void process(String clientSentence) {
+		if (!setup())
+			return;
+	
+		Scanner scan = null;
 
 		try {	
 			int paren = clientSentence.indexOf('(');
@@ -177,6 +183,7 @@ public class APIHandler {
 		}
 		catch(Exception e) {
 			System.out.println(""+e);
+			e.printStackTrace();
 		}
 		finally {
 			if (scan != null)
@@ -185,7 +192,7 @@ public class APIHandler {
 	}
 
 
-	private void runCommand(String cmd, String args, Scanner scan) 
+	protected void runCommand(String cmd, String args, Scanner scan) 
 			throws InputMismatchException, NoSuchElementException, IndexOutOfBoundsException {
 
 		if (cmd.equals(SETBLOCK)) {
@@ -364,38 +371,7 @@ public class APIHandler {
 			}
 		}
 		else if (cmd.equals(WORLDSPAWNPARTICLE)) {
-			String particleName = scan.next();
-			double x0 = scan.nextDouble();
-			double y0 = scan.nextDouble();
-			double z0 = scan.nextDouble();
-			Vec3w pos = Location.decodeVec3w(serverWorlds, x0, y0, z0);
-			double dx = scan.nextDouble();
-			double dy = scan.nextDouble();
-			double dz = scan.nextDouble();
-			double speed = scan.nextDouble();
-			int count = scan.nextInt();
-
-			int[] extras = null;
-			EnumParticleTypes particle = null;
-			for (EnumParticleTypes e : EnumParticleTypes.values()) {
-				if (e.getParticleName().equals(particleName)) {
-					particle = e;
-					extras = new int[e.getArgumentCount()];
-					try {
-						for (int i = 0 ; i < extras.length; i++)
-							extras[i] = scan.nextInt();
-					}
-					catch (Exception exc) {}
-					break;
-				}
-			}
-			if (particle == null) {
-				fail("Cannot find particle type");
-			}
-			else {
-				((WorldServer)pos.world).spawnParticle(particle, false, pos.xCoord, pos.yCoord, pos.zCoord, count, 
-						dx, dy, dz, speed, extras);
-			}
+			spawnParticle(scan);
 		}
 		else if (cmd.equals(EVENTSCLEAR)) {
 			eventHandler.clearAll();
@@ -420,15 +396,61 @@ public class APIHandler {
 			if (scan.next().equals("restrict_to_sword")) // across connections
 				eventHandler.setRestrictToSword(scan.nextInt() != 0);
 		}
-		else if (cmd.equals(CAMERAGETENTITYID)) {
+		else if (cmd.startsWith("camera.")) {
+			cameraCommand(cmd.substring(7), scan);
+		}
+	}
+	
+	protected void spawnParticle(Scanner scan) {
+		String particleName = scan.next();
+		double x0 = scan.nextDouble();
+		double y0 = scan.nextDouble();
+		double z0 = scan.nextDouble();
+		Vec3w pos = Location.decodeVec3w(serverWorlds, x0, y0, z0);
+		double dx = scan.nextDouble();
+		double dy = scan.nextDouble();
+		double dz = scan.nextDouble();
+		double speed = scan.nextDouble();
+		int count = scan.nextInt();
+
+		int[] extras = null;
+		EnumParticleTypes particle = null;
+		for (EnumParticleTypes e : EnumParticleTypes.values()) {
+			if (e.getParticleName().equals(particleName)) {
+				particle = e;
+				extras = new int[e.getArgumentCount()];
+				try {
+					for (int i = 0 ; i < extras.length; i++)
+						extras[i] = scan.nextInt();
+				}
+				catch (Exception exc) {}
+				break;
+			}
+		}
+		if (particle == null) {
+			fail("Cannot find particle type");
+		}
+		else {
+			((WorldServer)pos.world).spawnParticle(particle, false, pos.xCoord, pos.yCoord, pos.zCoord, count, 
+					dx, dy, dz, speed, extras);
+		}
+	}
+	
+	protected void cameraCommand(String cmd, Scanner scan) {
+		if (playerMP == null) {
+			fail("playerMP not available");
+			return;
+		}
+		
+		if (cmd.equals(GETENTITYID)) {
 			sendLine(playerMP.getSpectatingEntity().getEntityId());
 		}
-		else if (cmd.equals(CAMERASETFOLLOW) || cmd.equals(CAMERASETNORMAL)) {
+		else if (cmd.equals(SETFOLLOW) || cmd.equals(SETNORMAL)) {
 			if (! RaspberryJamMod.integrated)
 				return;
 			
 			mc.gameSettings.debugCamEnable = false;
-			boolean follow = cmd.equals(CAMERASETFOLLOW);
+			boolean follow = cmd.equals(SETFOLLOW);
 
 			if (playerMP != null) {
 				if (! scan.hasNext()) {
@@ -451,7 +473,7 @@ public class APIHandler {
 				mc.entityRenderer.loadEntityShader(mc.getRenderViewEntity());
 			}
 		}
-		else if (cmd.equals(CAMERASETDEBUG)) {
+		else if (cmd.equals(SETDEBUG)) {
 			if (! RaspberryJamMod.integrated)
 				return;
 			
@@ -459,7 +481,7 @@ public class APIHandler {
 		}
 	}
 
-	private void entityCommand(int id, String cmd, Scanner scan) {
+	protected void entityCommand(int id, String cmd, Scanner scan) {
 		if (cmd.equals(GETPOS)) {
 			entityGetPos(id);
 		}
@@ -495,7 +517,7 @@ public class APIHandler {
 		}
 	}
 
-	private void entitySetDirection(int id, Scanner scan) {
+	protected void entitySetDirection(int id, Scanner scan) {
 		double x  = scan.nextDouble();
 		double y = scan.nextDouble();
 		double z = scan.nextDouble();
@@ -511,7 +533,7 @@ public class APIHandler {
 			entitySetDirection(e, x, y, z);
 	}
 
-	static private String getRest(Scanner scan) {
+	static protected String getRest(Scanner scan) {
 		StringBuilder out = new StringBuilder();
 
 		while (scan.hasNext()) {
@@ -522,13 +544,13 @@ public class APIHandler {
 		return out.toString();
 	}
 	
-	private void entitySetDimension(int id, int dimension) {
+	protected void entitySetDimension(int id, int dimension) {
 		Entity e = getServerEntityByID(id);
 		if (e != null) 
 			eventHandler.queueServerAction(new SetDimension(e, dimension));
 	}
 
-	private void entitySetDirection(Entity e, double x, double y, double z) {
+	protected void entitySetDirection(Entity e, double x, double y, double z) {
 		double xz = Math.sqrt(x * x + z * z);
 
 		if (xz >= TOO_SMALL) {
@@ -541,12 +563,12 @@ public class APIHandler {
 			e.rotationPitch = (float) (Math.atan2(-y, xz) * 180 / Math.PI);
 	}
 
-	private void fail(String string) {
+	protected void fail(String string) {
 		System.err.println("Error: "+string);
 		sendLine("Fail");
 	}
 	
-	private void entitySetPitch(int id, float angle) {
+	protected void entitySetPitch(int id, float angle) {
 		Entity e = getServerEntityByID(id);
 		if (e != null)
 			e.rotationPitch = angle;
@@ -559,7 +581,7 @@ public class APIHandler {
 			e.rotationPitch = angle;
 	}
 
-	private void entitySetRotation(int id, float angle) {
+	protected void entitySetRotation(int id, float angle) {
 		Entity e = getServerEntityByID(id);
 		if (e != null) {
 			e.rotationYaw = angle;
@@ -576,13 +598,13 @@ public class APIHandler {
 		}
 	}
 	
-	private void entityGetRotation(int id) {
+	protected void entityGetRotation(int id) {
 		Entity e = getServerEntityByID(id);
 		if (e != null) 
 			sendLine(normalizeAngle(e.rotationYaw));
 	}
 
-	private float normalizeAngle(float angle) {
+	protected float normalizeAngle(float angle) {
 		angle = angle % 360;
 		if (angle <= -180)
 			angle += 360;
@@ -591,13 +613,13 @@ public class APIHandler {
 		return angle;
 	}
 
-	private void entityGetPitch(int id) {
+	protected void entityGetPitch(int id) {
 		Entity e = getServerEntityByID(id);
 		if (e != null) 
 			sendLine(normalizeAngle(e.rotationPitch));
 	}
 
-	private void entityGetDirection(int id) {
+	protected void entityGetDirection(int id) {
 		Entity e = getServerEntityByID(id);
 		if (e != null) {
 			//sendLine(e.getLookVec());
@@ -610,7 +632,7 @@ public class APIHandler {
 		}
 	}
 
-	private void entitySetPos(int id, Scanner scan) {
+	protected void entitySetPos(int id, Scanner scan) {
 		Entity e = getServerEntityByID(id);
 		if (e != null) {
 			float serverYaw = 0f;
@@ -640,7 +662,7 @@ public class APIHandler {
 		}
 	}
 
-	private void entitySetTile(int id, Scanner scan) {
+	protected void entitySetTile(int id, Scanner scan) {
 		Entity e = getServerEntityByID(id);
 		if (e != null) {
 			float serverYaw = 0f;
@@ -666,11 +688,11 @@ public class APIHandler {
 		}
 	}
 
-	private static int trunc(double x) {
+	protected static int trunc(double x) {
 		return (int)Math.floor(x);
 	}
 
-	private void entityGetTile(int id) {
+	protected void entityGetTile(int id) {
 		Entity e = getServerEntityByID(id);
 		if (e != null) {
 			World w = e.getEntityWorld();
@@ -690,11 +712,11 @@ public class APIHandler {
 		}
 	}
 
-	private void sendLine(BlockPos pos) {
+	protected void sendLine(BlockPos pos) {
 		sendLine(""+pos.getX()+","+pos.getY()+","+pos.getZ());
 	}
 
-	private void entityGetPos(int id) {
+	protected void entityGetPos(int id) {
 		Entity e = getServerEntityByID(id);
 		if (e != null) {
 			World w = e.getEntityWorld();
@@ -713,19 +735,19 @@ public class APIHandler {
 		}
 	}
 
-	private void sendLine(double x) {
+	protected void sendLine(double x) {
 		sendLine(Double.toString(x));
 	}
 
-	private void sendLine(int x) {
+	protected void sendLine(int x) {
 		sendLine(Integer.toString(x));
 	}
 
-	private void sendLine(Vec3 v) {
+	protected void sendLine(Vec3 v) {
 		sendLine(""+v.xCoord+","+v.yCoord+","+v.zCoord);
 	}
 
-	private void sendLine(String string) {
+	protected void sendLine(String string) {
 		try {
 			writer.writeBytes(string+"\n");
 			writer.flush();
@@ -734,15 +756,14 @@ public class APIHandler {
 		}
 	}
 
-	private Location getBlockLocation(Scanner scan) {
+	protected Location getBlockLocation(Scanner scan) {
 		int x = scan.nextInt();
 		int y = scan.nextInt();
 		int z = scan.nextInt();
 		return Location.decodeLocation(serverWorlds, x, y, z);
 	}
-	
 
-	Entity getServerEntityByID(int id) {
+	protected Entity getServerEntityByID(int id) {
 		if (id == playerId)
 			return playerMP;
 		for (World w : serverWorlds) {

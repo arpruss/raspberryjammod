@@ -48,15 +48,17 @@ public class APIServer {
 	private MCEventHandler eventHandler;
 	private boolean listening = true;
 	private List<Socket> socketList;
+	private boolean controlServer;
 
-	public APIServer(MCEventHandler eventHandler) throws IOException {
+	public APIServer(MCEventHandler eventHandler, int portNumber, boolean controlServer) throws IOException {
 		socketList = new ArrayList<Socket>();
 		this.eventHandler = eventHandler;
+		this.controlServer = controlServer;
 		if (RaspberryJamMod.allowRemote) {
-			serverSocket = new ServerSocket(RaspberryJamMod.portNumber);
+			serverSocket = new ServerSocket(portNumber);
 		}
 		else {
-			serverSocket = new ServerSocket(RaspberryJamMod.portNumber, 50, InetAddress.getByName("127.0.0.1"));
+			serverSocket = new ServerSocket(portNumber, 50, InetAddress.getByName("127.0.0.1"));
 		}
 	}
 
@@ -107,7 +109,8 @@ public class APIServer {
 			reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 			writer = new DataOutputStream(connectionSocket.getOutputStream());
 
-			APIHandler api = new APIHandler(eventHandler, writer);
+			APIHandler api = controlServer ? new APIHandler(eventHandler, writer) : 
+				new APIHandlerClientOnly(eventHandler, writer);
 
 			while(null != (clientSentence = reader.readLine())) {
 				api.process(clientSentence);

@@ -88,6 +88,32 @@ public class RaspberryJamMod
 		FMLCommonHandler.instance().bus().register(eventHandler);
 		nightVisionExternalCommand = new NightVisionExternalCommand(eventHandler);
 		net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(nightVisionExternalCommand);
+		//apiServerWithoutServerControl();
+	}
+	
+	private void apiServerWithoutServerControl() {
+		try{
+			// the eventhandler is unregistered, so it doesn't do much
+			final APIServer s = new APIServer(new MCEventHandler(), portNumber+1, false);
+	
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						s.communicate();
+					} catch(IOException e) {
+						System.out.println("RaspberryJamMod error "+e);
+					}
+					finally {
+						System.out.println("Closing RaspberryJamMod");
+						if (s != null)
+							s.close();
+					}
+				}
+	
+			}).start();
+		}
+		catch (Exception e) {}
 	}
 
 	public static void synchronizeConfig() {
@@ -139,7 +165,7 @@ public class RaspberryJamMod
 		FMLCommonHandler.instance().bus().register(serverEventHandler);
 		MinecraftForge.EVENT_BUS.register(serverEventHandler);
 		try {
-			mcc = new APIServer(serverEventHandler);
+			mcc = new APIServer(serverEventHandler, portNumber, true);
 
 			new Thread(new Runnable() {
 				@Override

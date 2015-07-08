@@ -39,6 +39,8 @@ public class Location extends BlockPos {
 			else
 				return 1-WORLD_SPACING_HALF;
 		}
+		if (y >= WORLD_SPACING_HALF)
+			y = WORLD_SPACING_HALF - 1;
 		return y - WORLD_SPACING * worldIndex;
 	}
 

@@ -108,9 +108,6 @@ public class MCEventHandler {
 		ItemStack item = player.getHeldItem();
 		if (item != null) {
 			return item.getItem() instanceof ItemSword;
-//			String name = item.getUnlocalizedName();
-//			if (name != null)
-//				return name.contains("item.sword");
 		}
 		return false;
 	}
