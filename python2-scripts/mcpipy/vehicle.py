@@ -390,6 +390,7 @@ if __name__ == '__main__':
     loadName = None
     saveName = None
     scanRectangularPrism = False
+    exitAfterDraw = False
 
     if len(sys.argv)>1:
         for x in sys.argv[1]:
@@ -403,6 +404,9 @@ if __name__ == '__main__':
                 saveName = sys.argv[2]
             elif x == 'l' and len(sys.argv)>2:
                 loadName = sys.argv[2]
+            elif x == 'L' and len(sys.argv)>2:
+                loadName = sys.argv[2]
+                exitAfterDraw = True
             elif x == 'r':
                 scanRectangularPrism = True
 
@@ -434,6 +438,13 @@ if __name__ == '__main__':
         save(saveName)
         exit()
         minecraft.postToChat("Saved: exiting.")
+
+    if exitAfterDraw:
+        minecraft.postToChat("Drawing")
+        vehicle.draw(vehiclePos.x,vehiclePos.y,vehiclePos.z,startRot)
+        minecraft.postToChat("Done")
+        exit(0)
+
     minecraft.postToChat("Now walk around.")
 
     entity = None
@@ -452,7 +463,7 @@ if __name__ == '__main__':
                 if len(args)>0:
                     if args[0] == 'vhelp':
                         chatHelp()
-                    if args[0] == 'verase':
+                    elif args[0] == 'verase':
                         vehicle.erase()
                         exit()
                     elif args[0] == 'vsave':
@@ -460,6 +471,21 @@ if __name__ == '__main__':
                             save(args[1])
                         else:
                             chatHelp()
+                    elif args[0] == 'vlist':
+                        try:
+                             out = None
+                             for f in os.listdir('vehicle'):
+                                 if f.endsWith(".py"):
+                                     if out is not None:
+                                         out += f[:-3]
+                                     else:
+                                         out = f[:-3]
+                             if out is None:
+                                 minecraft.postToChat('No saved vehicles')
+                             else:
+                                 minecraft.postToChat(out)
+                        except:
+                             pass
                     elif args[0] == 'vload':
                         if len(args) > 1:
                             try:
