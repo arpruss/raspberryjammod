@@ -11,7 +11,7 @@
    n: non-destructive mode
    q: don't want the vehicle to flash as it is scanned
    l: load vehicle from vehicles/name.py
-   s: save vehicle to vehicles/name.py
+   s: save vehicle to vehicles/name.py and quit
 
  The vehicle detection algorithm works as follows:
    first, search for nearest non-terrain block within distance SCAN_DISTANCE of the player
@@ -322,7 +322,7 @@ if __name__ == '__main__':
     import time
     import sys
     import os
-    
+
     def save(name):
         dir = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
         try:
@@ -338,16 +338,60 @@ if __name__ == '__main__':
         minecraft.postToChat('Vehicle "'+name+'" loaded.')
 
     def chatHelp():
+        minecraft.postToChat("vlist: list vehicles")
         minecraft.postToChat("verase: erase vehicle and exit")
         minecraft.postToChat("vsave filename: save vehicle")
         minecraft.postToChat("vload filename: load vehicle")
         minecraft.postToChat("vdriver [EntityName]: set driver to entity (omit for player) [Jam only]")
+
+    def doScanRectangularPrism(vehicle, basePos, startRot):
+        minecraft.postToChat("Indicate extreme points with sword right-click.")
+        minecraft.postToChat("Double-click when done.")
+        corner1 = [None,None,None]
+        corner2 = [None,None,None]
+        prevHit = None
+        done = False
+
+        minecraft.events.pollBlockHits()
+
+        while not done:
+            hits = minecraft.events.pollBlockHits()
+            if len(hits) > 0:
+                for h in hits:
+                    if prevHit != None and h.pos == prevHit.pos:
+                        done = True
+                        break
+                    if corner1[0] == None or h.pos.x < corner1[0]: corner1[0] = h.pos.x
+                    if corner1[1] == None or h.pos.y < corner1[1]: corner1[1] = h.pos.y
+                    if corner1[2] == None or h.pos.z < corner1[2]: corner1[2] = h.pos.z
+                    if corner2[0] == None or h.pos.x > corner2[0]: corner2[0] = h.pos.x
+                    if corner2[1] == None or h.pos.y > corner2[1]: corner2[1] = h.pos.y
+                    if corner2[2] == None or h.pos.z > corner2[2]: corner2[2] = h.pos.z
+                    minecraft.postToChat(""+str(corner2[0]-corner1[0]+1)+"x"+str(corner2[1]-corner1[1]+1)+"x"+str(corner2[2]-corner1[2]+1))
+                    prevHit = h
+            else:
+                prevHit = None
+            time.sleep(0.25)
+
+        minecraft.postToChat("Scanning region")
+        dict = {}
+        for x in range(corner1[0],corner2[0]+1):
+            for y in range(corner1[1],corner2[1]+1):
+                for z in range(corner1[2],corner2[2]+1):
+                    block = vehicle.getBlockWithData(x,y,z)
+                    if block.id != AIR.id and block.id != WATER_STATIONARY.id and block.id != WATER_FLOWING.id:
+                        pos = (x-basePos.x,y-basePos.y,z-basePos.z)
+                        dict[pos] = block
+        minecraft.postToChat("Found "+str(len(dict))+" blocks")
+        vehicle.setVehicle(dict, startRot)
 
     bubble = False
     nondestructive = False
     flash = True
     loadName = None
     saveName = None
+    scanRectangularPrism = False
+    exitAfterDraw = False
 
     if len(sys.argv)>1:
         for x in sys.argv[1]:
@@ -361,6 +405,11 @@ if __name__ == '__main__':
                 saveName = sys.argv[2]
             elif x == 'l' and len(sys.argv)>2:
                 loadName = sys.argv[2]
+            elif x == 'L' and len(sys.argv)>2:
+                loadName = sys.argv[2]
+                exitAfterDraw = True
+            elif x == 'r':
+                scanRectangularPrism = True
 
     minecraft = Minecraft()
 
@@ -368,13 +417,16 @@ if __name__ == '__main__':
     getTilePos = minecraft.player.getTilePos
 
     vehiclePos = getTilePos()
+    startRot = getRotation()
 
     vehicle = Vehicle(minecraft,nondestructive)
     if loadName:
         load(loadName)
+    elif scanRectangularPrism:
+        doScanRectangularPrism(vehicle,vehiclePos,startRot)
     else:
         minecraft.postToChat("Scanning vehicle")
-        vehicle.scan(vehiclePos.x,vehiclePos.y,vehiclePos.z,getRotation(),flash)
+        vehicle.scan(vehiclePos.x,vehiclePos.y,vehiclePos.z,startRot,flash)
         minecraft.postToChat("Number of blocks: "+str(len(vehicle.baseVehicle)))
         if bubble:
             minecraft.postToChat("Scanning for air bubble")
@@ -382,8 +434,18 @@ if __name__ == '__main__':
         if len(vehicle.baseVehicle) == 0:
             minecraft.postToChat("Make a vehicle and then stand on or in it when starting this script.")
             exit()
+
     if saveName:
         save(saveName)
+        exit()
+        minecraft.postToChat("Saved: exiting.")
+
+    if exitAfterDraw:
+        minecraft.postToChat("Drawing")
+        vehicle.draw(vehiclePos.x,vehiclePos.y,vehiclePos.z,startRot)
+        minecraft.postToChat("Done")
+        exit(0)
+
     minecraft.postToChat("Now walk around.")
 
     entity = None
@@ -402,7 +464,7 @@ if __name__ == '__main__':
                 if len(args)>0:
                     if args[0] == 'vhelp':
                         chatHelp()
-                    if args[0] == 'verase':
+                    elif args[0] == 'verase':
                         vehicle.erase()
                         exit()
                     elif args[0] == 'vsave':
@@ -410,6 +472,22 @@ if __name__ == '__main__':
                             save(args[1])
                         else:
                             chatHelp()
+                    elif args[0] == 'vlist':
+                        try:
+                             out = None
+                             dir = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
+                             for f in os.listdir(dir):
+                                 if f.endswith(".py"):
+                                     if out is not None:
+                                         out += ' '+f[:-3]
+                                     else:
+                                         out = f[:-3]
+                             if out is None:
+                                 minecraft.postToChat('No saved vehicles')
+                             else:
+                                 minecraft.postToChat(out)
+                        except:
+                             minecraft.postToChat('Error listing (maybe no directory?)')
                     elif args[0] == 'vload':
                         if len(args) > 1:
                             try:

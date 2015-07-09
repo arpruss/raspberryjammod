@@ -338,6 +338,7 @@ if __name__ == '__main__':
         minecraft.postToChat('Vehicle "'+name+'" loaded.')
 
     def chatHelp():
+        minecraft.postToChat("vlist: list vehicles")
         minecraft.postToChat("verase: erase vehicle and exit")
         minecraft.postToChat("vsave filename: save vehicle")
         minecraft.postToChat("vload filename: load vehicle")
@@ -350,7 +351,7 @@ if __name__ == '__main__':
         corner2 = [None,None,None]
         prevHit = None
         done = False
-        
+
         minecraft.events.pollBlockHits()
 
         while not done:
@@ -474,10 +475,11 @@ if __name__ == '__main__':
                     elif args[0] == 'vlist':
                         try:
                              out = None
-                             for f in os.listdir('vehicle'):
-                                 if f.endsWith(".py"):
+                             dir = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
+                             for f in os.listdir(dir):
+                                 if f.endswith(".py"):
                                      if out is not None:
-                                         out += f[:-3]
+                                         out += ' '+f[:-3]
                                      else:
                                          out = f[:-3]
                              if out is None:
@@ -485,7 +487,7 @@ if __name__ == '__main__':
                              else:
                                  minecraft.postToChat(out)
                         except:
-                             pass
+                             minecraft.postToChat('Error listing (maybe no directory?)')
                     elif args[0] == 'vload':
                         if len(args) > 1:
                             try:
