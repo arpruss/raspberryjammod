@@ -46,21 +46,25 @@ public class ClientEventHandler {
 	private volatile boolean nightVision = false;
 	private int clientTickCount = 0;
 	private MCEventHandlerClientOnly eventHandler = null;
-	private APIServer apiServer;
+	private APIServer apiServer = null;
 	private boolean registeredCommands = false;
+	private int currentPortNumber = 0;
 
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onClientTick(TickEvent.ClientTickEvent event) {
 		if (nightVision && clientTickCount % 1024 == 0) {
-			EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-			
-			if (player != null) {
-				player.addPotionEffect(new PotionEffect(Potion.nightVision.id, 4096));
+			Minecraft mc = Minecraft.getMinecraft();
+			if (mc != null) {
+				EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+				
+				if (player != null) {
+					player.addPotionEffect(new PotionEffect(Potion.nightVision.id, 4096));
+				}
 			}
 		}
 		clientTickCount++;
-	}
+	} 
 
 	public void setNightVision(boolean b) {
 		nightVision = b;
@@ -69,23 +73,26 @@ public class ClientEventHandler {
 	public boolean getNightVision() {
 		return nightVision;
 	}
-	
+
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void onPlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
-		Entity mcPlayer = Minecraft.getMinecraft().thePlayer;
-		if (mcPlayer != null && event.player.getEntityId() != mcPlayer.getEntityId()) {
-			System.out.println("different player");
-			return;
-		}
-		System.out.println("World loaded "+RaspberryJamMod.clientOnlyAPI);
+	public void onWorldUnloaded(WorldEvent.Unload event) {
 		if (! RaspberryJamMod.clientOnlyAPI)
 			return;
+		
+		closeAPI();
+	}	
 
-		if (eventHandler != null) {
-			FMLCommonHandler.instance().bus().unregister(eventHandler);
-		}
-		eventHandler = new MCEventHandlerClientOnly();
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onWorldLoaded(WorldEvent.Load event) {
+		RaspberryJamMod.synchronizeConfig();
+
+		if (! RaspberryJamMod.clientOnlyAPI)
+			return;
+			
+		if (eventHandler == null)
+            eventHandler = new MCEventHandlerClientOnly();
 		FMLCommonHandler.instance().bus().register(eventHandler);
 		MinecraftForge.EVENT_BUS.register(eventHandler);
 		if (! registeredCommands) {
@@ -98,59 +105,50 @@ public class ClientEventHandler {
 			}
 		}
 
-		try {
-			// the eventhandler is unregistered, so it doesn't do much
-			System.out.println("RaspberryJamMod client only API");
-			RaspberryJamMod.serverActive = true;
-			if (apiServer == null) {
-				apiServer = new APIServer(eventHandler, RaspberryJamMod.portNumber, true);
-		
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							apiServer.communicate();
-						} catch(IOException e) {
-							System.out.println("RaspberryJamMod error "+e);
-						}
-						finally {
-							System.out.println("Closing RaspberryJamMod client-only API");
-							RaspberryJamMod.closeAllScripts();
-							if (apiServer != null) {
-								apiServer.close();
-								apiServer = null;
+        if (RaspberryJamMod.portNumber != currentPortNumber || apiServer == null)
+			try {
+				System.out.println("RaspberryJamMod client only API");
+				RaspberryJamMod.serverActive = true;
+				if (apiServer == null) {
+					apiServer = new APIServer(eventHandler, RaspberryJamMod.portNumber, true);
+	
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								apiServer.communicate();
+							} catch(IOException e) {
+								System.out.println("RaspberryJamMod error "+e);
+							}
+							finally {
+								System.out.println("Closing RaspberryJamMod client-only API");
+								RaspberryJamMod.closeAllScripts();
+								if (apiServer != null) {
+									apiServer.close();
+									apiServer = null;
+								}
 							}
 						}
-					}
-		
-				}).start();
-			}
-		}
-		catch (Exception e) {}
-	}
 	
-	private void closeAsNeeded(boolean force) {
+					}).start();
+	                currentPortNumber = RaspberryJamMod.portNumber;
+				}
+			}
+			catch (Exception e) {}
+	}
+
+	public void closeAPI() {
+	    RaspberryJamMod.closeAllScripts();
+		RaspberryJamMod.serverActive = false;
 		if (eventHandler != null) {
-			RaspberryJamMod.serverActive = false;
+            MinecraftForge.EVENT_BUS.unregister(eventHandler);
 			FMLCommonHandler.instance().bus().unregister(eventHandler);
-			eventHandler = null;
+            eventHandler = null;
 		}
-		if ((force || ! RaspberryJamMod.clientOnlyAPI) && apiServer != null) {
-			RaspberryJamMod.closeAllScripts();
+		if (apiServer != null) {
 			apiServer.close();
 			apiServer = null;
 		}
+		currentPortNumber = 0;
 	}
-	
-	@SubscribeEvent
-	@SideOnly(Side.CLIENT)
-	public void onPlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
-		Entity mcPlayer = Minecraft.getMinecraft().thePlayer;
-		if (mcPlayer != null && event.player.getEntityId() != mcPlayer.getEntityId()) {
-			System.out.println("different player");
-			return;
-		}
-		closeAsNeeded(true);
-	}	
-
 }

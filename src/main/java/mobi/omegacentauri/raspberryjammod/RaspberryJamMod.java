@@ -50,7 +50,6 @@ public class RaspberryJamMod
 	public static final String VERSION = "0.40";
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer fullAPIServer = null;
-	private APIServer clientOnlyAPIServer = null;
 	private PythonExternalCommand pythonExternalCommand = null;
 	private NightVisionExternalCommand nightVisionExternalCommand = null;
 	public static ScriptExternalCommand[] scriptExternalCommands = null;
@@ -63,9 +62,9 @@ public class RaspberryJamMod
 	public static String pythonInterpreter = "python";
 	public static boolean integrated = true;
 	public static volatile boolean serverActive = false;
+	private ClientEventHandler clientEventHandler = null;
 	static boolean clientOnlyAPI = false;
 	private MCEventHandler serverEventHandler = null;
-	private MCEventHandlerClientOnly clientOnlyEventHandler = null;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -84,17 +83,25 @@ public class RaspberryJamMod
 
 		synchronizeConfig();
 	}
-	
+
+	@Mod.EventHandler
+	@SideOnly(Side.CLIENT)
+	public void onConfigChanged(net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent event) {
+		System.out.println("config changed 0");
+        }
+
+
 	@Mod.EventHandler
 	@SideOnly(Side.CLIENT)
 	public void Init(FMLInitializationEvent event) {
 		System.out.println("FMLInitializationEvent");
-		final ClientEventHandler eventHandler = new ClientEventHandler();
-		FMLCommonHandler.instance().bus().register(eventHandler);
-		nightVisionExternalCommand = new NightVisionExternalCommand(eventHandler);
+		clientEventHandler = new ClientEventHandler();
+		MinecraftForge.EVENT_BUS.register(clientEventHandler);
+		FMLCommonHandler.instance().bus().register(clientEventHandler);
+		nightVisionExternalCommand = new NightVisionExternalCommand(clientEventHandler);
 		net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(nightVisionExternalCommand);
 	}
-	
+
 	public static void synchronizeConfig() {
 		portNumber = configFile.getInt("Port Number", Configuration.CATEGORY_GENERAL, 4711, 0, 65535, "Port number");
 		concurrent = configFile.getBoolean("Multiple Connections", Configuration.CATEGORY_GENERAL, true, "Multiple connections");
@@ -139,9 +146,11 @@ public class RaspberryJamMod
 		System.out.println("Server started event");
 		
 		synchronizeConfig();
-		
+
 		if (clientOnlyAPI)
 			return;
+			
+		clientEventHandler.closeAPI();
 
 		serverActive = true;
 		

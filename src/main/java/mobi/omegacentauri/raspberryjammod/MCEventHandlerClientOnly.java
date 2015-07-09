@@ -16,6 +16,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class MCEventHandlerClientOnly extends MCEventHandler {
 	private APIServer apiServer;
+	protected World[] worlds = { null };
 
 	public MCEventHandlerClientOnly() {
 		super();
@@ -23,6 +24,7 @@ public class MCEventHandlerClientOnly extends MCEventHandler {
 	}
 
 	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
 	public void onChatEvent(ClientChatReceivedEvent event) {
 		System.out.println("ClientChatEvent on client side: "+event.message.toString());
 		ChatDescription cd = new ChatDescription(Minecraft.getMinecraft().thePlayer.getEntityId(), 
@@ -36,19 +38,13 @@ public class MCEventHandlerClientOnly extends MCEventHandler {
 	
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
-	public void onChatEvent(ServerChatEvent event) {
-		System.out.println("ServerChatEvent on client side: "+event.message);
-		ChatDescription cd = new ChatDescription(event.player.getEntityId(), event.message);
-		synchronized(chats) {
-			if (chats.size() >= MAX_CHATS)
-				chats.remove(0);
-			chats.add(cd);
-		}
-	}
-
-	@SubscribeEvent
-	@SideOnly(Side.CLIENT)
 	public void onClientTick(TickEvent.ClientTickEvent event) {
 		runQueue();
+	}
+
+	@Override
+	protected World[] getWorlds() {
+		worlds[0] = Minecraft.getMinecraft().theWorld;
+		return worlds;
 	}
 }

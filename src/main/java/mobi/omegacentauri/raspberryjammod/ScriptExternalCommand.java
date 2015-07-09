@@ -196,14 +196,16 @@ public abstract class ScriptExternalCommand implements ICommand {
 		
 		if (clientSide != RaspberryJamMod.clientOnlyAPI) 
 			return;
-		
-		World serverWorld = MinecraftServer.getServer().getEntityWorld();
-		
-		if (! RaspberryJamMod.allowRemote && (! RaspberryJamMod.integrated || 
-				serverWorld.playerEntities.size() > 1 &&
-				! sender.getName().equals(Minecraft.getMinecraft().thePlayer.getName()))) {
-			globalMessage("Blocked possible remote script launch by "+sender.getCommandSenderEntity());
-			return;
+
+		if (! clientSide) {
+			World serverWorld = MinecraftServer.getServer().getEntityWorld();
+			
+			if (! RaspberryJamMod.allowRemote && (! RaspberryJamMod.integrated || 
+					serverWorld.playerEntities.size() > 1 &&
+					! sender.getName().equals(Minecraft.getMinecraft().thePlayer.getName()))) {
+				globalMessage("Blocked possible remote script launch by "+sender.getCommandSenderEntity());
+				return;
+			}
 		}
 		
 		boolean addMode = addMode();
@@ -252,6 +254,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 			environment.put("MINECRAFT_PLAYER_NAME", senderEntity.getName());
 			environment.put("MINECRAFT_PLAYER_ID", ""+senderEntity.getEntityId());
 		}
+		environment.put("MINECRAFT_API_PORT", ""+RaspberryJamMod.portNumber);
 
 		pb.command(cmd);
 		try {

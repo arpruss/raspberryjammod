@@ -41,7 +41,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
-public class MCEventHandler {
+abstract public class MCEventHandler {
 	protected List<ServerAction> serverActionQueue = new ArrayList<ServerAction>();		
 	private List<HitDescription> hits = new LinkedList<HitDescription>();
 	protected List<ChatDescription> chats = new LinkedList<ChatDescription>();
@@ -73,7 +73,7 @@ public class MCEventHandler {
 	
 	@SubscribeEvent
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
-		if (event.entityPlayer == null || event.entityPlayer.getEntityWorld().isRemote)
+		if (event.entityPlayer == null || event.entityPlayer.getEntityWorld().isRemote != RaspberryJamMod.clientOnlyAPI )
 			return;
 		
 		if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK ||
@@ -82,7 +82,7 @@ public class MCEventHandler {
 				synchronized(hits) {
 					if (hits.size() >= MAX_HITS)
 						hits.remove(0);
-					hits.add(new HitDescription(event));
+					hits.add(new HitDescription(getWorlds(),event));
 				}
 			}
 		}
@@ -90,6 +90,8 @@ public class MCEventHandler {
 			event.setCanceled(true);
 		}
 	}
+	
+	abstract protected World[] getWorlds();
 
 	private boolean holdingSword(EntityPlayer player) {
 		ItemStack item = player.getHeldItem();
@@ -259,8 +261,8 @@ public class MCEventHandler {
 	static class HitDescription {
 		private String description;
 		
-		public HitDescription(PlayerInteractEvent event) {
-			Vec3i pos = Location.encodeVec3i(MinecraftServer.getServer().worldServers, 
+		public HitDescription(World[] worlds, PlayerInteractEvent event) {
+			Vec3i pos = Location.encodeVec3i(worlds, 
 					event.entityPlayer.getEntityWorld(),
 					event.pos.getX(), event.pos.getY(), event.pos.getZ());
 			description = ""+pos.getX()+","+pos.getY()+","+pos.getZ()+","+numericFace(event.face)+","+event.entity.getEntityId();

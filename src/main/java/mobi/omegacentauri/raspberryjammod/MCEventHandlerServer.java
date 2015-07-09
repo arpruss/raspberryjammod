@@ -27,4 +27,9 @@ public class MCEventHandlerServer extends MCEventHandler {
 	public void onServerTick(TickEvent.ServerTickEvent event) {
 		runQueue();
 	}
+	
+	@Override
+	protected World[] getWorlds() {
+		return MinecraftServer.getServer().worldServers;
+	}
 }
