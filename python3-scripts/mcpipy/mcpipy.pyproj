@@ -35,6 +35,7 @@
     <Compile Include="lforest.py" />
     <Compile Include="lsystem.py" />
     <Compile Include="ltree.py" />
+    <Compile Include="mandelbrot.py" />
     <Compile Include="mc.py" />
     <Compile Include="mcdragoncurve.py" />
     <Compile Include="mcpi\block.py" />
@@ -63,6 +64,7 @@
     <Compile Include="render\render.py" />
     <Compile Include="scan.py" />
     <Compile Include="server.py" />
+    <Compile Include="sierpinski3d.py" />
     <Compile Include="simpletree.py">
       <SubType>Code</SubType>
     </Compile>

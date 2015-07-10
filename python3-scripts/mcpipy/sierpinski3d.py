@@ -4,7 +4,10 @@
 
 from mc import *
 import drawing
+from sys import argv
 import mcpi.settings as settings
+
+RAINBOW = (WOOL_RED,WOOL_PINK,WOOL_ORANGE,WOOL_YELLOW,WOOL_GREEN,WOOL_BLUE,WOOL_LIGHT_BLUE,WOOL_PURPLE)
 
 TAN30 = sqrt(3.)/3
 SQRT32 = sqrt(3./2)
@@ -32,14 +35,14 @@ def average(a,b):
     return tuple(0.5*(a[i]+b[i]) for i in range(len(a)))
 
 def transform(tet):
-    height, apex = tet[0],tet[1]
+    level, height, apex = tet[0],tet[1],tet[2]
     bottom = tetrahedronBottom(height,apex)
-    yield (height/2.,apex)
+    yield (level,height/2.,apex)
     for p in bottom:
-        yield (height/2.,average(apex,p))
+        yield (level+1,height/2.,average(apex,p))
 
 def sierpinski(height, x,y,z, level):
-    tetrahedra = [(height,(x,y,z))]
+    tetrahedra = [(0,height,(x,y,z))]
     for i in range(level):
         out = []
         for tet in tetrahedra:
@@ -55,5 +58,9 @@ levels = 7
 mc.player.setPos(tetrahedronBottom(height,(pos.x,pos.y+height,pos.z))[0])
 tetrahedra = sierpinski(height,pos.x,pos.y+height,pos.z,levels)
 mc.postToChat("Drawing")
+if len(argv) >= 2 and '__' not in argv[1]:
+    block = lambda level : eval(argv[1])
+else:
+    block = lambda level : RAINBOW[level % len(RAINBOW)]
 for tet in tetrahedra:
-    drawTetrahedron(tet[0],tet[1],GOLD_BLOCK)
+    drawTetrahedron(tet[1],tet[2],block(tet[0]))
