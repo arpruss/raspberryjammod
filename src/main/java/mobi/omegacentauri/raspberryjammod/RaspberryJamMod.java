@@ -61,7 +61,7 @@ public class RaspberryJamMod
 	public static boolean globalChatMessages = true;
 	public static String pythonInterpreter = "python";
 	public static boolean integrated = true;
-	public static volatile boolean serverActive = false;
+	public static volatile boolean apiActive = false;
 	private ClientEventHandler clientEventHandler = null;
 	static boolean clientOnlyAPI = false;
 	private MCEventHandler serverEventHandler = null;
@@ -127,7 +127,7 @@ public class RaspberryJamMod
 	
 	@EventHandler
 	public void onServerStopping(FMLServerStoppingEvent event) {
-		serverActive = false;
+		apiActive = false;
 
 		if (serverEventHandler != null) {
 			FMLCommonHandler.instance().bus().unregister(serverEventHandler);
@@ -152,7 +152,7 @@ public class RaspberryJamMod
 			
 		clientEventHandler.closeAPI();
 
-		serverActive = true;
+		apiActive = true;
 		
 		serverEventHandler = new MCEventHandlerServer();
 		FMLCommonHandler.instance().bus().register(serverEventHandler);

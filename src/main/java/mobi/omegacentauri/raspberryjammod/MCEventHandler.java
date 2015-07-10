@@ -172,14 +172,14 @@ abstract public class MCEventHandler {
 		if (!pause) {
 			synchronized(serverActionQueue) {
 				for (ServerAction entry: serverActionQueue) {
-					if (! RaspberryJamMod.serverActive)
+					if (! RaspberryJamMod.apiActive)
 						break;
 					entry.execute();
 				}
 				serverActionQueue.clear();
 			}
 		}
-		else if (! RaspberryJamMod.serverActive) {
+		else if (! RaspberryJamMod.apiActive) {
 			synchronized(serverActionQueue) {
 				serverActionQueue.clear();
 			}

@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ad0b690c-a698-4ce0-9b50-3069e7e8660d}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>donut.py</StartupFile>
+    <StartupFile>symmetry.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -50,7 +50,6 @@
     <Compile Include="NeuroPy\NeuroPy.py" />
     <Compile Include="NeuroPy\__init__.py" />
     <Compile Include="polyhedron.py" />
-    <Compile Include="pushtest.py" />
     <Compile Include="render\ds9.py" />
     <Compile Include="render\minecraft-renderObj.py" />
     <Compile Include="render\minecraft-renderObjv2.py" />
@@ -62,6 +61,7 @@
     <Compile Include="render\minecraft\vec3.py" />
     <Compile Include="render\minecraft\__init__.py" />
     <Compile Include="render\render.py" />
+    <Compile Include="scan.py" />
     <Compile Include="server.py" />
     <Compile Include="simpletree.py">
       <SubType>Code</SubType>
@@ -70,8 +70,12 @@
     <Compile Include="spacefill.py" />
     <Compile Include="squarecurve.py" />
     <Compile Include="star.py" />
+    <Compile Include="symmetry.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="turtle.py" />
     <Compile Include="turtledonut.py" />
+    <Compile Include="vehicle.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="mcpi\mcpi_protocol_spec.txt" />

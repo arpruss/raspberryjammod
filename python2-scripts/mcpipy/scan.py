@@ -1,7 +1,34 @@
 import vehicle
 import sys
 from mc import *
+from time import sleep
 import os
+
+#
+# Either:
+#   scan name x0 y0 z0 x1 y1 z1 : scan from (x0,y0,z0) relative to player to (x1,y1,z1) relative to player
+#   scan name y0 : scan from y0 to sky in sword-right-click specified rectangle
+#   scan name : scan from player feet to sky in sword-right-click specified rectangle
+#
+
+def getArea(basePos,depth):
+    mc.postToChat("Sword-right-click other corner of rectange")
+    mc.events.clearAll()
+    while True:
+        hits = mc.events.pollBlockHits()
+        if len(hits) > 0:
+            c1 = (min(basePos.x,hits[0].pos.x),min(basePos.y-depth,hits[0].pos.y),min(basePos.z,hits[0].pos.z))
+            c2 = (max(basePos.x,hits[0].pos.x),None,max(basePos.z,hits[0].pos.z))
+            break
+        sleep(0.25)
+    maxY = c1[1]
+    for x in range(c1[0],c2[0]+1):
+        for z in range(c1[2],c2[2]+1):
+            y = mc.getHeight(x,z)
+            if y > maxY:
+                maxY = y
+    return (c1[0]-basePos.x,c1[1]-basePos.y,c1[2]-basePos.z),(c2[0]-basePos.x,maxY-basePos.y,c2[2]-basePos.z)
+        
 
 def save(vehicle,name):
     dir = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
@@ -17,13 +44,21 @@ basePos = mc.player.getTilePos()
 rot = mc.player.getRotation()
 vehicle = vehicle.Vehicle(mc)
 
-if len(sys.argv) != 8:
-    mc.postToChat("scan x1 y1 z1 x2 y2 z2 vehiclename")
+if len(sys.argv) == 8:
+    corner1 = int(sys.argv[2]),int(sys.argv[3]),int(sys.argv[4])
+    corner2 = int(sys.argv[5]),int(sys.argv[6]),int(sys.argv[7])
+elif len(sys.argv) == 2:
+    corner1,corner2 = getArea(basePos,0)
+elif len(sys.argv) == 3:
+    corner1,corner2 = getArea(basePos,int(sys.argv[2]))
+else:
+    mc.postToChat("scan vehiclename x1 y1 z1 x2 y2 z2")
+    mc.postToChat("scan vehiclename depth [then right-click with sword on other corner]")
+    mc.postToChat("scan vehiclename [then right-click with sword on other corner]")
+    mc.postToChat("All coordinates are relative to player")
     exit()
-corner1 = int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3])
-corner2 = int(sys.argv[4]),int(sys.argv[5]),int(sys.argv[6])
 
-mc.postToChat("Scanning region")
+mc.postToChat("Scanning region "+str(corner1)+"-"+str(corner2))
 dict = {}
 for x in range(corner1[0],corner2[0]+1):
     for y in range(corner1[1],corner2[1]+1):
@@ -31,6 +66,6 @@ for x in range(corner1[0],corner2[0]+1):
             block = vehicle.getBlockWithData(basePos.x+x,basePos.y+y,basePos.z+z)
             if block.id != AIR.id:
                 dict[(x,y,z)] = block
-mc.postToChat("Found "+str(len(dict))+" blocks")
+mc.postToChat("Scanned "+str(len(dict))+" blocks")
 vehicle.setVehicle(dict, rot)
-save(vehicle,sys.argv[7])
+save(vehicle,sys.argv[1])

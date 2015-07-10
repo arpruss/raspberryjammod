@@ -45,10 +45,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class ClientEventHandler {
 	private volatile boolean nightVision = false;
 	private int clientTickCount = 0;
-	private MCEventHandlerClientOnly eventHandler = null;
+	private MCEventHandlerClientOnly apiEventHandler = null;
 	private APIServer apiServer = null;
 	private boolean registeredCommands = false;
-	private int currentPortNumber = 0;
 
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
@@ -79,6 +78,8 @@ public class ClientEventHandler {
 	public void onWorldUnloaded(WorldEvent.Unload event) {
 		if (! RaspberryJamMod.clientOnlyAPI)
 			return;
+
+		System.out.println("Closing world: "+event.world);
 		
 		closeAPI();
 	}	
@@ -87,14 +88,11 @@ public class ClientEventHandler {
 	@SubscribeEvent
 	public void onWorldLoaded(WorldEvent.Load event) {
 		RaspberryJamMod.synchronizeConfig();
+		System.out.println("Loading world: "+event.world);
 
 		if (! RaspberryJamMod.clientOnlyAPI)
 			return;
 			
-		if (eventHandler == null)
-            eventHandler = new MCEventHandlerClientOnly();
-		FMLCommonHandler.instance().bus().register(eventHandler);
-		MinecraftForge.EVENT_BUS.register(eventHandler);
 		if (! registeredCommands) {
 			RaspberryJamMod.scriptExternalCommands = new ScriptExternalCommand[] {
 					new PythonExternalCommand(true),
@@ -105,12 +103,18 @@ public class ClientEventHandler {
 			}
 		}
 
-        if (RaspberryJamMod.portNumber != currentPortNumber || apiServer == null)
+		if (apiEventHandler == null) {
+            apiEventHandler = new MCEventHandlerClientOnly();
+			FMLCommonHandler.instance().bus().register(apiEventHandler);
+			MinecraftForge.EVENT_BUS.register(apiEventHandler);
+		}
+
+        if (apiServer == null)
 			try {
 				System.out.println("RaspberryJamMod client only API");
-				RaspberryJamMod.serverActive = true;
+				RaspberryJamMod.apiActive = true;
 				if (apiServer == null) {
-					apiServer = new APIServer(eventHandler, RaspberryJamMod.portNumber, true);
+					apiServer = new APIServer(apiEventHandler, RaspberryJamMod.portNumber, true);
 	
 					new Thread(new Runnable() {
 						@Override
@@ -121,34 +125,26 @@ public class ClientEventHandler {
 								System.out.println("RaspberryJamMod error "+e);
 							}
 							finally {
-								System.out.println("Closing RaspberryJamMod client-only API");
-								RaspberryJamMod.closeAllScripts();
-								if (apiServer != null) {
-									apiServer.close();
-									apiServer = null;
-								}
+								closeAPI();
 							}
 						}
-	
 					}).start();
-	                currentPortNumber = RaspberryJamMod.portNumber;
 				}
 			}
 			catch (Exception e) {}
 	}
 
 	public void closeAPI() {
-	    RaspberryJamMod.closeAllScripts();
-		RaspberryJamMod.serverActive = false;
-		if (eventHandler != null) {
-            MinecraftForge.EVENT_BUS.unregister(eventHandler);
-			FMLCommonHandler.instance().bus().unregister(eventHandler);
-            eventHandler = null;
+		RaspberryJamMod.closeAllScripts();
+		RaspberryJamMod.apiActive = false;
+		if (apiEventHandler != null) {
+            MinecraftForge.EVENT_BUS.unregister(apiEventHandler);
+			FMLCommonHandler.instance().bus().unregister(apiEventHandler);
+            apiEventHandler = null;
 		}
 		if (apiServer != null) {
 			apiServer.close();
 			apiServer = null;
 		}
-		currentPortNumber = 0;
 	}
 }

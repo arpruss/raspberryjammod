@@ -28,7 +28,7 @@ public class SetBlocksNBT extends SetBlocksState {
 				for (int z = z1 ; z <= z2 ; z++) {
 
 					// TODO: fix in client-only mode
-					if (! RaspberryJamMod.serverActive)
+					if (! RaspberryJamMod.apiActive)
 						break;
 
 					BlockPos here = new BlockPos(x,y,z);
