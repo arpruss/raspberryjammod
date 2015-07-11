@@ -2,9 +2,13 @@ package mobi.omegacentauri.raspberryjammod;
 
 import java.beans.EventSetDescriptor;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -12,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.command.ICommand;
 import net.minecraft.entity.Entity;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.item.ItemStack;
@@ -26,6 +31,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CommandEvent;
@@ -47,7 +53,7 @@ public class ClientEventHandler {
 	private int clientTickCount = 0;
 	private MCEventHandlerClientOnly apiEventHandler = null;
 	private APIServer apiServer = null;
-	private boolean registeredCommands = false;
+//	private boolean registeredCommands = false;
 
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
@@ -83,7 +89,7 @@ public class ClientEventHandler {
 		
 		closeAPI();
 	}	
-
+	
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void onWorldLoaded(WorldEvent.Load event) {
@@ -93,7 +99,7 @@ public class ClientEventHandler {
 		if (! RaspberryJamMod.clientOnlyAPI)
 			return;
 			
-		if (! registeredCommands) {
+//		if (! registeredCommands) {
 			RaspberryJamMod.scriptExternalCommands = new ScriptExternalCommand[] {
 					new PythonExternalCommand(true),
 					new AddPythonExternalCommand(true)
@@ -101,7 +107,7 @@ public class ClientEventHandler {
 			for (ScriptExternalCommand c : RaspberryJamMod.scriptExternalCommands) {
 				net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(c);
 			}
-		}
+//		}
 
 		if (apiEventHandler == null) {
             apiEventHandler = new MCEventHandlerClientOnly();
@@ -136,6 +142,12 @@ public class ClientEventHandler {
 
 	public void closeAPI() {
 		RaspberryJamMod.closeAllScripts();
+		if (RaspberryJamMod.scriptExternalCommands != null) {
+			for (ICommand c : RaspberryJamMod.scriptExternalCommands) {
+				RaspberryJamMod.unregisterCommand(net.minecraftforge.client.ClientCommandHandler.instance,c);
+			}
+			RaspberryJamMod.scriptExternalCommands = null;
+		}
 		RaspberryJamMod.apiActive = false;
 		if (apiEventHandler != null) {
             MinecraftForge.EVENT_BUS.unregister(apiEventHandler);

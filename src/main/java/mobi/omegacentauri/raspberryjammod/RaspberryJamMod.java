@@ -6,10 +6,14 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.InputMismatchException;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 import scala.collection.script.Script;
 
@@ -17,6 +21,8 @@ import net.minecraft.block.state.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.command.CommandHandler;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
@@ -65,6 +71,7 @@ public class RaspberryJamMod
 	private ClientEventHandler clientEventHandler = null;
 	static boolean clientOnlyAPI = false;
 	private MCEventHandler serverEventHandler = null;
+	private MinecraftServer s;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -127,6 +134,9 @@ public class RaspberryJamMod
 	
 	@EventHandler
 	public void onServerStopping(FMLServerStoppingEvent event) {
+		if (clientOnlyAPI)
+			return;
+		
 		apiActive = false;
 
 		if (serverEventHandler != null) {
@@ -138,7 +148,15 @@ public class RaspberryJamMod
 			fullAPIServer.close();
 		}
 		closeAllScripts();
-		scriptExternalCommands = null;
+		if (scriptExternalCommands != null) {
+			s = MinecraftServer.getServer();
+			if (s != null) {
+				for (ICommand c : scriptExternalCommands) {
+					unregisterCommand((CommandHandler)s.getCommandManager(), c);
+				}
+			}
+			scriptExternalCommands = null;
+		}
 	}
 	
 	@EventHandler
@@ -188,4 +206,43 @@ public class RaspberryJamMod
 			event.registerServerCommand(c);
 		}
 	}
+	
+	static public Field findField(Class c, String name) throws NoSuchFieldException {
+		do {
+			try {
+				return c.getDeclaredField(name);
+			}
+			catch (Exception e) {
+			}
+		} while(null != (c = c.getSuperclass()));
+		throw new NoSuchFieldException(name);
+	}
+
+	static public void unregisterCommand(CommandHandler ch, ICommand c) {
+		try {
+			Field commandMapField = findField(ch.getClass(),"commandMap");
+			commandMapField.setAccessible(true);
+			Map commandMap = (Map) commandMapField.get(ch);
+			Field commandSetField = findField(ch.getClass(),"commandSet");
+			commandSetField.setAccessible(true);
+			Set commandSet = (Set) commandSetField.get(ch);
+	
+			for (String alias: (List<String>)c.getAliases()) {
+				try {
+				     commandMap.remove(alias);
+				} catch(Exception e) {}
+			}
+			try {
+				commandMap.remove(c.getName());
+			} catch(Exception e) {}
+			try {
+				commandSet.remove(c);
+			} catch(Exception e) {}
+		}
+		catch (Exception e) {
+			System.err.println("Oops "+e);
+		}
+	}
+
+
 }

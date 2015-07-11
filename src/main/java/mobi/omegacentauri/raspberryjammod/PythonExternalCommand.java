@@ -16,14 +16,14 @@ public class PythonExternalCommand extends ScriptExternalCommand {
 	
 	@Override
 	public String getName() {
-		return clientSide ? "lpython" : "python";
+		return /* clientSide ? "lpython" : */ "python";
 	}
 
 	@Override
 	public List getAliases() {
 		List<String> aliases = new ArrayList<String>();
 		aliases.add(getName());
-		aliases.add(clientSide ? "lpy" : "py");
+		aliases.add(/* clientSide ? "lpy" : */ "py");
 		return aliases;
 	}
 

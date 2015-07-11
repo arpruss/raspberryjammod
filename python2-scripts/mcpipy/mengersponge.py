@@ -49,7 +49,7 @@ if len(sys.argv) > 1:
     length = 3**int(sys.argv[1])
 colorIndex = None
 if len(sys.argv) > 2:
-    colorIndex = 'c' in sys.argv[2]
+    colorIndex = 0 if 'c' in sys.argv[2] else None
 mc.setBlocks(playerPos.x,playerPos.y,playerPos.z,
              playerPos.x+length-1,playerPos.y+length-1,playerPos.z+length-1,WOOL_PURPLE)
 deleteCubes(playerPos.x,playerPos.y,playerPos.z,length,colorIndex=colorIndex)

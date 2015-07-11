@@ -3,6 +3,7 @@
 #
 import lsystem
 from mcturtle import *
+from sys import argv
 t = Turtle()
 t.pendelay(0)
 t.turtle(None)
@@ -31,4 +32,4 @@ dictionary = {
   '<': lambda: t.roll(-90)
   }
 
-lsystem.lsystem('X', rules, dictionary, 3)
+lsystem.lsystem('X', rules, dictionary, 3 if len(argv)<2 else int(argv[1]))
