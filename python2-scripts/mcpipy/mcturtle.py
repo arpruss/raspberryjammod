@@ -449,12 +449,12 @@ class Turtle:
     @staticmethod
     def getLine(x1, y1, z1, x2, y2, z2):
         line = []
-        x1 = int(x1)
-        y1 = int(y1)
-        z1 = int(z1)
-        x2 = int(x2)
-        y2 = int(y2)
-        z2 = int(z2)
+        x1 = int(floor(x1))
+        y1 = int(floor(y1))
+        z1 = int(floor(z1))
+        x2 = int(floor(x2))
+        y2 = int(floor(y2))
+        z2 = int(floor(z2))
         point = [x1,y1,z1]
         dx = x2 - x1
         dy = y2 - y1
