@@ -9,88 +9,11 @@ from mcpi.entity import *
 import numbers
 import copy
 import time
+from drawing import getLine, getTriangle
 from operator import itemgetter
 from math import *
 import numbers
 
-class V3(tuple):
-    def __new__(cls,*args):
-        if len(args) == 1:
-           return tuple.__new__(cls,tuple(*args))
-        else:
-           return tuple.__new__(cls,args)
-
-    def dot(self,other):
-        return self[0]*other[0]+self[1]*other[1]+self[2]*other[2]
-
-    def x(self):
-        return self[0]
-
-    def y(self):
-        return self[1]
-
-    def z(self):
-        return self[2]
-
-    def __add__(self,other):
-        return V3(self[0]+other[0],self[1]+other[1],self[2]+other[2])
-
-    def __radd__(self,other):
-        return V3(self[0]+other[0],self[1]+other[1],self[2]+other[2])
-
-    def __sub__(self,other):
-        return V3(self[0]-other[0],self[1]-other[1],self[2]-other[2])
-
-    def __rsub__(self,other):
-        return V3(other[0]-self[0],other[1]-self[1],other[2]-self[2])
-
-    def __neg__(self):
-        return V3(-self[0],-self[1],-self[2])
-
-    def __pos__(self):
-        return self
-
-    def len2(self):
-        return self[0]*self[0]+self[1]*self[1]+self[2]*self[2]
-
-    def __abs__(self):
-        return sqrt(self.len2())
-
-    def __div__(self,other):
-        if isinstance(other,numbers.Number):
-            y = float(other)
-            return V3(self[0]/y,self[1]/y,self[2]/y)
-        else:
-            return NotImplemented
-
-    def __mul__(self,other):
-        if isinstance(other,numbers.Number):
-            return V3(self[0]*other,self[1]*other,self[2]*other)
-        elif isinstance(other,V3):
-            # cross product
-            return V3(self[1]*other[2]-self[2]*other[1],self[2]*other[0]-self[0]*other[2],self[0]*other[1]-self[1]*other[0])
-
-    def __rmul__(self,other):
-        return self.__mul__(other)
-
-    def __repr__(self):
-        return "V3"+repr(tuple(self))
-
-    def permute(self,p):
-        return V3(self[p[0]], self[p[1]], self[p[2]])
-        
-    def ifloor(self):
-        return V3(int(floor(self[0])),int(floor(self[1])),int(floor(self[2])))
-
-    @staticmethod
-    def invertPermutation(p):
-        def find(i):
-            for j in range(3):
-                if p[j] == i:
-                    return j
-            raise ValueError
-
-        return (find(0), find(1), find(2))
 
 class Turtle:
     TO_RADIANS = pi / 180.
@@ -501,207 +424,18 @@ class Turtle:
 
         # dictinary to avoid duplicate drawing
         done = {}
-        line = Turtle.getLine(x1,y1,z1, x2,y2,z2)
 
         if self.pen and self.fan:
             if self.delayTime > 0:
-                for a in line:
+                for a in getLine(x1,y1,z1, x2,y2,z2):
                     drawPoint(a)
 
-            def fan(base,line):
-                for a in line:
-                    fillLine = Turtle.getLine(a[0],a[1],a[2],
-                                              base[0],base[1],base[2])
-                    for b in fillLine:
-                        drawPoint(b, True)
-
-            # draw the main fan
-            fan(self.fan,line)
-            # now fill in some possible gaps
-            # This is faster than it seems due to the done dictionary
-            fan((x1,y1,z1),Turtle.getLine(self.fan[0],self.fan[1],self.fan[2],
-                                          x2,y2,z2))
-            fan((x2,y2,z2),Turtle.getLine(self.fan[0],self.fan[1],self.fan[2],
-                                          x1,y1,z1))
+            triangle = getTriangle(self.fan, (x1,y1,z1), (x2,y2,z2))
+            for a in triangle:
+                drawPoint(a, True)
         else:
-            for a in line:
+            for a in getLine(x1,y1,z1, x2,y2,z2):
                 drawPoint(a)
-
-    @staticmethod
-    def get2DTriangle(*v):
-        """get the points of the 2D triangle with vertices a,b,c"""
-        """Coordinates assumed to be integral"""
-        points = []
-        # sort by y coordinate
-        A,B,C = tuple(sorted(v, key=itemgetter(1)))
-        # Use algorithm from http://www-users.mat.uni.torun.pl/~wrona/3d_tutor/tri_fillers.html
-        dx1 = (B[0]-A[0])/float(B[1]-A[1]) if B[1]>A[1] else 0
-        dx2 = (C[0]-A[0])/float(C[1]-A[1]) if C[1]>A[1] else 0
-        dx3 = (C[0]-B[0])/float(C[1]-B[1]) if C[1]>B[1] else 0
-
-        Sx=A[0]
-        Ex=A[0]
-        Sy=A[1]
-        Ey=A[1]
-        
-        def horiz(sx,ex,y):
-            a = int(floor(sx))
-            b = int(floor(ex))
-            for x in range(min(a,b),max(a,b)+1):
-                points.append((x,y))
-
-        if dx1 > dx2:
-            while Sy <= B[1]:
-                horiz(Sx,Ex,Sy)
-                Sy += 1
-                Ey += 1
-                Sx += dx2
-                Ex += dx1
-            Ex=B[0]
-            Ey=B[1]
-            while Sy <= C[1]:
-                horiz(Sx,Ex,Sy)
-                Sy += 1
-                Ey += 1
-                Sx += dx2
-                Ex += dx3
-        else:
-            while Sy < B[1]:
-                 horiz(Sx,Ex,Sy)
-                 Sy += 1
-                 Sx += dx1
-                 Ex += dx2
-            Sx=B[0]
-            Sy=B[1]
-            while Sy <= C[1]:
-                 horiz(Sx,Ex,Sy)
-                 Sy += 1
-                 Ey += 1
-                 Sx += dx3
-                 Ex += dx2
-
-        return points
-
-    @staticmethod
-    def getTriangle(p1, p2, p3):
-        v = (V3(p1).ifloor(),V3(p2).ifloor(),V3(p3).ifloor())
-        a = v[1]-v[0]
-        b = v[2]-v[0]
-        normal = a*b
-        if normal.len2() < 0.000001:
-           lMax = a.len2()
-           sideMax = 0
-           l2 = b.len2()
-           if lMax < l2:
-              lMax = l2
-              sideMax = 1
-           l3 = (v[2]-v[0]).len2()
-           if lMax < l3:
-              lMax = l3
-              sideMax = 3
-           if sideMax == 0:
-              return getLine(p1[0],p1[1],p1[2],p2[0],p2[1],p2[2])
-           elif sideMax == 2:
-              return getLine(p2[0],p2[1],p2[2],p3[0],p3[1],p3[2])
-           elif sideMax == 3:
-              return getLine(p1[0],p1[1],p1[2],p3[0],p3[1],p3[2])
-        nMax = abs(normal[0])
-        iMax = 0
-        l = abs(normal[1])
-        if l > nMax:
-           iMax = 1
-           nMax = l
-        l = abs(normal[2])
-        if l > nMax:
-           iMax = 2
-           #nMax = l
-
-        def project(u):
-           return (u[0] if iMax > 0 else u[1], u[1] if iMax > 1 else u[2])
-
-        flat = Turtle.get2DTriangle((0,0),project(a),project(b))
-
-        # the plane of the 3D triangle translated by -v[0] is defined by
-        # { u : u.normal = 0 }
-
-        if iMax == 0:
-           unproject = lambda u : v[0]+( -(normal[1]*u[0]+normal[2]*u[1])/normal[0], u[0], u[1])
-        elif iMax == 1:
-           unproject = lambda u : v[0]+( u[0], -(normal[0]*u[0]+normal[2]*u[1])/normal[1], u[1])
-        else:
-           unproject = lambda u : v[0]+( u[0], u[1], -(normal[0]*u[0]-normal[1]*u[1])/normal[2])
-
-        return [unproject(u).ifloor() for u in flat]
-
-    @staticmethod
-    def getLine(x1, y1, z1, x2, y2, z2):
-        line = []
-        x1 = int(floor(x1))
-        y1 = int(floor(y1))
-        z1 = int(floor(z1))
-        x2 = int(floor(x2))
-        y2 = int(floor(y2))
-        z2 = int(floor(z2))
-        point = [x1,y1,z1]
-        dx = x2 - x1
-        dy = y2 - y1
-        dz = z2 - z1
-        x_inc = -1 if dx < 0 else 1
-        l = abs(dx)
-        y_inc = -1 if dy < 0 else 1
-        m = abs(dy)
-        z_inc = -1 if dz < 0 else 1
-        n = abs(dz)
-        dx2 = l << 1
-        dy2 = m << 1
-        dz2 = n << 1
-    
-        if l >= m and l >= n:
-            err_1 = dy2 - l
-            err_2 = dz2 - l
-            for i in range(0,l-1):
-                line.append((point[0],point[1],point[2]))
-                if err_1 > 0:
-                    point[1] += y_inc
-                    err_1 -= dx2
-                if err_2 > 0:
-                    point[2] += z_inc
-                    err_2 -= dx2
-                err_1 += dy2
-                err_2 += dz2
-                point[0] += x_inc
-        elif m >= l and m >= n:
-            err_1 = dx2 - m;
-            err_2 = dz2 - m;
-            for i in range(0,m-1):
-                line.append((point[0],point[1],point[2]))
-                if err_1 > 0:
-                    point[0] += x_inc
-                    err_1 -= dy2
-                if err_2 > 0:
-                    point[2] += z_inc
-                    err_2 -= dy2
-                err_1 += dx2
-                err_2 += dz2
-                point[1] += y_inc
-        else:
-            err_1 = dy2 - n;
-            err_2 = dx2 - n;
-            for i in range(0, n-1):
-                line.append((point[0],point[1],point[2]))
-                if err_1 > 0:
-                    point[1] += y_inc
-                    err_1 -= dz2
-                if err_2 > 0:
-                    point[0] += x_inc
-                    err_2 -= dz2
-                err_1 += dy2
-                err_2 += dx2
-                point[2] += z_inc
-        line.append((point[0],point[1],point[2]))
-        if point[0] != x2 or point[1] != y2 or point[2] != z2:
-            line.append((x2,y2,z2))
-        return line
 
 
 if __name__ == "__main__":
