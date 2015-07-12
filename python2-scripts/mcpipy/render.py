@@ -50,8 +50,9 @@ class MinecraftDrawing:
             self.drawLine(drawDict,vertices[0].x,vertices[0].y,vertices[0].z,
                vertices[1].x,vertices[1].y,vertices[1].z,block)
             return
-        for i in range(len(vertices)):
-            self.drawLine(drawDict, vertices[i-1], vertices[i],block)
+        vertices = sorted(vertices)
+#        for i in range(len(vertices)):
+#            self.drawLine(drawDict, vertices[i-1], vertices[i],block)
         for i in range(2, len(vertices)):
             self.drawTriangle(drawDict,vertices[0],vertices[i-1],vertices[i],block)
 

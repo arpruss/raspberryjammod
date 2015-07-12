@@ -185,7 +185,7 @@ def getTriangle(p1, p2, p3):
     elif iMax == 1:
        unproject = lambda u : v[0]+( u[0], -(normal[0]*u[0]+normal[2]*u[1])/normal[1], u[1])
     else:
-       unproject = lambda u : v[0]+( u[0], u[1], -(normal[0]*u[0]-normal[1]*u[1])/normal[2])
+       unproject = lambda u : v[0]+( u[0], u[1], -(normal[0]*u[0]+normal[1]*u[1])/normal[2])
 
     return [unproject(u).ifloor() for u in flat]
 
@@ -304,7 +304,7 @@ class Drawing:
            self.line(points[0][0], points[0][1], points[0][2],
                        points[-1][0], points[-1][1], poiints[-1][2])
            return
-           
+
         for i in range(2, len(points)):
            self.drawPoints(getTriangle(points[0],points[i-1],points[i]), block)
 
@@ -328,5 +328,5 @@ class Drawing:
 if __name__ == "__main__":
     d = Drawing()
     pos = d.mc.player.getPos()
-    d.face([(pos.x,pos.y,pos.z),(pos.x+10,pos.y+10,pos.z),(pos.x+10,pos.y+10,pos.z+10),
-         (pos.x,pos.y,pos.z+10)], GLASS)
+    d.face([(pos.x,pos.y,pos.z),(pos.x+20,pos.y+20,pos.z),(pos.x+20,pos.y+20,pos.z+20),
+         (pos.x,pos.y,pos.z+20)], GLASS)
