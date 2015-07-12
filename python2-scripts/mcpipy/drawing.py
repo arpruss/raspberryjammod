@@ -215,7 +215,7 @@ def getLine(x1, y1, z1, x2, y2, z2):
         err_1 = dy2 - l
         err_2 = dz2 - l
         for i in range(0,l-1):
-            line.append((point[0],point[1],point[2]))
+            line.append(V3(point[0],point[1],point[2]))
             if err_1 > 0:
                 point[1] += y_inc
                 err_1 -= dx2
@@ -229,7 +229,7 @@ def getLine(x1, y1, z1, x2, y2, z2):
         err_1 = dx2 - m;
         err_2 = dz2 - m;
         for i in range(0,m-1):
-            line.append((point[0],point[1],point[2]))
+            line.append(V3(point[0],point[1],point[2]))
             if err_1 > 0:
                 point[0] += x_inc
                 err_1 -= dy2
@@ -243,7 +243,7 @@ def getLine(x1, y1, z1, x2, y2, z2):
         err_1 = dy2 - n;
         err_2 = dx2 - n;
         for i in range(0, n-1):
-            line.append((point[0],point[1],point[2]))
+            line.append(V3(point[0],point[1],point[2]))
             if err_1 > 0:
                 point[1] += y_inc
                 err_1 -= dz2
@@ -253,9 +253,9 @@ def getLine(x1, y1, z1, x2, y2, z2):
             err_1 += dy2
             err_2 += dx2
             point[2] += z_inc
-    line.append((point[0],point[1],point[2]))
+    line.append(V3(point[0],point[1],point[2]))
     if point[0] != x2 or point[1] != y2 or point[2] != z2:
-        line.append((x2,y2,z2))
+        line.append(V3(x2,y2,z2))
     return line
 
 
@@ -270,7 +270,6 @@ class Drawing:
              self.mc = minecraft.Minecraft()
         self.width = 1
         self.nib = [(0,0,0)]
-        self.fan = None
 
     def penwidth(self,w):
         self.width = int(w)
@@ -301,19 +300,21 @@ class Drawing:
         if len(points) == 0:
             return
 
-        self.fan = points[0]
-        self.done = {}
-        prev = points[len(points)-1]
+        if len(points) <= 2:
+           self.line(points[0][0], points[0][1], points[0][2],
+                       points[-1][0], points[-1][1], poiints[-1][2])
+           return
+           
+        for i in range(2, len(points)):
+           self.drawPoints(getTriangle(points[0],points[i-1],points[i]), block)
 
+    def drawLine(self, x1,y1,z1, x2,y2,z2, block):
+        self.drawPoints(getLine(x1,y1,z1, x2,y2,z2), block)
+
+    def drawPoints(self, points, block):
+        done = {}
         for p in points:
-            self.line(prev[0], prev[1], prev[2], p[0], p[1], p[2], block)
-            prev = p
-
-        self.fan = False
-
-    def line(self, x1,y1,z1, x2,y2,z2, block):
-        def drawPoint(p):
-            if self.width == 1 and not self.fan:
+            if self.width == 1:
                 self.mc.setBlock(p[0],p[1],p[2],block)
             else:
                 for point in self.nib:
@@ -323,18 +324,6 @@ class Drawing:
                     if not (x0,y0,z0) in self.done:
                         self.mc.setBlock(x0,y0,z0,block)
                         self.done[x0,y0,z0] = True
-
-        # dictinary to avoid duplicate drawing
-        if not self.fan:
-            self.done = {}
-
-        if self.fan:
-            for a in getTriangle(self.fan, (x1,y1,z1), (x2,y2,z2)):
-                drawPoint(a)
-        else:
-            for a in line:
-                drawPoint(a)
-
 
 if __name__ == "__main__":
     d = Drawing()
