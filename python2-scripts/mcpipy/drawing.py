@@ -7,8 +7,7 @@ import mcpi.block as block
 from mcpi.block import *
 from mcpi.entity import *
 from math import *
-from numbers import Number
-from operator import itemgetter
+from numbers import Number,Integral
 
 class V3(tuple):
     def __new__(cls,*args):
@@ -83,6 +82,84 @@ class V3(tuple):
 
     def ifloor(self):
         return V3(int(floor(self[0])),int(floor(self[1])),int(floor(self[2])))
+
+TO_RADIANS = pi / 180.
+TO_DEGREES = 180. / pi
+ICOS = [1,0,-1,0]
+ISIN = [0,1,0,-1]
+
+def makeMatrix(compass,vertical,roll):
+    m0 = matrixMultiply(yawMatrix(compass), pitchMatrix(vertical))
+    return matrixMultiply(m0, rollMatrix(roll))
+
+def matrixDistanceSquared(m1,m2):
+    d2 = 0.
+    for i in range(3):
+        for j in range(3):
+            d2 += (m1[i][j]-m2[i][j])**2
+    return d2
+
+def iatan2(y,x):
+    """One coordinate must be zero"""
+    if x == 0:
+        return 90 if y > 0 else -90
+    else:
+        return 0 if x > 0 else 180
+
+def icos(angleDegrees):
+    """Calculate a cosine of an angle that must be a multiple of 90 degrees"""
+    return ICOS[(angleDegrees % 360) / 90]
+
+def isin(angleDegrees):
+    """Calculate a sine of an angle that must be a multiple of 90 degrees"""
+    return ISIN[(angleDegrees % 360) / 90]
+
+def matrixMultiply(a,b):
+    c = [[0,0,0],[0,0,0],[0,0,0]]
+    for i in range(3):
+        for j in range(3):
+            c[i][j] = a[i][0]*b[0][j] + a[i][1]*b[1][j] + a[i][2]*b[2][j]
+    return c
+
+def applyMatrix(a,b):
+    c = [[0,0,0],[0,0,0],[0,0,0]]
+    for i in range(3):
+        for j in range(3):
+            c[i][j] = a[i][0]*b[0][j] + a[i][1]*b[1][j] + a[i][2]*b[2][j]
+    return c
+
+def yawMatrix(angleDegrees):
+    if isinstance(angleDegrees, Integral) and angleDegrees % 90 == 0:
+        return [[icos(angleDegrees), 0, -isin(angleDegrees)],
+                [0,          1, 0],
+                [isin(angleDegrees), 0, icos(angleDegrees)]]
+    else:
+        theta = angleDegrees * TO_RADIANS
+        return [[cos(theta), 0., -sin(theta)],
+                [0.,         1., 0.],
+                [sin(theta), 0., cos(theta)]]
+
+def rollMatrix(angleDegrees):
+    if isinstance(angleDegrees, Integral) and angleDegrees % 90 == 0:
+        return [[icos(angleDegrees), -isin(angleDegrees), 0],
+                [isin(angleDegrees), icos(angleDegrees),0],
+                [0,          0,          1]]
+    else:
+        theta = angleDegrees * TO_RADIANS
+        return [[cos(theta), -sin(theta), 0.],
+                [sin(theta), cos(theta),0.],
+                [0.,          0.,          1.]]
+
+def pitchMatrix(angleDegrees):
+    if isinstance(angleDegrees, Integral) and angleDegrees % 90 == 0:
+        return [[1,          0,          0],
+                [0, icos(angleDegrees),isin(angleDegrees)],
+                [0, -isin(angleDegrees),icos(angleDegrees)]]
+    else:
+        theta = angleDegrees * TO_RADIANS
+        return [[1.,          0.,          0.],
+                [0., cos(theta),sin(theta)],
+                [0., -sin(theta),cos(theta)]]
 
 def get2DTriangle(a,b,c):
     """get the points of the 2D triangle"""
@@ -294,6 +371,7 @@ def traverse(a,b):
         if tMaxX == inf and tMaxY == inf and tMaxZ == inf:
             return
 
+# Brasenham's algorithm
 def getLine(x1, y1, z1, x2, y2, z2):
     line = []
     x1 = int(floor(x1))
