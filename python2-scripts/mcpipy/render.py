@@ -44,30 +44,16 @@ class MinecraftDrawing:
         self.mc = mc
         self.data = {}
 
-    # draws a face, when passed a collection of vertices which make up a polyhedron
+    # draws a face, when passed a collection of vertices which make up a polygon
     def drawFace(self, drawDict, vertices, block):
         self.drawVertices(drawDict, getFace(vertices), block)
-#        if len(vertices) < 3:
-#            self.drawLine(drawDict,vertices[0],
-#               vertices[1],block)
-#            return
-#        for i in range(2, len(vertices)):
-#            for u in traverse(vertices[i-1],vertices[i]):
-#                self.drawLine(drawDict, vertices[0], u, block)
 
     # draws all the points in a collection of vertices with a block
     def drawVertices(self, drawDict, vertices, block):
         for vertex in vertices:
- #           if not vertex in drawDict or block != drawDict[vertex]:
+            if not vertex in drawDict or block != drawDict[vertex]:
                 self.mc.setBlock(vertex, block)
- #               drawDict[vertex] = block
-
-    # draw line
-    def drawLine(self, drawDict, v1, v2, block):
-        self.drawVertices(drawDict, traverse(v1, v2), block)
-
-    def drawTriangle(self, drawDict, v1, v2, v3, block):
-        self.drawVertices(drawDict, getTriangle(v1, v2, v3), block)
+                drawDict[vertex] = block
 
 def load_obj(filename, swapyz, defaultBlock, materials) :
     V = [] #vertex
