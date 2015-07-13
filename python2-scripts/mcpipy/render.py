@@ -33,7 +33,7 @@ import mcpi.block as block
 import time
 #import datetime, to get the time!
 import datetime
-from drawing import getLine, getTriangle, V3
+from drawing import getFace, V3
 
 import math
 import re
@@ -46,26 +46,25 @@ class MinecraftDrawing:
 
     # draws a face, when passed a collection of vertices which make up a polyhedron
     def drawFace(self, drawDict, vertices, block):
-        if len(vertices) < 3:
-            self.drawLine(drawDict,vertices[0].x,vertices[0].y,vertices[0].z,
-               vertices[1].x,vertices[1].y,vertices[1].z,block)
-            return
-        vertices = sorted(vertices)
-#        for i in range(len(vertices)):
-#            self.drawLine(drawDict, vertices[i-1], vertices[i],block)
-        for i in range(2, len(vertices)):
-            self.drawTriangle(drawDict,vertices[0],vertices[i-1],vertices[i],block)
+        self.drawVertices(drawDict, getFace(vertices), block)
+#        if len(vertices) < 3:
+#            self.drawLine(drawDict,vertices[0],
+#               vertices[1],block)
+#            return
+#        for i in range(2, len(vertices)):
+#            for u in traverse(vertices[i-1],vertices[i]):
+#                self.drawLine(drawDict, vertices[0], u, block)
 
     # draws all the points in a collection of vertices with a block
     def drawVertices(self, drawDict, vertices, block):
         for vertex in vertices:
-            if not vertex in drawDict or block != drawDict[vertex]:
-                self.mc.setBlock(vertex, block[0], block[1])
-                drawDict[vertex] = block
+ #           if not vertex in drawDict or block != drawDict[vertex]:
+                self.mc.setBlock(vertex, block)
+ #               drawDict[vertex] = block
 
     # draw line
     def drawLine(self, drawDict, v1, v2, block):
-        self.drawVertices(drawDict, getLine(v1.x,v1.y,v1.z,v2.x,v2.y,v2.z), block)
+        self.drawVertices(drawDict, traverse(v1, v2), block)
 
     def drawTriangle(self, drawDict, v1, v2, v3, block):
         self.drawVertices(drawDict, getTriangle(v1, v2, v3), block)
@@ -77,11 +76,10 @@ def load_obj(filename, swapyz, defaultBlock, materials) :
     F = [] #face indexies
     MF = [] #materials to faces
 
-    def fix(list):
-        if swapyz:
-            return [list[0], list[2], list[1]]
-        else:
-            return list
+    if swapyz:
+        fix = lambda list : V3(list[0], list[2], list[1])
+    else:
+        fix = lambda list : V3(list)
 
     currentMaterial = defaultBlock
 
@@ -89,8 +87,8 @@ def load_obj(filename, swapyz, defaultBlock, materials) :
     for line in fh :
         if line[0] == '#' : continue
         line = re.split('\s+', line.strip())
-        if line[0] == 'v' : 
-            V.append(fix([float(x) for x in line[1:]]))
+        if line[0] == 'v' :
+            V.append(V3(fix([float(x) for x in line[1:]])))
         elif line[0] == 'vt' : #tex-coord
             T.append(fix(line[1:]))
         elif line[0] == 'vn' : #normal vector
@@ -314,15 +312,13 @@ if __name__ == "__main__":
 
     scaledVertices = []
     for vertex in vertices:
-        scaledVertices.append(V3(int(0.5 + vertex[0] * scale + translate[0]),
-                                             int(0.5 + vertex[1] * scale + translate[1]),
-                                             int(0.5 + vertex[2] * scale + translate[2])))
+        scaledVertices.append(vertex * scale + translate)
 
     faceCount = 0
     # loop through faces
 
     drawRecord = {}
-    
+
     print len(faces),"faces"
 
     for face in faces:
@@ -333,7 +329,7 @@ if __name__ == "__main__":
 
         # draw the face
         mcDrawing.drawFace(drawRecord, faceVertices, materials[faceCount])
-        faceCount = faceCount + 1
+        faceCount += 1
 
     mc.postToChat("Model complete, www.stuffaboutcode.com")
 

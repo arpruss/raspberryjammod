@@ -408,9 +408,9 @@ class Turtle:
                         x0 = p[0]+point[0]
                         y0 = p[1]+point[1]
                         z0 = p[2]+point[2]
-                        if not (x0,y0,z0) in done:
+                        if (x0,y0,z0) not in done:
                             self.mc.setBlock(x0,y0,z0,self.block)
-                            done[x0,y0,z0] = True
+                            done.add((x0,y0,z0))
 
             if not fast and self.delayTime > 0:
                 self.position.x = p[0]
@@ -423,7 +423,7 @@ class Turtle:
             return
 
         # dictinary to avoid duplicate drawing
-        done = {}
+        done = set()
 
         if self.pen and self.fan:
             if self.delayTime > 0:
