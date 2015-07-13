@@ -84,110 +84,215 @@ class V3(tuple):
     def ifloor(self):
         return V3(int(floor(self[0])),int(floor(self[1])),int(floor(self[2])))
 
-def get2DTriangle(*v):
-    """get the points of the 2D triangle with vertices a,b,c"""
-    """Coordinates assumed to be integral"""
-    points = []
-    # sort by y coordinate
-    A,B,C = tuple(sorted(v, key=itemgetter(1)))
-    # Use algorithm from http://www-users.mat.uni.torun.pl/~wrona/3d_tutor/tri_fillers.html
-    dx1 = (B[0]-A[0])/float(B[1]-A[1]) if B[1]>A[1] else 0
-    dx2 = (C[0]-A[0])/float(C[1]-A[1]) if C[1]>A[1] else 0
-    dx3 = (C[0]-B[0])/float(C[1]-B[1]) if C[1]>B[1] else 0
+def get2DTriangle(a,b,c):
+    """get the points of the 2D triangle"""
+    minX = {}
+    maxX = {}
 
-    Sx=A[0]
-    Ex=A[0]
-    Sy=A[1]
-    Ey=A[1]
-    
-    def horiz(sx,ex,y):
-        a = int(floor(sx))
-        b = int(floor(ex))
-        for x in range(min(a,b),max(a,b)+1):
-            points.append((x,y))
+    for line in (traverse2D(a,b), traverse2D(b,c), traverse2D(a,c)):
+        for p in line:
+            minX0 = minX.get(p[1])
+            if minX0 == None:
+                minX[p[1]] = p[0]
+                maxX[p[1]] = p[0]
+                yield(p)
+            elif p[0] < minX0:
+                for x in xrange(p[0],minX0):
+                    yield(x,p[1])
+                minX[p[1]] = p[0]
+            else:
+                maxX0 = maxX[p[1]]
+                if maxX0 < p[0]:
+                    for x in range(maxX0,p[0]):
+                        yield(x,p[1])
+                    maxX[p[1]] = p[0]
 
-    if dx1 > dx2:
-        while Sy <= B[1]:
-            horiz(Sx,Ex,Sy)
-            Sy += 1
-            Ey += 1
-            Sx += dx2
-            Ex += dx1
-        Ex=B[0]
-        Ey=B[1]
-        while Sy <= C[1]:
-            horiz(Sx,Ex,Sy)
-            Sy += 1
-            Ey += 1
-            Sx += dx2
-            Ex += dx3
-    else:
-        while Sy < B[1]:
-             horiz(Sx,Ex,Sy)
-             Sy += 1
-             Sx += dx1
-             Ex += dx2
-        Sx=B[0]
-        Sy=B[1]
-        while Sy <= C[1]:
-             horiz(Sx,Ex,Sy)
-             Sy += 1
-             Ey += 1
-             Sx += dx3
-             Ex += dx2
-
-    return points
+def getFace(vertices):
+    if len(vertices) < 1:
+        raise StopIteration
+    if len(vertices) <= 2:
+        for p in traverse(V3(vertices[0]), V3(vertices[1])):
+            yield p
+    v0 = V3(vertices[0])
+    for i in range(2,len(vertices)):
+        for p in traverse(V3(vertices[i-1]), V3(vertices[i])):
+            for q in traverse(p, v0):
+                yield q
 
 def getTriangle(p1, p2, p3):
-    v = (V3(p1),V3(p2),V3(p3))
-    a = v[1]-v[0]
-    b = v[2]-v[0]
-    normal = a*b
-    if normal.len2() < 0.000001:
-       lMax = a.len2()
-       sideMax = 0
-       l2 = b.len2()
-       if lMax < l2:
-          lMax = l2
-          sideMax = 1
-       l3 = (v[2]-v[0]).len2()
-       if lMax < l3:
-          lMax = l3
-          sideMax = 2
-       if sideMax == 0:
-          return getLine(p1[0],p1[1],p1[2],p2[0],p2[1],p2[2])
-       elif sideMax == 1:
-          return getLine(p2[0],p2[1],p2[2],p3[0],p3[1],p3[2])
-       else:
-          return getLine(p1[0],p1[1],p1[2],p3[0],p3[1],p3[2])
-    nMax = abs(normal[0])
-    iMax = 0
-    l = abs(normal[1])
-    if l > nMax:
-       iMax = 1
-       nMax = l
-    l = abs(normal[2])
-    if l > nMax:
-       iMax = 2
-       #nMax = l
+    """
+    Note that this will return many duplicate poitns
+    """
+    p1,p2,p3 = V3(p1),V3(p2),V3(p3)
 
-    def project(u):
-       return (floor(u[0]) if iMax > 0 else floor(u[1]),
-                  floor(u[1]) if iMax > 1 else floor(u[2]))
+    for u in traverse(p2,p3):
+        for w in traverse(p1,u):
+             yield w
 
-    flat = get2DTriangle((0,0),project(a),project(b))
+def frac(x):
+    return x - floor(x)
 
-    # the plane of the 3D triangle translated by -v[0] is defined by
-    # { u : u.normal = 0 }
+def traverse2D(a,b):
+    """
+    equation of line: a + t(b-a), t from 0 to 1
+    Based on Amantides and Woo's ray traversal algorithm with some help from
+    http://stackoverflow.com/questions/12367071/how-do-i-initialize-the-t-variables-in-a-fast-voxel-traversal-algorithm-for-ray
+    """
 
-    if iMax == 0:
-       unproject = lambda u : v[0]+( -(normal[1]*u[0]+normal[2]*u[1])/normal[0], u[0], u[1])
-    elif iMax == 1:
-       unproject = lambda u : v[0]+( u[0], -(normal[0]*u[0]+normal[2]*u[1])/normal[1], u[1])
+    inf = float("inf")
+
+    if b[0] == a[0]:
+        if b[1] == a[1]:
+            yield (int(floor(a[0])),int(floor(a[1])))
+            return
+        tMaxX = inf
+        tDeltaX = 0
     else:
-       unproject = lambda u : v[0]+( u[0], u[1], -(normal[0]*u[0]+normal[1]*u[1])/normal[2])
+        tDeltaX = 1./abs(b[0]-a[0])
+        tMaxX = tDeltaX * (1. - frac(a[0]))
 
-    return [unproject(u).ifloor() for u in flat]
+    if b[1] == a[1]:
+        tMaxY = inf
+        tDeltaY = 0
+    else:
+        tDeltaY = 1./abs(b[1]-a[1])
+        tMaxY = tDeltaY * (1. - frac(a[1]))
+
+    endX = int(floor(b[0]))
+    endY = int(floor(b[1]))
+    x = int(floor(a[0]))
+    y = int(floor(a[1]))
+    if x <= endX:
+        stepX = 1
+    else:
+        stepX = -1
+    if y <= endY:
+        stepY = 1
+    else:
+        stepY = -1
+
+    yield (x,y)
+    if x == endX:
+        if y == endY:
+            return
+        tMaxX = inf
+    if y == endY:
+        tMaxY = inf
+
+    while True:
+        if tMaxX < tMaxY:
+            x += stepX
+            yield (x,y)
+            if x == endX:
+                tMaxX = inf
+            else:
+                tMaxX += tDeltaX
+        else:
+            y += stepY
+            yield (x,y)
+            if y == endY:
+                tMaxY = inf
+            else:
+                tMaxY += tDeltaY
+
+        if tMaxX == inf and tMaxY == inf:
+            return
+
+def traverse(a,b):
+    """
+    equation of line: a + t(b-a), t from 0 to 1
+    Based on Amantides and Woo's ray traversal algorithm with some help from
+    http://stackoverflow.com/questions/12367071/how-do-i-initialize-the-t-variables-in-a-fast-voxel-traversal-algorithm-for-ray
+    """
+
+    inf = float("inf")
+
+    if b.x == a.x:
+        if b.y == a.y and b.z == a.z:
+            yield a.ifloor()
+            return
+        tMaxX = inf
+        tDeltaX = 0
+    else:
+        tDeltaX = 1./abs(b.x-a.x)
+        tMaxX = tDeltaX * (1. - frac(a.x))
+
+    if b.y == a.y:
+        tMaxY = inf
+        tDeltaY = 0
+    else:
+        tDeltaY = 1./abs(b.y-a.y)
+        tMaxY = tDeltaY * (1. - frac(a.y))
+
+    if b.z == a.z:
+        tMaxZ = inf
+        tDeltaZ = 0
+    else:
+        tDeltaZ = 1./abs(b.z-a.z)
+        tMaxZ = tDeltaZ * (1. - frac(a.z))
+
+    end = b.ifloor()
+    x = int(floor(a.x))
+    y = int(floor(a.y))
+    z = int(floor(a.z))
+    if x <= end.x:
+        stepX = 1
+    else:
+        stepX = -1
+    if y <= end.y:
+        stepY = 1
+    else:
+        stepY = -1
+    if z <= end.z:
+        stepZ = 1
+    else:
+        stepZ = -1
+
+    yield V3(x,y,z)
+
+    if x == end.x:
+        if y == end.y and z == end.z:
+            return
+        tMaxX = inf
+    if y == end.y:
+        tMaxY = inf
+    if z == end.z:
+        tMaxZ = inf
+
+    while True:
+        if tMaxX < tMaxY:
+            if tMaxX < tMaxZ:
+                x += stepX
+                yield V3(x,y,z)
+                if x == end.x:
+                    tMaxX = inf
+                else:
+                    tMaxX += tDeltaX
+            else:
+                z += stepZ
+                yield V3(x,y,z)
+                if z == end.z:
+                    tMaxZ = inf
+                else:
+                    tMaxZ += tDeltaZ
+        else:
+            if tMaxY < tMaxZ:
+                y += stepY
+                yield V3(x,y,z)
+                if y == end.y:
+                    tMaxY = inf
+                else:
+                    tMaxY += tDeltaY
+            else:
+                z += stepZ
+                yield V3(x,y,z)
+                if z == end.z:
+                    tMaxZ = inf
+                else:
+                    tMaxZ += tDeltaZ
+
+        if tMaxX == inf and tMaxY == inf and tMaxZ == inf:
+            return
 
 def getLine(x1, y1, z1, x2, y2, z2):
     line = []
@@ -296,37 +401,43 @@ class Drawing:
         for p in self.nib:
             self.mc.setBlock(x+p[0],y+p[1],z+p[2],block)
 
-    def face(self, points, block):
-        if len(points) == 0:
-            return
+    def face(self, vertices, block):
+        self.drawPoints(getFace(vertices), block)
 
-        if len(points) <= 2:
-           self.line(points[0][0], points[0][1], points[0][2],
-                       points[-1][0], points[-1][1], poiints[-1][2])
-           return
-
-        for i in range(2, len(points)):
-           self.drawPoints(getTriangle(points[0],points[i-1],points[i]), block)
-
-    def drawLine(self, x1,y1,z1, x2,y2,z2, block):
+    def line(self, x1,y1,z1, x2,y2,z2, block):
         self.drawPoints(getLine(x1,y1,z1, x2,y2,z2), block)
 
     def drawPoints(self, points, block):
-        done = {}
-        for p in points:
-            if self.width == 1:
-                self.mc.setBlock(p[0],p[1],p[2],block)
-            else:
+        if self.width == 1:
+            done = set()
+            for p in points:
+                if p not in done:
+                    self.mc.setBlock(p, block)
+                    done.add(p)
+        else:
+            done = set()
+            for p in points:
                 for point in self.nib:
                     x0 = p[0]+point[0]
                     y0 = p[1]+point[1]
                     z0 = p[2]+point[2]
-                    if not (x0,y0,z0) in self.done:
+                    if (x0,y0,z0) not in self.done:
                         self.mc.setBlock(x0,y0,z0,block)
-                        self.done[x0,y0,z0] = True
+                        done.add((x0,y0,z0))
 
 if __name__ == "__main__":
     d = Drawing()
     pos = d.mc.player.getPos()
     d.face([(pos.x,pos.y,pos.z),(pos.x+20,pos.y+20,pos.z),(pos.x+20,pos.y+20,pos.z+20),
          (pos.x,pos.y,pos.z+20)], GLASS)
+    n = 20
+    for t in range(0,n):
+        (x1,z1) = (100*cos(t*2*pi/n),80*sin(t*2*pi/n))
+        for p in traverse(V3(pos.x,pos.y-1,pos.z),V3(pos.x+x1,pos.y-1,pos.z+z1)):
+            d.mc.setBlock(p,OBSIDIAN)
+    n = 40
+    vertices = []
+    for t in range(0,n):
+        (x1,z1) = (100*cos(t*2*pi/n),80*sin(t*2*pi/n))
+        vertices.append((pos.x+x1,pos.y,pos.z+z1))
+    d.face(vertices, STAINED_GLASS_BLUE)
