@@ -58,7 +58,8 @@ def parseBlock(data):
     return (b.id,b.data)
 
 class Mesh(object):
-    def __init__(self,infile):
+    def __init__(self,mc,infile):
+         self.mc = mc
          self.swapYZ = False
          self.size = 100
          self.default = (BEDROCK.id, 0)
@@ -111,6 +112,7 @@ class Mesh(object):
         else:
             fix = lambda list : V3(list)
 
+        warned = set()
         currentMaterialIndex = 0
         self.materialBlocks = [ self.default ]
         self.materialIndexDict = { "(unspecified)": 0 }
@@ -146,6 +148,9 @@ class Mesh(object):
                         currentMaterialIndex = len(self.materialBlocks)
                         self.materialIndexDict[name] = currentMaterialIndex
                         self.materialBlocks.append(self.materialBlockDict.get(name, self.default))
+                        if name not in self.materialBlockDict and name not in warned:
+                            self.mc.postToChat("Material "+name+" not defined")
+                            warned.add(name)
 
     def scale(self, bottomCenter, matrix=None):
         minimum = [None, None, None]
@@ -178,92 +183,28 @@ class Mesh(object):
         self.corner1 = (V3(minimum) * scale + translate).ifloor()
         self.corner2 = (V3(maximum) * scale + translate).iceil()
 
-    def drawVertices(self, mc, vertices, material):
+    def drawVertices(self, vertices, material):
         block = self.materialBlocks[material]
         for vertex in vertices:
             if material != self.drawRecord.get(vertex):
-                mc.setBlock(vertex, block)
+                self.mc.setBlock(vertex, block)
                 self.drawRecord[vertex] = material
 
-    def render(self, mc):
+    def render(self):
         self.drawRecord = {}
 
         for faceCount,face in enumerate(self.faces):
-            if faceCount % 5000 == 0:
-                mc.postToChat("{0:.1f}%".format(100. * faceCount / len(self.faces)))
+            if faceCount % 4000 == 0:
+                self.mc.postToChat("{0:.1f}%".format(100. * faceCount / len(self.faces)))
 
             faceVertices = [self.vertices[vertex[0]] for vertex in face]
-            self.drawVertices(mc, getFace(faceVertices), self.materials[faceCount])
+            self.drawVertices(getFace(faceVertices), self.materials[faceCount])
 
-# class to create 3d filled polygons
-class MinecraftDrawing:
-    def __init__(self, mc):
-        self.mc = mc
-        self.data = {}
-
-    # draws a face, when passed a collection of vertices which make up a polygon
-    def drawFace(self, drawDict, vertices, block):
-        self.drawVertices(drawDict, getFace(vertices), block)
-
-    # draws all the points in a collection of vertices with a block
-    def drawVertices(self, drawDict, vertices, block):
-        for vertex in vertices:
-            if not vertex in drawDict or block != drawDict[vertex]:
-                self.mc.setBlock(vertex, block)
-                drawDict[vertex] = block
-
-def load_obj(filename, swapyz, defaultBlock, materials) :
-    V = [] #vertex
-    T = [] #texcoords
-    N = [] #normals
-    F = [] #face indexies
-    MF = [] #materials to faces
-
-    if swapyz:
-        fix = lambda list : V3(list[0], list[2], list[1])
-    else:
-        fix = lambda list : V3(list)
-
-    currentMaterial = defaultBlock
-
-    fh = open(filename)
-    for line in fh :
-        if line[0] == '#' : continue
-        line = re.split('\s+', line.strip())
-        if line[0] == 'v' :
-            V.append(V3(fix([float(x) for x in line[1:]])))
-        elif line[0] == 'vt' : #tex-coord
-            T.append(fix(line[1:]))
-        elif line[0] == 'vn' : #normal vector
-            N.append(fix(line[1:]))
-        elif line[0] == 'f' : #face
-            face = line[1:]
-            for i in range(0, len(face)) :
-                face[i] = face[i].split('/')
-                # OBJ indexies are 1 based not 0 based hence the -1
-                # convert indexies to integer
-                for j in range(0, len(face[i])) :
-                    if face[i][j] != "":
-                        face[i][j] = int(face[i][j]) - 1
-            #append the material currently in use to the face
-            F.append(face)
-            MF.append(currentMaterial)
-
-        elif line[0] == 'usemtl': # material
-            usemtl = line[1]
-            if (usemtl in materials.keys()):
-                currentMaterial = materials[usemtl]
-            else:
-                currentMaterial = defaultBlock
-                print "Warning: Couldn't find '" + str(usemtl) + "' in materials using default"
-
-    return V, T, N, F, MF
-    
 def go(filename):
     mc = minecraft.Minecraft()
 
     mc.postToChat("Preparing")
-    mesh = Mesh(filename)
+    mesh = Mesh(mc, filename)
     mc.postToChat("Reading")
     mesh.read()
     mc.postToChat("Scaling")
@@ -271,9 +212,8 @@ def go(filename):
     mc.postToChat("Clearing")
     mc.setBlocks(mesh.corner1,mesh.corner2,AIR)
     mc.postToChat("Rendering")
-    mesh.render(mc)
+    mesh.render()
     mc.postToChat("Done!")
-
 
 # main program
 if __name__ == "__main__":
