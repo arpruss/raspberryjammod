@@ -83,6 +83,9 @@ class V3(tuple):
     def ifloor(self):
         return V3(int(floor(self[0])),int(floor(self[1])),int(floor(self[2])))
 
+    def iceil(self):
+        return V3(int(ceil(self[0])),int(ceil(self[1])),int(ceil(self[2])))
+
 TO_RADIANS = pi / 180.
 TO_DEGREES = 180. / pi
 ICOS = [1,0,-1,0]

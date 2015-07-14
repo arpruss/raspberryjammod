@@ -25,7 +25,6 @@ SOFTWARE.
 
 #import the minecraft.py module from the minecraft directory
 import sys
-sys.path.append('..')
 import mcpi.minecraft as minecraft
 #import minecraft block module
 import mcpi.block as block
@@ -36,7 +35,124 @@ import datetime
 from drawing import *
 
 import math
+import os
 import re
+
+class ObjDescriptor(object):
+    def __init__(self,in):
+         self.swapYZ = False
+         self.size = 100
+         self.default = (BEDROCK.id, 0)
+         self.materialNames = set()
+         self.materialDict = {}
+         self.baseVertices = []
+         self.vertices = []
+         self.textures = []
+         self.normals = []
+         self.faces = []
+         self.materials = []
+         self.corner1 = None
+         self.corner2 = None
+
+         base,ext = os.path.splitext(in)
+         if ext == '.obj':
+             self.objName = in
+             self.dataFile = base + ".txt"
+         with open(in) as f:
+             self.dataFile = base + ".txt"
+             self.objName = base + ".obj"
+             materialMode = False
+             for line in f:
+                 line = line.strip()
+                 if line[0] == '#':
+                     continue
+                 found = re.match('([^\\s]+) (.*)$', line)
+                 if found:
+                     token = found.group(1).lower()
+                     if materialMode:
+                         self.materialDict[found.group(1)] = parseBlock(found.group(2))
+                     elif token == "file":
+                         if found.group(2).startswith('"') or found.group(2).startswith("'"):
+                             self.objName = safeEval(found.group(2))
+                         else:
+                             self.objName = found.group(2)
+                     elif token == "swapyz":
+                         self.swapYZ = bool(safeEval(found.group(2).capitalize()))
+                     elif token == "size":
+                         self.size = safeEval(found.group(2))
+                     elif token == "default":
+                         self.default = parseBlock(found.group(2))
+                 elif line.strip().lower() == "materials":
+                     materialMode = True
+
+    def read(self):
+        if swapYZ:
+            fix = lambda list : V3(list[0], list[2], list[1])
+        else:
+            fix = lambda list : V3(list)
+
+        currentMaterial = "(unspecified)"
+
+        with open(filename) as fh:
+            for line in fh :
+                line = line.strip()
+                if line[0] == '#' : continue
+                line = re.split('\s+', line)
+                if line[0] == 'v' :
+                    self.baseVertices.append(V3(fix([float(x) for x in line[1:]])))
+                #elif line[0] == 'vt' : #tex-coord
+                #    self.textures.append(fix(line[1:]))
+                #elif line[0] == 'vn' : #normal vector
+                #    self.normals.append(fix(line[1:]))
+                elif line[0] == 'f' : #face
+                    face = line[1:]
+                    for i in range(0, len(face)) :
+                        face[i] = face[i].split('/')
+                        # OBJ indexies are 1 based not 0 based hence the -1
+                        # convert indexies to integer
+                        for j in range(0, len(face[i])) :
+                            if face[i][j] != "":
+                                face[i][j] = int(face[i][j]) - 1
+                    #append the material currently in use to the face
+                    self.faces.append(face)
+                    self.materials.append(currentMaterial)
+                elif line[0] == 'usemtl': # material
+                    currentMaterial = line[1]
+                    materialNames.add(currentMaterial)
+
+    def adjust(self, matrix, bottomCenter):
+        minimum = [None, None, None]
+        maximum = [None, None, None]
+
+        for i in range(len(baseVertices)):
+            if matrix is not None:
+                self.vertices[i] = applyMatrix(matrix,self.baseVertices[i])
+            else:
+                self.vertices[i] = self.baseVertices[i]
+            vertex = self.vertices[i]
+            for i in range(3):
+                if minimum[i] == None or vertex[i] < minimum[i]:
+                    minimum[i] = self.vertex[i]
+                if maximum[i] == None or vertex[i] > maximum[i]:
+                    maximum[i] = self.vertex[i]
+
+        center = [(maximum[i] + minimum[i])/2 for i in range(3)]
+
+        maxsize = 0
+
+        for i in range(3):
+            if maximum[i]-mininum[i] > maxsize:
+                maxsize = maxium[i]-mininum[i]
+
+        scale = size / maxsize
+        translate = V3(bottomCenter.x-scale*center[0], bottomCenter.y-scale*mininum[1], bottomCenter.z-scale*center[2])
+
+        for i in range(len(baseVertices)):
+            self.vertices[i] = self.vertices[i] * scale + translate
+
+        self.corner1 = (V3(minimum) * scale + translate).ifloor()
+        self.corner2 = (V3(maximum) * scale + translate).iceil()
+
 
 # class to create 3d filled polygons
 class MinecraftDrawing:
