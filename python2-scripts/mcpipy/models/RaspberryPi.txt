@@ -1,0 +1,27 @@
+file RaspberryPi.obj
+swapyz 0
+size 100
+default DIRT
+url https://raw.githubusercontent.com/martinohanlon/minecraft-renderObj/master/RaspberryPi.obj
+credits Downloaded from Martin O'Hanlon's repository
+materials
+Default_Material WOOL.id 0
+Material1 WOOL.id 5
+Goldenrod WOOL.id 1
+0136_Charcoal WOOL.id 7
+Gray61 WOOL.id 7
+Charcoal WOOL.id 7
+Color_002 WOOL.id 8
+Color_008 WOOL.id 4
+Plastic_Green WOOL.id 5
+MB_Pastic_White WOOL.id 0
+IO_Shiny IRON_BLOCK
+Material4 GRASS
+Gainsboro3 WOOL.id 5
+CorrogateShiny1 IRON_BLOCK
+Gold GOLD_BLOCK
+0129_WhiteSmoke WOOL
+Color_005 WOOL
+USB_IO WOOL.id 11
+_Metal IRON_BLOCK
+0132_LightGray WOOL.id 8

@@ -1,0 +1,25 @@
+file City_Ground-Notts.obj
+url https://raw.githubusercontent.com/martinohanlon/minecraft-renderObj/master/City_Ground-Notts.obj
+credits Downloaded from Martin O'Hanlon's repository
+size 200
+default DIRT
+materials
+Default_Material STONE.id
+Black WOOL.id 15
+Asphalt_Old WOOL.id 7
+GhostWhite WOOL
+Brick_Flemish_Bond BRICK_BLOCK
+Concrete_Brushed STONE.id
+Metal_Brushed IRON_BLOCK
+Roofing_Metal_Standing_Seam_Blue WOOL.id 8
+White WOOL
+Metal_Brushed1 IRON_BLOCK
+Rouge3141 WOOL.id 14
+roof WOOL.id 8
+Metal_Aluminum_Anodized IRON_BLOCK
+Translucent_Glass_Safety GLASS.id
+Translucent_Glass_Safety1 GLASS.id
+Safety_Glass2 GLASS.id
+Red WOOL.id 14
+goal_net1 WOOL
+Black WOOL.id 15

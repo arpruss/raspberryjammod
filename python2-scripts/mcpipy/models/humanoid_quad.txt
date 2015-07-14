@@ -1,0 +1,3 @@
+file humanoid_quad.obj
+url https://raw.githubusercontent.com/martinohanlon/minecraft-renderObj/master/humanoid_quad.obj
+credits Downloaded from Martin O'Hanlon's repository

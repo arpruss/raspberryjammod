@@ -1,0 +1,13 @@
+file cessna.obj
+size 100
+url https://raw.githubusercontent.com/martinohanlon/minecraft-renderObj/master/cessna.obj
+credits Downloaded from Martin O'Hanlon's repository
+default IRON_BLOCK
+materials
+yellow WOOL_YELLOW
+red WOOL_RED
+white WOOL_WHITE
+black WOOL_BLACK
+glass GLASS
+dkgrey WOOL_GRAY
+

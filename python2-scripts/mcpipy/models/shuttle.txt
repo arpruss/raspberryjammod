@@ -1,0 +1,14 @@
+file shuttle.obj
+url https://raw.githubusercontent.com/martinohanlon/minecraft-renderObj/master/shuttle.obj
+credits Downloaded from Martin O'Hanlon's repository
+swapyz 1
+size 100
+default WOOL
+materials
+glass GLASS
+bone WOOL
+fldkdkgrey WOOL.id 7
+redbrick WOOL.id 14
+black WOOL.id 15
+brass WOOL.id 1
+dkdkgrey WOOL.id 7

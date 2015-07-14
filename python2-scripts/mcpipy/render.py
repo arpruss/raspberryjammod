@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-#import the minecraft.py module from the minecraft directory
 import sys
+import urllib2
 import mcpi.minecraft as minecraft
 #import minecraft block module
 import mcpi.block as block
@@ -33,6 +33,7 @@ from mcpi.block import *
 import time
 #import datetime, to get the time!
 import datetime
+import gzip
 from drawing import *
 
 import math
@@ -60,7 +61,10 @@ def parseBlock(data):
 class Mesh(object):
     def __init__(self,mc,infile):
          self.mc = mc
+         self.url = None
+         self.urlgz = None
          self.swapYZ = False
+         self.credits = None
          self.size = 100
          self.default = (BEDROCK.id, 0)
          self.materialBlockDict = {}
@@ -85,7 +89,7 @@ class Mesh(object):
              materialMode = False
              for line in f:
                  line = line.strip()
-                 if line[0] == '#':
+                 if len(line) == 0 or line[0] == '#':
                      continue
                  found = re.match('([^\\s]+) (.*)$', line)
                  if found:
@@ -99,12 +103,48 @@ class Mesh(object):
                              self.objName = dirname + "/" + found.group(2)
                      elif token == "swapyz":
                          self.swapYZ = bool(safeEval(found.group(2).capitalize()))
+                     elif token == "credits":
+                         self.credits = found.group(2)
+                     elif token == "url":
+                         self.url = found.group(2)
+                     elif token == "urlgz":
+                         self.urlgz = found.group(2)
                      elif token == "size":
                          self.size = safeEval(found.group(2))
                      elif token == "default":
                          self.default = parseBlock(found.group(2))
                  elif line.strip().lower() == "materials":
                      materialMode = True
+                 elif line.strip().lower() == "end":
+                     break
+
+    def getFile(self, tryDownload=True):
+        if os.path.isfile(self.objName):
+            if self.objName.endswith(".gz"):
+                return self.objName, gzip.open
+            else:
+                return self.objName, open
+        if os.path.isfile(self.objName+".gz"):
+            return self.objName+".gz", gzip.open
+        if tryDownload and (self.url or self.urlgz):
+            self.mc.postToChat("Downloading mesh")
+            if self.urlgz:
+                url = self.urlgz
+                if not self.objName.endswith(".gz"):
+                    outName = self.objName+".gz"
+                else:
+                    outName = self.objName
+            else:
+                url = self.url
+                outName = self.objName
+            content = urllib2.urlopen(url).read()
+            with open(outName+".tempDownload","wb") as f:
+                f.write(content)
+            os.rename(outName+".tempDownload", outName)
+            self.mc.postToChat("Downloaded")
+            return self.getFile()
+        else:
+            raise IOError("File not found")
 
     def read(self):
         if self.swapYZ:
@@ -117,7 +157,10 @@ class Mesh(object):
         self.materialBlocks = [ self.default ]
         self.materialIndexDict = { "(unspecified)": 0 }
 
-        with open(self.objName) as fh:
+        name,myopen = self.getFile()
+        if self.credits:
+            self.mc.postToChat("Credits: "+self.credits)
+        with myopen(name) as fh:
             for line in fh :
                 line = line.strip()
                 if len(line) == 0 or line[0] == '#' : continue
@@ -200,7 +243,7 @@ class Mesh(object):
             faceVertices = [self.vertices[vertex[0]] for vertex in face]
             self.drawVertices(getFace(faceVertices), self.materials[faceCount])
 
-def go(filename):
+def go(filename, options=[]):
     mc = minecraft.Minecraft()
 
     mc.postToChat("Preparing")
@@ -217,4 +260,7 @@ def go(filename):
 
 # main program
 if __name__ == "__main__":
-    go("models/" + sys.argv[1] + ".txt")
+    if len(sys.argv)<2:
+        go("models/RaspberryPi.txt")
+    else:
+        go("models/" + sys.argv[1] + ".txt", sys.argv[2:])
