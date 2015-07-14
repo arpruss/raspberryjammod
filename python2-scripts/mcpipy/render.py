@@ -179,21 +179,21 @@ if __name__ == "__main__":
     WOOL_BLACK = (block.WOOL.id, 15)
 
     objects = {
-        'ds9': ('render/ds9.obj', False, 200, (block.STONE.id, None),
+        'ds9': ('model/ds9.obj', False, 200, (block.STONE.id, None),
                 { "Yellow_self_illum": (block.GLOWSTONE_BLOCK.id, None),
                       "Lamps": (block.GLOWSTONE_BLOCK.id, None),
                       "Windows": (block.GLASS.id, None),
                       "Phaser": (124,0),
                       "Antenna": (173,0)
                     }),
-        '1701d': ('render/1701d.obj', False, 200, (block.QUARTZ_BLOCK.id, None),
+        '1701d': ('model/1701d.obj', False, 200, (block.QUARTZ_BLOCK.id, None),
                 { "Yellow_self_illum": (block.GLOWSTONE_BLOCK.id, None),
                       "Lamps": (block.SEA_LANTERN.id, None),
                       "Windows": (block.GLASS.id, None),
                       "Phaser": (block.REDSTONE_BLOCK.id,0),
                       "Antenna": (173,0)
                     }),
-        'shuttle': ('render/shuttle.obj', True, 100, (block.WOOL.id, 0),
+        'shuttle': ('model/shuttle.obj', True, 100, (block.WOOL.id, 0),
                     { "glass": (block.GLASS.id, None),
                      "bone": (block.WOOL.id, 0),
                      "fldkdkgrey": (block.WOOL.id, 7),
@@ -202,9 +202,9 @@ if __name__ == "__main__":
                      "brass": (block.WOOL.id, 1),
                      "dkdkgrey": (block.WOOL.id, 7)
                         }),
-        'skyscraper': ('render/skyscraper.obj', False, 100, (block.IRON_BLOCK.id, None), {}),
-        'head': ('render/head.obj', False, 50, (block.GOLD_BLOCK.id, None), {}),
-        'cessna': ('render/cessna.obj', False, 100, (block.IRON_BLOCK.id, None),
+        'skyscraper': ('model/skyscraper.obj', False, 100, (block.IRON_BLOCK.id, None), {}),
+        'head': ('model/head.obj', False, 50, (block.GOLD_BLOCK.id, None), {}),
+        'cessna': ('model/cessna.obj', False, 100, (block.IRON_BLOCK.id, None),
                {
                   "yellow": WOOL_YELLOW,
                   "red": WOOL_RED,
@@ -213,7 +213,7 @@ if __name__ == "__main__":
                   "glass": (block.GLASS.id, None),
                   "dkgrey": WOOL_GRAY,
                }),
-        'ny': ('render/NY_LIL.obj', False, 200, (block.IRON_BLOCK.id, None),
+        'ny': ('model/NY_LIL.obj', False, 200, (block.IRON_BLOCK.id, None),
                {
                    "Default_Material": (block.WOOL.id, 0),
                    "Color_A01": (block.WOOL.id, 14),
@@ -245,7 +245,7 @@ if __name__ == "__main__":
                    "Color_D03": (block.WOOL.id, 4),
                    "0063_GreenYellow": (block.WOOL.id, 5)
                    }),
-        'nottingham': ('render/City_Ground-Notts.obj', False, 200, (block.DIRT.id, None),
+        'nottingham': ('model/City_Ground-Notts.obj', False, 200, (block.DIRT.id, None),
                {
                     "Default_Material": (block.STONE.id, None),
                     "Black": (block.WOOL.id, 15),
@@ -266,7 +266,7 @@ if __name__ == "__main__":
                    "Red": (block.WOOL.id, 14),
                    "goal_net1": (block.WOOL.id, 0),
                    "Black": (block.WOOL.id, 15)}),
-        'pi': ( 'render/RaspberryPi.obj', False, 150, (block.DIRT.id, None),
+        'pi': ( 'model/RaspberryPi.obj', False, 150, (block.DIRT.id, None),
                {
                    "Default_Material": (block.WOOL.id, 0),
                    "Material1": (block.WOOL.id, 5),
