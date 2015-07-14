@@ -92,6 +92,9 @@ def makeMatrix(compass,vertical,roll):
     m0 = matrixMultiply(yawMatrix(compass), pitchMatrix(vertical))
     return matrixMultiply(m0, rollMatrix(roll))
 
+def applyMatrix(m,v):
+    return V3(m[i][0]*v[0]+m[i][1]*v[1]+m[i][2]*v[2] for i in range(3))
+
 def matrixDistanceSquared(m1,m2):
     d2 = 0.
     for i in range(3):
@@ -115,13 +118,6 @@ def isin(angleDegrees):
     return ISIN[(angleDegrees % 360) / 90]
 
 def matrixMultiply(a,b):
-    c = [[0,0,0],[0,0,0],[0,0,0]]
-    for i in range(3):
-        for j in range(3):
-            c[i][j] = a[i][0]*b[0][j] + a[i][1]*b[1][j] + a[i][2]*b[2][j]
-    return c
-
-def applyMatrix(a,b):
     c = [[0,0,0],[0,0,0],[0,0,0]]
     for i in range(3):
         for j in range(3):

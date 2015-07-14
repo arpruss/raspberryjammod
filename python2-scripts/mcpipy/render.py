@@ -25,6 +25,7 @@ SOFTWARE.
 
 #import the minecraft.py module from the minecraft directory
 import sys
+sys.path.append('..')
 import mcpi.minecraft as minecraft
 #import minecraft block module
 import mcpi.block as block
@@ -32,56 +33,10 @@ import mcpi.block as block
 import time
 #import datetime, to get the time!
 import datetime
-from drawing import getFace, V3
+from drawing import *
 
 import math
 import re
-
-def safeEval(x):
-    if '__' in x:
-        raise ValueError("Unsafe evaluation string")
-    return eval(x)
-
-def parseBlock(data):
-    b = Block(0,0)
-    tokens = re.split("[\\s,]+", data)
-    haveBlock = False
-    start = safeEval(tokens[0])
-    if isinstance(start,Block):
-        b = start
-    else:
-        b.id = int(start)
-    if len(tokens)>1:
-        b.data = int(safeEval(tokens[1]))
-    return (b.id,b.data)
-
-class ObjDescriptor(object):
-    def __init__(self,dataFile):
-         self.swapYZ = False
-         self.size = 50
-         self.default = (BEDROCK.id, 0)
-         self.materials = {}
-         with open(dataFile) as f:
-             materialMode = False
-             for line in f:
-                 found = re.match('([^\\s]+) (.*)$', line.strip())
-                 if found:
-                     token = found.group(1).lower()
-                     if materialMode:
-                         self.materials[found.group(1)] = parseBlock(found.group(2))
-                     elif token == "file":
-                         if found.group(2).startswith('"') or found.group(2).startswith("'"):
-                             self.objName = safeEval(found.group(2))
-                         else:
-                             self.objName = found.group(2)
-                     elif token == "swapyz":
-                         self.swapYZ = bool(safeEval(found.group(2).capitalize()))
-                     elif token == "size":
-                         self.size = safeEval(found.group(2))
-                     elif token == "default":
-                         self.default = parseBlock(found.group(2))
-                 elif line.strip().lower() == "materials":
-                     materialMode = True
 
 # class to create 3d filled polygons
 class MinecraftDrawing:
@@ -179,21 +134,21 @@ if __name__ == "__main__":
     WOOL_BLACK = (block.WOOL.id, 15)
 
     objects = {
-        'ds9': ('model/ds9.obj', False, 200, (block.STONE.id, None),
+        'ds9': ('ds9.obj', False, 200, (block.STONE.id, None),
                 { "Yellow_self_illum": (block.GLOWSTONE_BLOCK.id, None),
                       "Lamps": (block.GLOWSTONE_BLOCK.id, None),
                       "Windows": (block.GLASS.id, None),
                       "Phaser": (124,0),
                       "Antenna": (173,0)
                     }),
-        '1701d': ('model/1701d.obj', False, 200, (block.QUARTZ_BLOCK.id, None),
+        '1701d': ('1701d.obj', False, 200, (block.QUARTZ_BLOCK.id, None),
                 { "Yellow_self_illum": (block.GLOWSTONE_BLOCK.id, None),
                       "Lamps": (block.SEA_LANTERN.id, None),
                       "Windows": (block.GLASS.id, None),
                       "Phaser": (block.REDSTONE_BLOCK.id,0),
                       "Antenna": (173,0)
                     }),
-        'shuttle': ('model/shuttle.obj', True, 100, (block.WOOL.id, 0),
+        'shuttle': ('shuttle.obj', True, 100, (block.WOOL.id, 0),
                     { "glass": (block.GLASS.id, None),
                      "bone": (block.WOOL.id, 0),
                      "fldkdkgrey": (block.WOOL.id, 7),
@@ -202,9 +157,9 @@ if __name__ == "__main__":
                      "brass": (block.WOOL.id, 1),
                      "dkdkgrey": (block.WOOL.id, 7)
                         }),
-        'skyscraper': ('model/skyscraper.obj', False, 100, (block.IRON_BLOCK.id, None), {}),
-        'head': ('model/head.obj', False, 50, (block.GOLD_BLOCK.id, None), {}),
-        'cessna': ('model/cessna.obj', False, 100, (block.IRON_BLOCK.id, None),
+        'skyscraper': ('skyscraper.obj', False, 100, (block.IRON_BLOCK.id, None), {}),
+        'head': ('head.obj', False, 50, (block.GOLD_BLOCK.id, None), {}),
+        'cessna': ('cessna.obj', False, 100, (block.IRON_BLOCK.id, None),
                {
                   "yellow": WOOL_YELLOW,
                   "red": WOOL_RED,
@@ -213,7 +168,7 @@ if __name__ == "__main__":
                   "glass": (block.GLASS.id, None),
                   "dkgrey": WOOL_GRAY,
                }),
-        'ny': ('model/NY_LIL.obj', False, 200, (block.IRON_BLOCK.id, None),
+        'ny': ('NY_LIL.obj', False, 200, (block.IRON_BLOCK.id, None),
                {
                    "Default_Material": (block.WOOL.id, 0),
                    "Color_A01": (block.WOOL.id, 14),
@@ -245,7 +200,7 @@ if __name__ == "__main__":
                    "Color_D03": (block.WOOL.id, 4),
                    "0063_GreenYellow": (block.WOOL.id, 5)
                    }),
-        'nottingham': ('model/City_Ground-Notts.obj', False, 200, (block.DIRT.id, None),
+        'nottingham': ('City_Ground-Notts.obj', False, 200, (block.DIRT.id, None),
                {
                     "Default_Material": (block.STONE.id, None),
                     "Black": (block.WOOL.id, 15),
@@ -266,7 +221,7 @@ if __name__ == "__main__":
                    "Red": (block.WOOL.id, 14),
                    "goal_net1": (block.WOOL.id, 0),
                    "Black": (block.WOOL.id, 15)}),
-        'pi': ( 'model/RaspberryPi.obj', False, 150, (block.DIRT.id, None),
+        'pi': ( 'RaspberryPi.obj', False, 150, (block.DIRT.id, None), 
                {
                    "Default_Material": (block.WOOL.id, 0),
                    "Material1": (block.WOOL.id, 5),
@@ -290,11 +245,6 @@ if __name__ == "__main__":
                    "0132_LightGray": (block.WOOL.id, 8)})
                    }
 
-    if sys.argv[0] in objects:
-        object = objects[sys.argv]
-    else:
-        object = objects['pi']
-
     objectname = sys.argv[1] if len(sys.argv) >= 2 else 'pi'
 
     if not objectname in objects:
@@ -302,14 +252,39 @@ if __name__ == "__main__":
         exit(3)
 
     filename,swapyz,size,defaultblock,materialdict = objects[objectname]
+
     if len(sys.argv) >= 3:
         size = float(sys.argv[2])
+        
+    yaw = 0
+
+    if len(sys.argv) >= 4:
+        yaw = float(sys.argv[3])
+           
+    pitch = 0
+
+    if len(sys.argv) >= 5:
+        pitch = float(sys.argv[4])
+
+    roll = 0
+
+    if len(sys.argv) >= 6:
+        roll = float(sys.argv[5])
+
+    matrix = None
+
+    if yaw != 0 or pitch != 0 or roll != 0:
+        matrix = makeMatrix(yaw, pitch, roll)
+
     vertices,textures,normals,faces,materials = load_obj(filename, swapyz, defaultblock, materialdict)
 
     min = [None, None, None]
     max = [None, None, None]
 
-    for vertex in vertices:
+    for i in range(len(vertices)):
+        if matrix is not None:
+            vertices[i] = applyMatrix(matrix,vertices[i])
+        vertex = vertices[i]
         for i in range(3):
             if min[i] == None or vertex[i] < min[i]:
                 min[i] = vertex[i]
