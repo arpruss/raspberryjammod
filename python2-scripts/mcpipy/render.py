@@ -206,7 +206,7 @@ class Mesh(object):
                 vertex = applyMatrix(matrix,v)
             else:
                 vertex = v
-            self.vertices.append(v)
+            self.vertices.append(vertex)
             for i in range(3):
                 if minimum[i] == None or vertex[i] < minimum[i]:
                     minimum[i] = vertex[i]
@@ -243,7 +243,7 @@ class Mesh(object):
             faceVertices = [self.vertices[vertex[0]] for vertex in face]
             self.drawVertices(getFace(faceVertices), self.materials[faceCount])
 
-def go(filename, options=[]):
+def go(filename, args=[]):
     mc = minecraft.Minecraft()
 
     mc.postToChat("Preparing")
@@ -251,7 +251,28 @@ def go(filename, options=[]):
     mc.postToChat("Reading")
     mesh.read()
     mc.postToChat("Scaling")
-    mesh.scale(mc.player.getPos())
+    
+    opts = ""
+
+    if args and re.match(args[0], "[a-zA-Z]"):
+       opts = args.pop(0)
+
+    if args:
+       mesh.size = int(args.pop(0))
+
+    matrix = None
+
+    if args:
+       yaw = float(args.pop(0))
+       pitch = 0
+       roll = 0
+       if args:
+          pitch = float(args.pop(0))
+          if args:
+             roll = float(args.pop(0))
+       matrix = makeMatrix(yaw, pitch, roll)
+
+    mesh.scale(mc.player.getPos(), matrix)
     mc.postToChat("Clearing")
     mc.setBlocks(mesh.corner1,mesh.corner2,AIR)
     mc.postToChat("Rendering")
