@@ -25,7 +25,6 @@ SOFTWARE.
 
 #import the minecraft.py module from the minecraft directory
 import sys
-sys.path.append('..')
 import mcpi.minecraft as minecraft
 #import minecraft block module
 import mcpi.block as block
@@ -37,6 +36,52 @@ from drawing import getFace, V3
 
 import math
 import re
+
+def safeEval(x):
+    if '__' in x:
+        raise ValueError("Unsafe evaluation string")
+    return eval(x)
+
+def parseBlock(data):
+    b = Block(0,0)
+    tokens = re.split("[\\s,]+", data)
+    haveBlock = False
+    start = safeEval(tokens[0])
+    if isinstance(start,Block):
+        b = start
+    else:
+        b.id = int(start)
+    if len(tokens)>1:
+        b.data = int(safeEval(tokens[1]))
+    return (b.id,b.data)
+
+class ObjDescriptor(object):
+    def __init__(self,dataFile):
+         self.swapYZ = False
+         self.size = 50
+         self.default = (BEDROCK.id, 0)
+         self.materials = {}
+         with open(dataFile) as f:
+             materialMode = False
+             for line in f:
+                 found = re.match('([^\\s]+) (.*)$', line.strip())
+                 if found:
+                     token = found.group(1).lower()
+                     if materialMode:
+                         self.materials[found.group(1)] = parseBlock(found.group(2))
+                     elif token == "file":
+                         if found.group(2).startswith('"') or found.group(2).startswith("'"):
+                             self.objName = safeEval(found.group(2))
+                         else:
+                             self.objName = found.group(2)
+                     elif token == "swapyz":
+                         self.swapYZ = bool(safeEval(found.group(2).capitalize()))
+                     elif token == "size":
+                         self.size = safeEval(found.group(2))
+                     elif token == "default":
+                         self.default = parseBlock(found.group(2))
+                 elif line.strip().lower() == "materials":
+                     materialMode = True
 
 # class to create 3d filled polygons
 class MinecraftDrawing:
@@ -134,21 +179,21 @@ if __name__ == "__main__":
     WOOL_BLACK = (block.WOOL.id, 15)
 
     objects = {
-        'ds9': ('ds9.obj', False, 200, (block.STONE.id, None),
+        'ds9': ('render/ds9.obj', False, 200, (block.STONE.id, None),
                 { "Yellow_self_illum": (block.GLOWSTONE_BLOCK.id, None),
                       "Lamps": (block.GLOWSTONE_BLOCK.id, None),
                       "Windows": (block.GLASS.id, None),
                       "Phaser": (124,0),
                       "Antenna": (173,0)
                     }),
-        '1701d': ('1701d.obj', False, 200, (block.QUARTZ_BLOCK.id, None),
+        '1701d': ('render/1701d.obj', False, 200, (block.QUARTZ_BLOCK.id, None),
                 { "Yellow_self_illum": (block.GLOWSTONE_BLOCK.id, None),
                       "Lamps": (block.SEA_LANTERN.id, None),
                       "Windows": (block.GLASS.id, None),
                       "Phaser": (block.REDSTONE_BLOCK.id,0),
                       "Antenna": (173,0)
                     }),
-        'shuttle': ('shuttle.obj', True, 100, (block.WOOL.id, 0),
+        'shuttle': ('render/shuttle.obj', True, 100, (block.WOOL.id, 0),
                     { "glass": (block.GLASS.id, None),
                      "bone": (block.WOOL.id, 0),
                      "fldkdkgrey": (block.WOOL.id, 7),
@@ -157,9 +202,9 @@ if __name__ == "__main__":
                      "brass": (block.WOOL.id, 1),
                      "dkdkgrey": (block.WOOL.id, 7)
                         }),
-        'skyscraper': ('skyscraper.obj', False, 100, (block.IRON_BLOCK.id, None), {}),
-        'head': ('head.obj', False, 50, (block.GOLD_BLOCK.id, None), {}),
-        'cessna': ('cessna.obj', False, 100, (block.IRON_BLOCK.id, None),
+        'skyscraper': ('render/skyscraper.obj', False, 100, (block.IRON_BLOCK.id, None), {}),
+        'head': ('render/head.obj', False, 50, (block.GOLD_BLOCK.id, None), {}),
+        'cessna': ('render/cessna.obj', False, 100, (block.IRON_BLOCK.id, None),
                {
                   "yellow": WOOL_YELLOW,
                   "red": WOOL_RED,
@@ -168,7 +213,7 @@ if __name__ == "__main__":
                   "glass": (block.GLASS.id, None),
                   "dkgrey": WOOL_GRAY,
                }),
-        'ny': ('NY_LIL.obj', False, 200, (block.IRON_BLOCK.id, None),
+        'ny': ('render/NY_LIL.obj', False, 200, (block.IRON_BLOCK.id, None),
                {
                    "Default_Material": (block.WOOL.id, 0),
                    "Color_A01": (block.WOOL.id, 14),
@@ -200,7 +245,7 @@ if __name__ == "__main__":
                    "Color_D03": (block.WOOL.id, 4),
                    "0063_GreenYellow": (block.WOOL.id, 5)
                    }),
-        'nottingham': ('City_Ground-Notts.obj', False, 200, (block.DIRT.id, None),
+        'nottingham': ('render/City_Ground-Notts.obj', False, 200, (block.DIRT.id, None),
                {
                     "Default_Material": (block.STONE.id, None),
                     "Black": (block.WOOL.id, 15),
@@ -221,7 +266,7 @@ if __name__ == "__main__":
                    "Red": (block.WOOL.id, 14),
                    "goal_net1": (block.WOOL.id, 0),
                    "Black": (block.WOOL.id, 15)}),
-        'pi': ( 'RaspberryPi.obj', False, 150, (block.DIRT.id, None), 
+        'pi': ( 'render/RaspberryPi.obj', False, 150, (block.DIRT.id, None),
                {
                    "Default_Material": (block.WOOL.id, 0),
                    "Material1": (block.WOOL.id, 5),
@@ -241,7 +286,7 @@ if __name__ == "__main__":
                    "0129_WhiteSmoke": (block.WOOL.id, 0),
                    "Color_005": (block.WOOL.id, 0),
                    "USB_IO": (block.WOOL.id, 11),
-                   "_Metal": (block.IRON_BLOCK.id, None), 
+                   "_Metal": (block.IRON_BLOCK.id, None),
                    "0132_LightGray": (block.WOOL.id, 8)})
                    }
 
