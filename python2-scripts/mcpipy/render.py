@@ -26,9 +26,9 @@ SOFTWARE.
 import sys
 import urllib2
 import mcpi.minecraft as minecraft
-#import minecraft block module
-import mcpi.block as block
+from copy import copy
 from mcpi.block import *
+import mcpi.settings as settings
 #import time, so delays can be used
 import time
 #import datetime, to get the time!
@@ -45,29 +45,35 @@ def safeEval(p):
         raise ValueError("Insecure entry")
     return eval(p)
 
-def parseBlock(data):
+def parseBlock(data,default):
+    if '__' in data:
+        raise ValueError("Insecure entry")
     b = Block(0,0)
     tokens = re.split("[\\s,]+", data)
     haveBlock = False
-    start = safeEval(tokens[0])
+    start = eval(tokens[0])
     if isinstance(start,Block):
-        b = start
+        b = copy(start)
     else:
         b.id = int(start)
     if len(tokens)>1:
-        b.data = int(safeEval(tokens[1]))
-    return (b.id,b.data)
+        b.data = int(eval(tokens[1]))
+    return Block(b.id,b.data)
 
 class Mesh(object):
-    def __init__(self,mc,infile):
+    UNSPECIFIED = None
+
+    def __init__(self,mc,infile,rewrite=True):
          self.mc = mc
+         self.rewrite = rewrite
          self.url = None
          self.urlgz = None
          self.swapYZ = False
          self.credits = None
          self.size = 100
-         self.default = (BEDROCK.id, 0)
+         self.default = STONE
          self.materialBlockDict = {}
+         self.materialOrderDict = {}
          self.baseVertices = []
          self.vertices = []
          self.textures = []
@@ -75,19 +81,27 @@ class Mesh(object):
          self.faces = []
          self.materials = []
          self.materialNames = []
+         self.haveMaterialArea = False
          self.corner1 = None
          self.corner2 = None
+         self.endLineIndex = None
 
          base,ext = os.path.splitext(infile)
          if ext == '.obj':
              self.objName = infile
-             self.dataFile = base + ".txt"
-         with open(infile) as f:
-             self.dataFile = infile
+             self.controlFile = base + ".txt"
+         else:
              self.objName = base + ".obj"
-             dirname = os.path.dirname(infile)
+             self.controlFile = infile
+
+         if os.path.isfile(self.controlFile):
+             self.haveControlFile = True
+             with open(self.controlFile) as f:
+                 self.controlFileLines = f.readlines()
+             self.objName = base + ".obj"
+             dirname = os.path.dirname(self.controlFile)
              materialMode = False
-             for line in f:
+             for i,line in enumerate(self.controlFileLines):
                  line = line.strip()
                  if len(line) == 0 or line[0] == '#':
                      continue
@@ -95,7 +109,7 @@ class Mesh(object):
                  if found:
                      token = found.group(1).lower()
                      if materialMode:
-                         self.materialBlockDict[found.group(1)] = parseBlock(found.group(2))
+                         self.materialBlockDict[found.group(1)] = parseBlock(found.group(2),self.default)
                      elif token == "file":
                          if found.group(2).startswith('"') or found.group(2).startswith("'"):
                              self.objName = dirname + "/" + safeEval(found.group(2))
@@ -112,11 +126,41 @@ class Mesh(object):
                      elif token == "size":
                          self.size = safeEval(found.group(2))
                      elif token == "default":
-                         self.default = parseBlock(found.group(2))
+                         self.default = parseBlock(found.group(2),self.default)
+                     elif token == "order":
+                         args = re.split("[\\s,]+", found.group(2))
+                         self.materialOrderDict[args[0]] = int(args[1])
                  elif line.strip().lower() == "materials":
                      materialMode = True
+                     self.haveMaterialArea = True
                  elif line.strip().lower() == "end":
+                     self.endLineIndex = i
                      break
+             if self.endLineIndex is None:
+                 self.endLineIndex = len(self.controlFileLines)
+         elif rewrite:
+             if not os.path.isfile(self.objName):
+                 raise IOError("Cannot find mesh file")
+             mc.postToChat("Creating a default control file")
+             with open(self.controlFile,"w") as f:
+                self.controlFileLines = []
+                self.controlFileLines.append("file "+repr(self.objName)+"\n")
+                self.controlFileLines.append("swapyz 0\n")
+                self.controlFileLines.append("#credits [add?]\n")
+                self.controlFileLines.append("#url [add?]\n")
+                self.controlFileLines.append("#urlgz [add?]\n")
+                self.controlFileLines.append("size "+str(self.size)+"\n")
+                self.controlFileLines.append("default STONE\n")
+                self.controlFileLines.append("#order material position\n")
+                self.controlFileLines.append("materials\n")
+                self.haveMaterialArea = True
+                self.endLineIndex = len(self.controlFileLines)
+                self.controlFileLines.append("end\n\n")
+                self.controlFileLines.append("[Insert any detailed licensing information here]")
+                for line in self.controlFileLines:
+                    f.write(line)
+         if settings.isPE:
+             self.size /= 2
 
     def getFile(self, tryDownload=True):
         if os.path.isfile(self.objName):
@@ -146,7 +190,7 @@ class Mesh(object):
         else:
             raise IOError("File not found")
 
-    def read(self):
+    def read(self, rewriteControlFile = None):
         if self.swapYZ:
             fix = lambda list : V3(list[0], list[2], list[1])
         else:
@@ -155,7 +199,8 @@ class Mesh(object):
         warned = set()
         currentMaterialIndex = 0
         self.materialBlocks = [ self.default ]
-        self.materialIndexDict = { "(unspecified)": 0 }
+        self.materialOrders = [ 0 ]
+        self.materialIndexDict = { Mesh.UNSPECIFIED: 0 }
 
         name,myopen = self.getFile()
         if self.credits:
@@ -176,13 +221,12 @@ class Mesh(object):
                     for i in range(0, len(face)) :
                         face[i] = face[i].split('/')
                         # OBJ indexies are 1 based not 0 based hence the -1
-                        # convert indexies to integer
+                        # convert indexes to integer
                         for j in range(0, len(face[i])) :
                             if face[i][j] != "":
                                 face[i][j] = int(face[i][j]) - 1
-                    #append the material currently in use to the face
-                    self.faces.append(face)
-                    self.materials.append(currentMaterialIndex)
+                    #prepend the material currently in use to the face
+                    self.faces.append((currentMaterialIndex,face))
                 elif line[0] == 'usemtl': # material
                     name = line[1]
                     try:
@@ -190,10 +234,38 @@ class Mesh(object):
                     except KeyError:
                         currentMaterialIndex = len(self.materialBlocks)
                         self.materialIndexDict[name] = currentMaterialIndex
+                        self.materialOrders.append(self.materialOrderDict.get(name, 0))
                         self.materialBlocks.append(self.materialBlockDict.get(name, self.default))
                         if name not in self.materialBlockDict and name not in warned:
                             self.mc.postToChat("Material "+name+" not defined")
                             warned.add(name)
+
+        if self.rewrite and warned and self.haveControlFile:
+            try:
+                self.mc.postToChat("Rewriting control file to include missing materials")
+                with open(self.controlFile+".tempFile", "w") as f:
+                    f.write(''.join(self.controlFileLines[:self.endLineIndex]))
+                    if not self.haveMaterialArea:
+                        f.write('\nmaterials\n')
+                    for material in warned:
+                        f.write(material+' default\n')
+                    f.write(''.join(self.controlFileLines[self.endLineIndex:]))
+                try:
+                    os.unlink(self.controlFile+".bak")
+                except:
+                    pass
+                try:
+                    os.rename(self.controlFile, self.controlFile+".bak")
+                except:
+                    pass
+                os.rename(self.controlFile+".tempFile", self.controlFile)
+            except:
+                self.mc.postToChat("Couldn't rewrite control file")
+#        print 'self.materials',self.materials
+#        print 'self.materialBlocks',self.materialBlocks
+#        print 'self.materialIndexDict',self.materialIndexDict
+#        print 'self.materialBlockDict',self.materialBlockDict
+#        exit()
 
     def scale(self, bottomCenter, matrix=None):
         minimum = [None, None, None]
@@ -236,12 +308,17 @@ class Mesh(object):
     def render(self):
         self.drawRecord = {}
 
-        for faceCount,face in enumerate(self.faces):
+        if len(self.materialOrderDict):
+            faces = sorted(self.faces, key=lambda a : self.materialOrders[a[0]])
+        else:
+            faces = self.faces
+
+        for faceCount,(material,face) in enumerate(faces):
             if faceCount % 4000 == 0:
                 self.mc.postToChat("{0:.1f}%".format(100. * faceCount / len(self.faces)))
 
             faceVertices = [self.vertices[vertex[0]] for vertex in face]
-            self.drawVertices(getFace(faceVertices), self.materials[faceCount])
+            self.drawVertices(getFace(faceVertices), material)
 
 def go(filename, args=[]):
     mc = minecraft.Minecraft()
@@ -251,7 +328,7 @@ def go(filename, args=[]):
     mc.postToChat("Reading")
     mesh.read()
     mc.postToChat("Scaling")
-    
+
     opts = ""
 
     if args and re.match(args[0], "[a-zA-Z]"):

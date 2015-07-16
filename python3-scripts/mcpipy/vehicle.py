@@ -25,6 +25,7 @@ from mcpi.minecraft import *
 from mcpi.block import *
 from math import *
 from sys import maxsize
+from copy import copy
 import re
 
 class Vehicle():
@@ -43,7 +44,12 @@ class Vehicle():
     MAX_DISTANCE = 30
     stairDirectionsClockwise = [2, 1, 3, 0]
     stairToClockwise = [3, 1, 0, 2]
+    chestToClockwise = [0,0,0,2,3,1,0,0]
+    chestDirectionsClockwise = [2,5,3,4]
     STAIRS = set((STAIRS_COBBLESTONE.id, STAIRS_WOOD.id, 108, 109, 114, 128, 134, 135, 136, 156, 163, 164, 180))
+    DOORS = set((DOOR_WOOD.id,193,194,195,196,197,DOOR_IRON.id))
+    LADDERS_FURNACES_CHESTS_SIGNS = set((LADDER.id, FURNACE_ACTIVE.id, FURNACE_INACTIVE.id, CHEST.id, 130, 146, 68))
+    REDSTONE_COMPARATORS_REPEATERS = set((93,94,149,150,356,404))
     EMPTY = {}
 
     def __init__(self,mc,nondestructive=False):
@@ -65,8 +71,12 @@ class Vehicle():
 
     @staticmethod
     def keyFunction(dict,erase,pos):
-        return (pos in dict and dict[pos].id in Vehicle.NEED_SUPPORT,
-                pos not in erase or erase[pos].id not in Vehicle.NEED_SUPPORT,
+        ns = pos in dict and dict[pos].id in Vehicle.NEED_SUPPORT
+        if ns:
+            return (True, pos not in erase or erase[pos].id not in Vehicle.NEED_SUPPORT,
+                pos[0],pos[2],pos[1])
+        else:
+            return (False, pos not in erase or erase[pos].id not in Vehicle.NEED_SUPPORT,
                 pos[1],pos[0],pos[2])
 
     @staticmethod
@@ -246,14 +256,30 @@ class Vehicle():
     def rotateBlock(block,amount):
         if block.id in Vehicle.STAIRS:
             meta = block.data
-            return Block(block.id, (meta & ~0x03) | 
+            return Block(block.id, (meta & ~0x03) |
                          Vehicle.stairDirectionsClockwise[(Vehicle.stairToClockwise[meta & 0x03] + amount) % 4])
+        elif block.id in Vehicle.LADDERS_FURNACES_CHESTS_SIGNS:
+            meta = block.data & 0x07
+            block = copy(block)
+            block.data = Vehicle.chestDirectionsClockwise[(Vehicle.chestToClockwise[meta] + amount) % 4]
+            return block
         elif block.id == STONE_BUTTON.id or block.id == WOOD_BUTTON.id:
             direction = block.data & 0x07
             if direction < 1 or direction > 4:
                 return block
             direction = 1 + Vehicle.stairDirectionsClockwise[(Vehicle.stairToClockwise[direction-1] + amount) % 4]
             return Block(block.id, (block.data & ~0x07) | direction)
+        elif block.id in Vehicle.REDSTONE_COMPARATORS_REPEATERS:
+            return Block(block.id, (block.data & ~0x03) | (((block.data & 0x03) + amount) & 0x03))
+        elif block.id == 96 or block.id == 167:
+            # trapdoors
+            return Block(block.id, (block.data & ~0x03) | (((block.data & 0x03) - amount) & 0x03))
+        elif block.id in Vehicle.DOORS:
+            meta = block.data
+            if meta & 0x08:
+                return block
+            else:
+                return Block(block.id, (meta & ~0x03) | (((meta & 0x03) + amount) & 0x03))
         else:
             return block
 
@@ -392,6 +418,7 @@ if __name__ == '__main__':
     saveName = None
     scanRectangularPrism = False
     exitAfterDraw = False
+    noInitialRotate = False
 
     if len(sys.argv)>1:
         for x in sys.argv[1]:

@@ -13,17 +13,17 @@ public class AddPythonExternalCommand extends PythonExternalCommand {
 	public AddPythonExternalCommand(boolean clientSide) {
 		super(clientSide);
 	}
-	
+
 	@Override
 	public String getName() {
-		return clientSide ? "laddpython" : "addpython";
+		return "addpython";
 	}
 
 	@Override
 	public List getAliases() {
 		List<String> aliases = new ArrayList<String>();
 		aliases.add(getName());
-		aliases.add(clientSide ? "lapy" : "apy");
+		aliases.add("apy");
 		return aliases;
 	}
 

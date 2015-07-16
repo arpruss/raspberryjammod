@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ad0b690c-a698-4ce0-9b50-3069e7e8660d}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>symmetry.py</StartupFile>
+    <StartupFile>scan.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -48,6 +48,9 @@
     <Compile Include="mcpi\__init__.py" />
     <Compile Include="mcturtle.py" />
     <Compile Include="mengersponge.py" />
+    <Compile Include="sphere.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="NeuroPy\NeuroPy.py" />
     <Compile Include="NeuroPy\__init__.py" />
     <Compile Include="polyhedron.py" />

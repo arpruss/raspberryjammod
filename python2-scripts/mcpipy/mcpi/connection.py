@@ -26,6 +26,9 @@ class Connection:
                  port = int(os.environ['MINECRAFT_API_PORT'])
             except KeyError:
                  port = 4711
+        if sys.version[0] >= 3 or True:
+            self.send = self.send_python3
+            self.send_flat = self.send_flat_python3
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((address, port))
         self.readFile = self.socket.makefile("r")
@@ -64,14 +67,22 @@ class Connection:
             e =  "Drained Data: <%s>\n"%data.strip()
             e += "Last Message: <%s>\n"%self.lastSent.strip()
             sys.stderr.write(e)
-
+                                             
     def send(self, f, *data):
         """Sends data. Note that a trailing newline '\n' is added here"""
         s = "%s(%s)\n"%(f, flatten_parameters_to_string(data))
         #print "f,data:",f,data
         self.drain()
         self.lastSent = s
-        self.socket.sendall(s.encode('utf-8'))
+        self.socket.sendall(s)
+
+    def send_python3(self, f, *data):
+        """Sends data. Note that a trailing newline '\n' is added here"""
+        s = "%s(%s)\n"%(f, flatten_parameters_to_string(data))
+        #print "f,data:",f,data
+        self.drain()
+        self.lastSent = s
+        self.socket.sendall(s.encode("utf-8"))
 
     def send_flat(self, f, data):
         """Sends data. Note that a trailing newline '\n' is added here"""
@@ -79,7 +90,15 @@ class Connection:
         s = "%s(%s)\n"%(f, ",".join(data))
         self.drain()
         self.lastSent = s
-        self.socket.sendall(s.encode('utf-8'))
+        self.socket.sendall(s)
+
+    def send_flat_python3(self, f, data):
+        """Sends data. Note that a trailing newline '\n' is added here"""
+#        print "f,data:",f,list(data)
+        s = "%s(%s)\n"%(f, ",".join(data))
+        self.drain()
+        self.lastSent = s
+        self.socket.sendall(s.encode("utf-8"))
 
     def receive(self):
         """Receives data. Note that the trailing newline '\n' is trimmed"""

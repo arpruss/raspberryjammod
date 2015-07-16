@@ -100,6 +100,7 @@ public class ClientEventHandler {
 			return;
 			
 //		if (! registeredCommands) {
+		System.out.println("Registering commands");
 			RaspberryJamMod.scriptExternalCommands = new ScriptExternalCommand[] {
 					new PythonExternalCommand(true),
 					new AddPythonExternalCommand(true)
@@ -144,6 +145,7 @@ public class ClientEventHandler {
 		RaspberryJamMod.closeAllScripts();
 		if (RaspberryJamMod.scriptExternalCommands != null) {
 			for (ICommand c : RaspberryJamMod.scriptExternalCommands) {
+				System.out.println("Unregistering "+c.getClass());
 				RaspberryJamMod.unregisterCommand(net.minecraftforge.client.ClientCommandHandler.instance,c);
 			}
 			RaspberryJamMod.scriptExternalCommands = null;
