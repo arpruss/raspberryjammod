@@ -27,7 +27,7 @@
 ##SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import serial
-import _thread
+import thread
 
 class NeuroPy(object):
     """NeuroPy libraby, to get data from neurosky mindwave.
@@ -82,7 +82,7 @@ class NeuroPy(object):
             http://www.instructables.com/id/Mindflex-EEG-with-raw-data-over-Bluetooth/
             """
             self.srl.write(b'\x00\xF8\x00\x00\x00\xE0')
-        _thread.start_new_thread(self.__packetParser,(self.srl,))
+        thread.start_new_thread(self.__packetParser,(self.srl,))
 
     def __packetParser(self,srl):
         "packetParser runs continously in a separate thread to parse packets from mindwave and update the corresponding variables"

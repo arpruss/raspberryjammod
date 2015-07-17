@@ -1,6 +1,6 @@
-from . import vehicle
+import vehicle
 import sys
-from .mc import *
+from mc import *
 from time import sleep
 import os
 

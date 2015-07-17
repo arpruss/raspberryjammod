@@ -4,7 +4,7 @@ import sys
 import atexit
 import os
 import platform
-from .util import flatten_parameters_to_string
+from util import flatten_parameters_to_string
 
 """ @author: Aron Nieminen, Mojang AB"""
 

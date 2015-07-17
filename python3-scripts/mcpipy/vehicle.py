@@ -21,8 +21,8 @@
      player if the the vehicle is not airtight
 """
 
-from .mcpi.minecraft import *
-from .mcpi.block import *
+from mcpi.minecraft import *
+from mcpi.block import *
 from math import *
 from sys import maxsize
 from copy import copy

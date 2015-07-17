@@ -1,5 +1,5 @@
 file stardestroyer.obj
-#urlgz https://raw.githubusercontent.com/arpruss/raspberryjammod/master/models/ds9.obj.gz
+urlgz https://raw.githubusercontent.com/arpruss/raspberryjammod/master/models/stardestroyer.obj.gz
 swapyz 0
 size 200
 default IRON_BLOCK

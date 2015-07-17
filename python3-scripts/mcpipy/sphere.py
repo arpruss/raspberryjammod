@@ -1,4 +1,4 @@
-from .mcturtle import *
+from mcturtle import *
 import sys
 t = Turtle()
 t.pendelay(0)

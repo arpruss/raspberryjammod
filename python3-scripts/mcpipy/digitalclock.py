@@ -2,12 +2,12 @@
 # Code under the MIT license by Alexander Pruss
 #
 
-from .mc import *
-from . import text
+from mc import *
+import text
 import datetime
 import time
 import sys
-from . import fonts
+import fonts
 
 foreground = SEA_LANTERN # this needs Minecraft 1.8
 background = AIR

@@ -10,8 +10,8 @@
 # sun, moon or pluto.
 #
 
-from .mc import *
-from .vehicle import *
+from mc import *
+from vehicle import *
 import time
 import sys
 

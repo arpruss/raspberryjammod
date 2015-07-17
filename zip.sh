@@ -3,7 +3,7 @@ rm python3-scripts.zip
 chmod -R u+rw python[23]-scripts
 rm -r python3-scripts
 cp -r python2-scripts python3-scripts
-2to3 -w -f all python3-scripts
+2to3 -w -f all -x imports python3-scripts
 cd python3-scripts/mcpipy
 rm -rf *.{bak,pyc} */*.{bak,pyc} __pycache__ */__pycache__ */*/__pycache__
 cd ..

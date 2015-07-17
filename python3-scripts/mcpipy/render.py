@@ -25,16 +25,16 @@ SOFTWARE.
 
 import sys
 import urllib.request, urllib.error, urllib.parse
-from . import mcpi.minecraft as minecraft
+import mcpi.minecraft as minecraft
 from copy import copy
-from .mcpi.block import *
-from . import mcpi.settings as settings
+from mcpi.block import *
+import mcpi.settings as settings
 #import time, so delays can be used
 import time
 #import datetime, to get the time!
 import datetime
 import gzip
-from .drawing import *
+from drawing import *
 
 import math
 import os

@@ -1,8 +1,7 @@
 file 'atat2.obj'
+urlgz https://raw.githubusercontent.com/arpruss/raspberryjammod/master/models/atat.obj.gz
 swapyz 0
 credits Brad Blackburn <fatjack@mac.com>. Downloaded from scifi3d.com. Star Wars is copyright (c) Lucasfilm. Noncommercial use only.
-#url [add?]
-#urlgz [add?]
 yaw 90
 size 100
 default STONE

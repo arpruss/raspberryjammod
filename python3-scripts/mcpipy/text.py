@@ -4,7 +4,7 @@
 
 import sys
 import time
-from . import mcpi.minecraft as minecraft
+import mcpi.minecraft as minecraft
 
 # vectors must be minecraft.Vec3
 def drawGlyph(mc, pos, forwardVec, upVec, glyph, foreground, background=None):
@@ -69,8 +69,8 @@ def angleToTextDirection(angle):
         return minecraft.Vec3(-1,0,1)
 
 if __name__ == '__main__':
-    from . import fonts
-    from . import mcpi.block as block
+    import fonts
+    import mcpi.block as block
 
     mc = minecraft.Minecraft()
     pos = mc.player.getPos()

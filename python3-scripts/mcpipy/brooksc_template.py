@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 #import the minecraft.py module from the minecraft directory
-from . import mcpi.minecraft as minecraft
+import mcpi.minecraft as minecraft
 #import minecraft block module
-from . import mcpi.block as block
+import mcpi.block as block
 #import time, so delays can be used
-from . import server
+import server
 
 def main():
     mc = minecraft.Minecraft.create(server.address)

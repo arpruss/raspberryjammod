@@ -26,7 +26,7 @@ class Connection:
                  port = int(os.environ['MINECRAFT_API_PORT'])
             except KeyError:
                  port = 4711
-        if sys.version[0] >= 3 or True:
+        if int(sys.version[0]) >= 3:
             self.send = self.send_python3
             self.send_flat = self.send_flat_python3
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -1,5 +1,5 @@
 from time import time
-from .mcpi.minecraft import Minecraft
+from mcpi.minecraft import Minecraft
 mc = Minecraft.create()
 t = time()
 for i in range(1000):

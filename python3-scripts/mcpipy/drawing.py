@@ -2,10 +2,10 @@
 # Code under the MIT license by Alexander Pruss
 #
 
-from . import mcpi.minecraft as minecraft
-from . import mcpi.block as block
-from .mcpi.block import *
-from .mcpi.entity import *
+import mcpi.minecraft as minecraft
+import mcpi.block as block
+from mcpi.block import *
+from mcpi.entity import *
 from math import *
 from numbers import Number,Integral
 

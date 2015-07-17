@@ -2,7 +2,7 @@
 # Code under the MIT license by Alexander Pruss
 #
 
-from .mc import *
+from mc import *
 import random
 
 def rectangularPrism(x1,y1,z1, x2,y2,z2, distribution):
