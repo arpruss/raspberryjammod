@@ -8,11 +8,11 @@
 #
 
 from collections import OrderedDict
-from mc import *
-from vehicle import *
-from text import *
-from fonts import *
-import drawing
+from .mc import *
+from .vehicle import *
+from .text import *
+from .fonts import *
+from . import drawing
 import time
 import sys
 

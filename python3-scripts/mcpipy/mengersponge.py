@@ -5,8 +5,8 @@
 #   levels is a level count, up to 5
 #   options is a string of characters containing possibly the options 's' for 'slice' (cut off a diagonal slice) and 'c' for 'color'
 #
-from mc import *
-import mcpi.settings as settings
+from .mc import *
+from . import mcpi.settings as settings
 import sys
 
 RAINBOW = (STAINED_GLASS_RED,STAINED_GLASS_ORANGE,STAINED_GLASS_YELLOW,STAINED_GLASS_GREEN,STAINED_GLASS_BLUE,STAINED_GLASS_PURPLE)

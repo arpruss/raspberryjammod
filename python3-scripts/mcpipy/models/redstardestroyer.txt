@@ -1,0 +1,9 @@
+file stardestroyer.obj
+#urlgz https://raw.githubusercontent.com/arpruss/raspberryjammod/master/models/ds9.obj.gz
+swapyz 0
+size 200
+default WOOL_RED
+credits Model and Maps by Alex Lukachuk chimaera@club-internet.fr. Source: scifi3d.com. Star Wars is copyright (c) Lucasfilm. Noncommercial use only. 
+
+materials
+end

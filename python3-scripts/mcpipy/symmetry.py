@@ -34,8 +34,8 @@
 # Code by Alexander Pruss under MIT license.
 #
 
-from mcpi.minecraft import Minecraft
-import mcpi.block as block
+from .mcpi.minecraft import Minecraft
+from . import mcpi.block as block
 from functools import partial
 import sys
 import time

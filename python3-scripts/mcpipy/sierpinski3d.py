@@ -2,10 +2,10 @@
 # Code under the MIT license by Alexander Pruss
 #
 
-from mc import *
-import drawing
+from .mc import *
+from . import drawing
 from sys import argv
-import mcpi.settings as settings
+from . import mcpi.settings as settings
 
 RAINBOW = (WOOL_RED,WOOL_PINK,WOOL_ORANGE,WOOL_YELLOW,WOOL_GREEN,WOOL_BLUE,WOOL_LIGHT_BLUE,WOOL_PURPLE)
 

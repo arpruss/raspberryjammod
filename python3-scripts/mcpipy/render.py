@@ -25,16 +25,16 @@ SOFTWARE.
 
 import sys
 import urllib.request, urllib.error, urllib.parse
-import mcpi.minecraft as minecraft
+from . import mcpi.minecraft as minecraft
 from copy import copy
-from mcpi.block import *
-import mcpi.settings as settings
+from .mcpi.block import *
+from . import mcpi.settings as settings
 #import time, so delays can be used
 import time
 #import datetime, to get the time!
 import datetime
 import gzip
-from drawing import *
+from .drawing import *
 
 import math
 import os
@@ -71,7 +71,10 @@ class Mesh(object):
          self.swapYZ = False
          self.credits = None
          self.size = 100
-         self.default = BEDROCK
+         self.preYaw = 0
+         self.prePitch = 0
+         self.preRoll = 0
+         self.default = STONE
          self.materialBlockDict = {}
          self.materialOrderDict = {}
          self.baseVertices = []
@@ -91,49 +94,85 @@ class Mesh(object):
              self.objName = infile
              self.controlFile = base + ".txt"
          else:
-             self.controlFile = infile
-         with open(self.controlFile) as f:
-             self.controlFileLines = f.readlines()
-         self.objName = base + ".obj"
-         dirname = os.path.dirname(self.controlFile)
-         materialMode = False
-         for i,line in enumerate(self.controlFileLines):
-             line = line.strip()
-             if len(line) == 0 or line[0] == '#':
-                 continue
-             found = re.match('([^\\s]+) (.*)$', line)
-             if found:
-                 token = found.group(1).lower()
-                 if materialMode:
-                     self.materialBlockDict[found.group(1)] = parseBlock(found.group(2),self.default)
-                 elif token == "file":
-                     if found.group(2).startswith('"') or found.group(2).startswith("'"):
-                         self.objName = dirname + "/" + safeEval(found.group(2))
-                     else:
-                         self.objName = dirname + "/" + found.group(2)
-                 elif token == "swapyz":
-                     self.swapYZ = bool(safeEval(found.group(2).capitalize()))
-                 elif token == "credits":
-                     self.credits = found.group(2)
-                 elif token == "url":
-                     self.url = found.group(2)
-                 elif token == "urlgz":
-                     self.urlgz = found.group(2)
-                 elif token == "size":
-                     self.size = safeEval(found.group(2))
-                 elif token == "default":
-                     self.default = parseBlock(found.group(2),self.default)
-                 elif token == "order":
-                     args = re.split("[\\s,]+", found.group(2))
-                     self.materialOrderDict[args[0]] = int(args[1])   
-             elif line.strip().lower() == "materials":
-                 materialMode = True
-                 self.haveMaterialArea = True
-             elif line.strip().lower() == "end":
-                 self.endLineIndex = i
-                 break
-         if self.endLineIndex is None:
-             self.endLineIndex = len(self.controlFileLines)
+             self.objName = base + ".obj"
+             if ext == '':
+                 self.controlFile = base + ".txt"
+             else:
+                 self.controlFile = infile
+
+         if os.path.isfile(self.controlFile):
+             with open(self.controlFile) as f:
+                 self.controlFileLines = f.readlines()
+             self.objName = base + ".obj"
+             dirname = os.path.dirname(self.controlFile)
+             materialMode = False
+             for i,line in enumerate(self.controlFileLines):
+                 line = line.strip()
+                 if len(line) == 0 or line[0] == '#':
+                     continue
+                 found = re.match('([^\\s]+) (.*)$', line)
+                 if found:
+                     token = found.group(1).lower()
+                     if materialMode:
+                         self.materialBlockDict[found.group(1)] = parseBlock(found.group(2),self.default)
+                     elif token == "file":
+                         if found.group(2).startswith('"') or found.group(2).startswith("'"):
+                             self.objName = dirname + "/" + safeEval(found.group(2))
+                         else:
+                             self.objName = dirname + "/" + found.group(2)
+                     elif token == "swapyz":
+                         self.swapYZ = bool(safeEval(found.group(2).capitalize()))
+                     elif token == "credits":
+                         self.credits = found.group(2)
+                     elif token == "url":
+                         self.url = found.group(2)
+                     elif token == "urlgz":
+                         self.urlgz = found.group(2)
+                     elif token == "size":
+                         self.size = safeEval(found.group(2))
+                     elif token == "default":
+                         self.default = parseBlock(found.group(2),self.default)
+                     elif token == "yaw":
+                         self.preYaw = safeEval(found.group(2))
+                     elif token == "pitch":
+                         self.prePitch = safeEval(found.group(2))
+                     elif token == "roll":
+                         self.preRoll = safeEval(found.group(2))
+                     elif token == "order":
+                         args = re.split("[\\s,]+", found.group(2))
+                         self.materialOrderDict[args[0]] = int(args[1])
+                 elif line.strip().lower() == "materials":
+                     materialMode = True
+                     self.haveMaterialArea = True
+                 elif line.strip().lower() == "end":
+                     self.endLineIndex = i
+                     break
+             if self.endLineIndex is None:
+                 self.endLineIndex = len(self.controlFileLines)
+         elif rewrite:
+             if not os.path.isfile(self.objName):
+                 raise IOError("Cannot find mesh file")
+             mc.postToChat("Creating a default control file")
+             with open(self.controlFile,"w") as f:
+                self.controlFileLines = []
+                self.controlFileLines.append("file "+repr(os.path.basename(self.objName))+"\n")
+                self.controlFileLines.append("swapyz 0\n")
+                self.controlFileLines.append("#credits [add?]\n")
+                self.controlFileLines.append("#url [add?]\n")
+                self.controlFileLines.append("#urlgz [add?]\n")
+                self.controlFileLines.append("yaw 0\n")
+                self.controlFileLines.append("pitch 0\n")
+                self.controlFileLines.append("roll 0\n")
+                self.controlFileLines.append("size "+str(self.size)+"\n")
+                self.controlFileLines.append("default STONE\n")
+                self.controlFileLines.append("#order material position\n")
+                self.controlFileLines.append("materials\n")
+                self.haveMaterialArea = True
+                self.endLineIndex = len(self.controlFileLines)
+                self.controlFileLines.append("end\n\n")
+                self.controlFileLines.append("[Insert any detailed licensing information here]")
+                for line in self.controlFileLines:
+                    f.write(line)
          if settings.isPE:
              self.size /= 2
 
@@ -176,6 +215,10 @@ class Mesh(object):
         self.materialBlocks = [ self.default ]
         self.materialOrders = [ 0 ]
         self.materialIndexDict = { Mesh.UNSPECIFIED: 0 }
+        if self.preYaw != 0 or self.prePitch != 0 or self.preRoll != 0:
+            matrix = makeMatrix(self.preYaw, self.prePitch, self.preRoll)
+        else:
+            matrix = None
 
         name,myopen = self.getFile()
         if self.credits:
@@ -186,7 +229,7 @@ class Mesh(object):
                 if len(line) == 0 or line[0] == '#' : continue
                 line = re.split('\s+', line)
                 if line[0] == 'v' :
-                    self.baseVertices.append(V3(fix([float(x) for x in line[1:]])))
+                    self.baseVertices.append(applyMatrix(matrix,V3(fix([float(x) for x in line[1:]]))))
                 #elif line[0] == 'vt' : #tex-coord
                 #    self.textures.append(fix(line[1:]))
                 #elif line[0] == 'vn' : #normal vector
@@ -249,10 +292,7 @@ class Mesh(object):
         self.vertices = []
 
         for v in self.baseVertices:
-            if matrix is not None:
-                vertex = applyMatrix(matrix,v)
-            else:
-                vertex = v
+            vertex = applyMatrix(matrix,v)
             self.vertices.append(vertex)
             for i in range(3):
                 if minimum[i] == None or vertex[i] < minimum[i]:

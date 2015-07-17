@@ -7,16 +7,16 @@
 # http://www.stuffaboutcode.com/2013/02/raspberry-pi-minecraft-analogue-clock.html
 
 #import the minecraft.py module from the minecraft directory
-import mcpi.minecraft as minecraft
+from . import mcpi.minecraft as minecraft
 #import minecraft block module
-import mcpi.block as block
+from . import mcpi.block as block
 #import time, so delays can be used
 import time
 #import datetime, to get the time!
 import datetime
 #import math so we can use cos and sin
 import math
-import server
+from . import server
 
 
 #mid point circle algorithm

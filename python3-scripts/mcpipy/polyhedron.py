@@ -24,7 +24,7 @@
 from math import pi, asin, atan2, cos, sin, sqrt
 import string
 import random
-import drawing
+from . import drawing
 import sys
 
 # Python code to find the crossing point of two lines.

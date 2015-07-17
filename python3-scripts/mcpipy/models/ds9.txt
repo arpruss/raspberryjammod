@@ -1,0 +1,116 @@
+file ds9.obj
+urlgz https://raw.githubusercontent.com/arpruss/raspberryjammod/master/models/ds9.obj.gz
+swapyz 0
+size 200
+default STONE
+credits Star Trek is copyright Paramount Pictures; mesh is by Joerg Gerlach
+
+materials
+Yellow_self_illum GLOWSTONE_BLOCK
+Lamps SEA_LANTERN
+Windows GLASS
+Phaser REDSTONE_BLOCK
+Antenna 173
+Round_Neck default
+Pylon_inside default
+Pylon_Side default
+Round_Inside default
+Pylon_Neck_outside default
+Outer_Ring_Fill default
+Outer_Ring_inside default
+Outer_Ring_upper default
+Outer_Ring_lower default
+Habitat_upper_part default
+Habitat_lower_part default
+Habitat_side default
+Connect default
+ConnectIn default
+Bridge default
+Klammer default
+Outside_Core default
+Core_House_lower_p default
+Core_House_upper_p default
+Inside_Core default
+OPS_upper_part default
+OPS default
+end
+
+Copyright information:
+
+Non-commercial use only.
+
+Star Trek (including but not limited to Star Trek: Deep Space Nine, Star Trek:
+The Next Generation, Star Trek: Voyager, Star Trek: Enterprise), and the
+various logo devices used in them, are copyright Paramount Pictures, as are the
+characters, related images, and sound from the productions. None of these web
+pages are either endorsed or supported by Paramount Pictures.Star Trek (
+including but not limited to Star Trek: Deep Space Nine, Star Trek: The Next
+Generation, Star Trek: Voyager, Star Trek: Enterprise), and the various logo
+devices used in them, are copyright Paramount Pictures, as are the characters,
+related images, and sound from the productions. None of these web pages are
+either endorsed or supported by Paramount Pictures.
+
+Mesh converted by Alexander Pruss from 3DS MAX mesh at http://www.trekmeshes.ch/
+(Probably: http://www.trekmeshes.ch/meshes/meshesdetails.php?Name=JORGDS9)
+
+
+--Information from original mesh--
+
+README.TXT for the mesh of Deep Space 9 by Joerg Gerlach
+--------------------------------------------------------
+
+Thank you for downloading this big monster file. I´m sorry about the size,
+but I wasn´t able to reduce the file size any more. Every single object is
+collapsed, but any more face count optimization wasn´t possible without
+a decrease of smoothness. I use this mesh and all its textures on the
+following system (I recommend a much better system!):
+
+Intel Pentium 150
+96 MB RAM
+200 MB swap disk
+WinNT4 Workstation Servicepack 5
+
+Rendering time 640x480 (including DS9, Noise starfield background, RLF Pro Glows): 10 mins
+
+The MAX file contains also some helper objects representing the glows used
+by RealLensFlare Pro. If you don´t use RLF Pro or if you don´t have it
+you can delete them without problems. If you want to use my glow settings feel
+free to do so.
+
+Usage of different textures:
+----------------------------
+
+Although this mesh looks exactly the same as the first release of my DS9 I divided
+several objects into different parts for texturing. So you aren´t able to use all
+my textures with the old mesh. If you want to use either the grey or the brown texture
+version you only have to change the bitmap paths in MAX. The grey and brown versions
+are using the same file names, so be sure to copy them into different folders. To activate
+the different color versions disable one bitmap path and enable the other path using
+the File/Configure Paths.../Bitmaps command in MAX. That´s all. You don´t have to
+change anything on the mesh or the texture settings. It´s that simple...:-)
+
+I hope you have that fun with the mesh I have...
+
+Bye
+
+Joerg
+-----
+
+Copyright Info
+--------------
+
+Original design and name copyright by Paramount Communications/Viacom.
+
+Original design and name copyright by Paramount Communications/Viacom.
+Mesh and texture copyright by Joerg Gerlach 1999.
+Distribution of the mesh or the textures only with this README.TXT included.
+All contents of this zip file copyrighted under german law.
+You are allowed to change, rework or reassemble the mesh or the textures if you
+include a copyright link to Joerg Gerlach, Germany 1999.
+ANY commercial use is NOT allowed!!!
+
+Joerg Gerlach
+jger@01019freenet.de
+http://www.tu-chemnitz.de/~jger
+Member of the WolfPak359
+http://www.wolfpak359.co.uk

@@ -1,0 +1,13 @@
+file 'atat2.obj'
+swapyz 0
+credits Brad Blackburn <fatjack@mac.com>. Downloaded from scifi3d.com. Star Wars is copyright (c) Lucasfilm. Noncommercial use only.
+#url [add?]
+#urlgz [add?]
+yaw 90
+size 100
+default STONE
+#order material position
+materials
+New.2 default
+New.1 default
+end

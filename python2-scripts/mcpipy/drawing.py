@@ -96,7 +96,10 @@ def makeMatrix(compass,vertical,roll):
     return matrixMultiply(m0, rollMatrix(roll))
 
 def applyMatrix(m,v):
-    return V3(m[i][0]*v[0]+m[i][1]*v[1]+m[i][2]*v[2] for i in range(3))
+    if m is None:
+       return v
+    else:
+       return V3(m[i][0]*v[0]+m[i][1]*v[1]+m[i][2]*v[2] for i in range(3))
 
 def matrixDistanceSquared(m1,m2):
     d2 = 0.

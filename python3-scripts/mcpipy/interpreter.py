@@ -4,7 +4,7 @@
 # Useful for checking which interpreter RaspberryJamMod's /py command is picking up.
 #
 
-import mc
+from . import mc
 import sys
 import os
 

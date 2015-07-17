@@ -1,3 +1,13 @@
+This license applies to the materials not licensed otherwise.
+In particular, it does NOT apply to the non-commercial-use .obj meshes
+to the GPL'ed Sunfish chess engine, or most of the python scripts not
+by Alexander Pruss.
+
+I have tried to mark files or directories with the most accurate licensing
+or copyright credits that I could, but please let me know if I missed
+something. (Just put it in the project bug tracker.)
+
+
 The MIT License (MIT)
 
 Copyright (c) 2015 arpruss

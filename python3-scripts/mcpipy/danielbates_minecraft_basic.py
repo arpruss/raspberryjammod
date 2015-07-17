@@ -10,8 +10,8 @@ sys.path.append("mcpi/api/python/mcpi")
 
 # Attempt to import Mojang's API.
 try:
-	import connection
-	import minecraft
+	from . import connection
+	from . import minecraft
 except ImportError:
 	print("Unable to find Minecraft API. Please place minecraft_basic.py in the mcpi directory.")
 	exit()

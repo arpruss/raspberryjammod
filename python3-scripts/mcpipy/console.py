@@ -4,10 +4,10 @@
 # This script only works on Raspberry Jam
 #
 
-import mcpi.minecraft as minecraft
+from . import mcpi.minecraft as minecraft
 import time
 from math import *
-from mcpi.block import *
+from .mcpi.block import *
 import code
 import sys
 

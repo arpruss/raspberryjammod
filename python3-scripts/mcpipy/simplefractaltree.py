@@ -2,7 +2,7 @@
 # Code under the MIT license by Alexander Pruss
 #
 
-from turtle import *
+from .turtle import *
 
 def tree(depth):
     t.up(30)

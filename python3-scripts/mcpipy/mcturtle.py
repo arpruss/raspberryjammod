@@ -2,14 +2,14 @@
 # Code under the MIT license by Alexander Pruss
 #
 
-import mcpi.minecraft as minecraft
-import mcpi.block as block
-from mcpi.block import *
-from mcpi.entity import *
+from . import mcpi.minecraft as minecraft
+from . import mcpi.block as block
+from .mcpi.block import *
+from .mcpi.entity import *
 import numbers
 import copy
 import time
-from drawing import *
+from .drawing import *
 from operator import itemgetter
 from math import *
 import numbers

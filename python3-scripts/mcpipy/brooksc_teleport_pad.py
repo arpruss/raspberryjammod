@@ -2,10 +2,10 @@
 
 # as shared on mcpipy.com
 
-import mcpi.minecraft as minecraft
-import mcpi.block as block
+from . import mcpi.minecraft as minecraft
+from . import mcpi.block as block
 import time
-import server
+from . import server
 
 
 # If you are running this script with the bukkit mod, then use a diamond block as the magic center block for teleporting

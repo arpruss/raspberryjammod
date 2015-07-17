@@ -11,7 +11,28 @@ Lamps SEA_LANTERN
 Windows GLASS
 Phaser REDSTONE_BLOCK
 Antenna 173
-
+Round_Neck default
+Pylon_inside default
+Pylon_Side default
+Round_Inside default
+Pylon_Neck_outside default
+Outer_Ring_Fill default
+Outer_Ring_inside default
+Outer_Ring_upper default
+Outer_Ring_lower default
+Habitat_upper_part default
+Habitat_lower_part default
+Habitat_side default
+Connect default
+ConnectIn default
+Bridge default
+Klammer default
+Outside_Core default
+Core_House_lower_p default
+Core_House_upper_p default
+Inside_Core default
+OPS_upper_part default
+OPS default
 end
 
 Copyright information:

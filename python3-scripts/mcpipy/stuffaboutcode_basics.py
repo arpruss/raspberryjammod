@@ -7,12 +7,12 @@
 # http://www.stuffaboutcode.com/2013/01/raspberry-pi-minecraft-api-basics.html
 
 #import the minecraft.py module from the minecraft directory
-import mcpi.minecraft as minecraft
+from . import mcpi.minecraft as minecraft
 #import minecraft block module
-import mcpi.block as block
+from . import mcpi.block as block
 #import time, so delays can be used
 import time
-import server
+from . import server
 
 
 if __name__ == "__main__":

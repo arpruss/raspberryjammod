@@ -1,6 +1,6 @@
-import mcpi.minecraft as minecraft
-import mcpi.block as block
-import server
+from . import mcpi.minecraft as minecraft
+from . import mcpi.block as block
+from . import server
 import sys
 mc = minecraft.Minecraft.create(server.address)
 mc.postToChat("Hello world!")

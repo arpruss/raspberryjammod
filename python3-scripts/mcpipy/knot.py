@@ -6,7 +6,7 @@
 # Draw a knot
 #
 
-from mc import *
+from .mc import *
 
 mc = Minecraft()
 playerPos = mc.player.getPos()

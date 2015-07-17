@@ -71,6 +71,9 @@ class Mesh(object):
          self.swapYZ = False
          self.credits = None
          self.size = 100
+         self.preYaw = 0
+         self.prePitch = 0
+         self.preRoll = 0
          self.default = STONE
          self.materialBlockDict = {}
          self.materialOrderDict = {}
@@ -92,10 +95,12 @@ class Mesh(object):
              self.controlFile = base + ".txt"
          else:
              self.objName = base + ".obj"
-             self.controlFile = infile
+             if ext == '':
+                 self.controlFile = base + ".txt"
+             else:
+                 self.controlFile = infile
 
          if os.path.isfile(self.controlFile):
-             self.haveControlFile = True
              with open(self.controlFile) as f:
                  self.controlFileLines = f.readlines()
              self.objName = base + ".obj"
@@ -127,6 +132,12 @@ class Mesh(object):
                          self.size = safeEval(found.group(2))
                      elif token == "default":
                          self.default = parseBlock(found.group(2),self.default)
+                     elif token == "yaw":
+                         self.preYaw = safeEval(found.group(2))
+                     elif token == "pitch":
+                         self.prePitch = safeEval(found.group(2))
+                     elif token == "roll":
+                         self.preRoll = safeEval(found.group(2))
                      elif token == "order":
                          args = re.split("[\\s,]+", found.group(2))
                          self.materialOrderDict[args[0]] = int(args[1])
@@ -144,11 +155,14 @@ class Mesh(object):
              mc.postToChat("Creating a default control file")
              with open(self.controlFile,"w") as f:
                 self.controlFileLines = []
-                self.controlFileLines.append("file "+repr(self.objName)+"\n")
+                self.controlFileLines.append("file "+repr(os.path.basename(self.objName))+"\n")
                 self.controlFileLines.append("swapyz 0\n")
                 self.controlFileLines.append("#credits [add?]\n")
                 self.controlFileLines.append("#url [add?]\n")
                 self.controlFileLines.append("#urlgz [add?]\n")
+                self.controlFileLines.append("yaw 0\n")
+                self.controlFileLines.append("pitch 0\n")
+                self.controlFileLines.append("roll 0\n")
                 self.controlFileLines.append("size "+str(self.size)+"\n")
                 self.controlFileLines.append("default STONE\n")
                 self.controlFileLines.append("#order material position\n")
@@ -201,6 +215,10 @@ class Mesh(object):
         self.materialBlocks = [ self.default ]
         self.materialOrders = [ 0 ]
         self.materialIndexDict = { Mesh.UNSPECIFIED: 0 }
+        if self.preYaw != 0 or self.prePitch != 0 or self.preRoll != 0:
+            matrix = makeMatrix(self.preYaw, self.prePitch, self.preRoll)
+        else:
+            matrix = None
 
         name,myopen = self.getFile()
         if self.credits:
@@ -211,7 +229,7 @@ class Mesh(object):
                 if len(line) == 0 or line[0] == '#' : continue
                 line = re.split('\s+', line)
                 if line[0] == 'v' :
-                    self.baseVertices.append(V3(fix([float(x) for x in line[1:]])))
+                    self.baseVertices.append(applyMatrix(matrix,V3(fix([float(x) for x in line[1:]]))))
                 #elif line[0] == 'vt' : #tex-coord
                 #    self.textures.append(fix(line[1:]))
                 #elif line[0] == 'vn' : #normal vector
@@ -240,7 +258,7 @@ class Mesh(object):
                             self.mc.postToChat("Material "+name+" not defined")
                             warned.add(name)
 
-        if self.rewrite and warned and self.haveControlFile:
+        if self.rewrite and warned:
             try:
                 self.mc.postToChat("Rewriting control file to include missing materials")
                 with open(self.controlFile+".tempFile", "w") as f:
@@ -274,10 +292,7 @@ class Mesh(object):
         self.vertices = []
 
         for v in self.baseVertices:
-            if matrix is not None:
-                vertex = applyMatrix(matrix,v)
-            else:
-                vertex = v
+            vertex = applyMatrix(matrix,v)
             self.vertices.append(vertex)
             for i in range(3):
                 if minimum[i] == None or vertex[i] < minimum[i]:

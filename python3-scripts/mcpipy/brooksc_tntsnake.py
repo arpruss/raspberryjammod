@@ -14,14 +14,14 @@
 
 
 #import the minecraft.py module from the minecraft directory
-import mcpi.minecraft as minecraft
+from . import mcpi.minecraft as minecraft
 #import minecraft block module
-import mcpi.block as block
+from . import mcpi.block as block
 #import time, so delays can be used
 import time
 import random
 import math
-import server
+from . import server
 
 def new_direction(old_direction):
     max_direction = 5
