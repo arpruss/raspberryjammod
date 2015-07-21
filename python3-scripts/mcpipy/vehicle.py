@@ -529,6 +529,10 @@ if __name__ == '__main__':
                         if entity != None:
                             minecraft.removeEntity(entity)
                             entity = None
+                        else:
+                            direction = minecraft.player.getDirection()*10
+                            direction.y = 0
+                            minecraft.player.setPos(pos + direction)
                         if len(args) > 1:
                             try:
                                 entity = minecraft.spawnEntity(args[1],pos.x,pos.y,pos.z)

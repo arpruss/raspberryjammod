@@ -25,6 +25,7 @@ SOFTWARE.
 
 import sys
 import urllib.request, urllib.error, urllib.parse
+import struct
 import mcpi.minecraft as minecraft
 from copy import copy
 from mcpi.block import *
@@ -60,6 +61,256 @@ def parseBlock(data,default):
         b.data = int(eval(tokens[1]))
     return Block(b.id,b.data)
 
+class Mesh3DS(object):
+    MAIN3DS = 0x4D4D
+    EDIT3DS = 0x3D3D
+    KEYF3DS = 0xB000
+    KEYF_OBJDES = 0xB002
+    KEYF_OBJHIERARCH = 0xB010
+    KEYF_PIVOT = 0xB013
+    EDIT_OBJECT = 0x4000
+    OBJ_TRIMESH = 0x4100
+    TRI_VERTEXL = 0x4110
+    TRI_FACEL1 = 0x4120
+    TRI_LOCAL = 0x4160
+    TRI_MATERIAL = 0x4130
+
+    def __init__(self, filename, myopen=open, swapYZ=False):
+        self.vertices = []
+        self.faces = []
+        self.materialIndexDict = {None:0}
+        self.materials = []
+        self.objectData = {}
+        self.swapYZ = swapYZ
+        self.objects = []
+
+        with myopen(filename, "rb") as self.file:
+            id,lengthRemaining = self.readChunkHeader()
+            lengthRemaining -= 6
+            if id != Mesh3DS.MAIN3DS:
+                raise IOError("Cannot find main chunk")
+            while 0 < lengthRemaining:
+                id,chunkLength = self.readChunkHeader()
+                lengthRemaining -= 6
+                if id == Mesh3DS.EDIT3DS:
+                    self.handle_EDIT3DS(chunkLength - 6)
+                    lengthRemaining -= chunkLength - 6
+                elif id == Mesh3DS.KEYF3DS:
+                    self.handle_KEYF3DS(chunkLength - 6)
+                    lengthRemaining -= chunkLength - 6
+                else:
+                    self.skip(chunkLength - 6)
+                    lengthRemaining -= chunkLength - 6
+
+        self.processObjects()
+
+        if not self.faces:
+            raise IOError("No faces found")
+
+    def processObjects(self):
+        i = 0
+        for (name,parent,pivot) in self.objects:
+            try:
+                (object_vertices,object_faces,object_material_data,object_matrix,object_translation) = self.objectData[name]
+            except KeyError:
+                 continue
+
+            if not object_vertices:
+                 continue
+
+            if pivot != V3(0,0,0):
+               delta = applyMatrix(object_matrix, -pivot)
+            else:
+               delta = None
+
+            firstObjectVertex = len(self.vertices)
+
+            for v in object_vertices:
+                if delta is not None:
+                    v1 = v + delta
+                else:
+                    v1 = v
+
+                if self.swapYZ:
+                    self.vertices.append(V3(v1[0],v1[2],-v1[1]))
+                else:
+                    self.vertices.append(v1)
+
+            for (faceIndex,face) in enumerate(object_faces):
+                material = None
+                for (name,faces) in object_material_data:
+                    if faceIndex in faces:
+                        material = name
+                        break
+
+                try:
+                    materialIndex = self.materialIndexDict[material]
+                except KeyError:
+                    materialIndex = len(self.materials)
+                    self.materials.append(material)
+                    self.materialIndexDict[material] = materialIndex
+                self.faces.append((materialIndex, tuple(v + firstObjectVertex for v in face)))
+
+    def readChunkHeader(self):
+        return struct.unpack("<HL", self.file.read(6))
+
+    def skip(self,length):
+        if length:
+            self.file.seek(length,1)
+
+    def readAsciiz(self,lengthRemaining):
+        name = ""
+        while lengthRemaining > 0:
+            byte = self.file.read(1)
+            lengthRemaining -= 1
+            if ord(byte) == 0:
+                return lengthRemaining, name
+            name += byte
+        raise IOError("Name overflowing chunk")
+
+    def handle_EDIT3DS(self,lengthRemaining):
+        while lengthRemaining > 0:
+            id,chunkLength = self.readChunkHeader()
+            lengthRemaining -= 6
+            if id == Mesh3DS.EDIT_OBJECT:
+                self.handle_EDIT_OBJECT(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+            else:
+                self.skip(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+
+    def handle_KEYF3DS(self,lengthRemaining):
+        while lengthRemaining > 0:
+            id,chunkLength = self.readChunkHeader()
+            lengthRemaining -= 6
+            if id == Mesh3DS.KEYF_OBJDES:
+                self.handle_KEYF_OBJDES(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+            else:
+                self.skip(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+
+    def handle_KEYF_OBJDES(self,lengthRemaining):
+        self.object_name = None
+        self.object_pivot = None
+        self.object_parent = None
+        while lengthRemaining > 0:
+            id,chunkLength = self.readChunkHeader()
+            lengthRemaining -= 6
+            if id == Mesh3DS.KEYF_OBJHIERARCH:
+                self.handle_KEYF_OBJHIERARCH(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+            elif id == Mesh3DS.KEYF_PIVOT:
+                self.handle_KEYF_PIVOT(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+            else:
+                self.skip(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+        self.objects.append((self.object_name,self.object_parent,self.object_pivot))
+
+
+    def handle_KEYF_OBJHIERARCH(self,lengthRemaining):
+        lengthRemaining, self.object_name = self.readAsciiz(lengthRemaining)
+        self.skip(4)
+        lengthRemaining -= 4
+        self.object_parent = struct.unpack("<h", self.file.read(2))[0]
+        lengthRemaining -= 2
+        self.skip(lengthRemaining)
+
+    def handle_KEYF_PIVOT(self,lengthRemaining):
+        self.object_pivot = V3(struct.unpack("<fff", self.file.read(3*4)))
+        lengthRemaining -= 3*4
+        self.skip(lengthRemaining)
+
+    def handle_EDIT_OBJECT(self,lengthRemaining):
+        self.object_vertices = []
+        self.object_faces = []
+        self.object_material_data = []
+        self.object_matrix = None
+        self.object_translation = None
+
+        lengthRemaining, self.object_name = self.readAsciiz(lengthRemaining)
+        while lengthRemaining > 0:
+            id,chunkLength = self.readChunkHeader()
+            lengthRemaining -= 6
+            if id == Mesh3DS.OBJ_TRIMESH:
+                self.handle_OBJ_TRIMESH(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+            else:
+                self.skip(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+
+    def handle_OBJ_TRIMESH(self,lengthRemaining):
+        while lengthRemaining > 0:
+            id,chunkLength = self.readChunkHeader()
+            lengthRemaining -= 6
+            if id == Mesh3DS.TRI_VERTEXL:
+                self.handle_TRI_VERTEXL(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+            elif id == Mesh3DS.TRI_FACEL1:
+                self.handle_TRI_FACEL1(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+            elif id == Mesh3DS.TRI_LOCAL:
+                self.handle_TRI_LOCAL(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+            else:
+                self.skip(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+
+        if self.object_matrix is None:
+            self.object_matrix = ((1,0,0),(0,1,0),(0,0,1))
+            self.object_translation = 0
+        self.objectData[self.object_name] = (self.object_vertices,self.object_faces,self.object_material_data, self.object_matrix, self.object_translation)
+
+
+    def handle_TRI_VERTEXL(self,lengthRemaining):
+        count = struct.unpack("<H", self.file.read(2))[0]
+        lengthRemaining -= 2
+        for i in range(count):
+            self.object_vertices.append(V3(struct.unpack("<fff", self.file.read(3*4))))
+            lengthRemaining -= 3*4
+        self.skip(lengthRemaining)
+
+    def handle_TRI_FACEL1(self,lengthRemaining):
+        count = struct.unpack("<H", self.file.read(2))[0]
+        lengthRemaining -= 2
+        for i in range(count):
+            self.object_faces.append(struct.unpack("<HHH", self.file.read(2*3)))
+            lengthRemaining -= 2*3
+            self.skip(2)
+            lengthRemaining -= 2
+        while lengthRemaining > 0:
+            id,chunkLength = self.readChunkHeader()
+            lengthRemaining -= 6
+            if id == Mesh3DS.TRI_MATERIAL:
+                self.handle_TRI_MATERIAL(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+            else:
+                self.skip(chunkLength - 6)
+                lengthRemaining -= chunkLength - 6
+
+    def handle_TRI_LOCAL(self,lengthRemaining):
+        self.object_matrix = [ [0,0,0], [0,0,0], [0,0,0] ]
+        for i in range(3):
+            for j in range(3):
+                self.object_matrix[j][i] = struct.unpack("<f", self.file.read(4))[0]
+                lengthRemaining -= 4
+        self.object_translation = V3(struct.unpack("<fff", self.file.read(3*4)))
+        lengthRemaining -= 3*4
+        self.skip(lengthRemaining)
+
+    def handle_TRI_MATERIAL(self,lengthRemaining):
+        lengthRemaining,name = self.readAsciiz(lengthRemaining)
+        name = name.replace(' ', '_') # TODO: handle "A_B" and "A B" collision
+        count = struct.unpack("<H", self.file.read(2))[0]
+        lengthRemaining -= 2
+        faces = set()
+        for i in range(count):
+            faces.add(struct.unpack("<H", self.file.read(2))[0])
+            lengthRemaining -= 2
+        self.object_material_data.append( (name, faces) )
+        self.skip(lengthRemaining)
+        
 class Mesh(object):
     UNSPECIFIED = None
 
@@ -79,8 +330,8 @@ class Mesh(object):
          self.materialOrderDict = {}
          self.baseVertices = []
          self.vertices = []
-         self.textures = []
-         self.normals = []
+         #self.textures = []
+         #self.normals = []
          self.faces = []
          self.materials = []
          self.materialNames = []
@@ -90,11 +341,15 @@ class Mesh(object):
          self.endLineIndex = None
 
          base,ext = os.path.splitext(infile)
-         if ext == '.obj':
-             self.objName = infile
+         if ext.lower() == '.obj' or ext.lower() == ".3ds":
+             self.meshName = infile
              self.controlFile = base + ".txt"
          else:
-             self.objName = base + ".obj"
+             if os.path.isfile(base + ".3ds") or os.path.isfile(base + ".3ds.gz"):
+                 self.meshName = base + ".3ds"
+             else:
+                 self.meshName = base + ".obj"
+
              if ext == '':
                  self.controlFile = base + ".txt"
              else:
@@ -103,7 +358,6 @@ class Mesh(object):
          if os.path.isfile(self.controlFile):
              with open(self.controlFile) as f:
                  self.controlFileLines = f.readlines()
-             self.objName = base + ".obj"
              dirname = os.path.dirname(self.controlFile)
              materialMode = False
              for i,line in enumerate(self.controlFileLines):
@@ -117,9 +371,9 @@ class Mesh(object):
                          self.materialBlockDict[found.group(1)] = parseBlock(found.group(2),self.default)
                      elif token == "file":
                          if found.group(2).startswith('"') or found.group(2).startswith("'"):
-                             self.objName = dirname + "/" + safeEval(found.group(2))
+                             self.meshName = dirname + "/" + safeEval(found.group(2))
                          else:
-                             self.objName = dirname + "/" + found.group(2)
+                             self.meshName = dirname + "/" + found.group(2)
                      elif token == "swapyz":
                          self.swapYZ = bool(safeEval(found.group(2).capitalize()))
                      elif token == "credits":
@@ -150,13 +404,18 @@ class Mesh(object):
              if self.endLineIndex is None:
                  self.endLineIndex = len(self.controlFileLines)
          elif rewrite:
-             if not os.path.isfile(self.objName):
+             if not os.path.isfile(self.meshName):
                  raise IOError("Cannot find mesh file")
+             if self.meshName.endswith(".3ds") or self.meshName.endswith(".3ds.gz"):
+                 self.swapYZ = True
              mc.postToChat("Creating a default control file")
              with open(self.controlFile,"w") as f:
                 self.controlFileLines = []
-                self.controlFileLines.append("file "+repr(os.path.basename(self.objName))+"\n")
-                self.controlFileLines.append("swapyz 0\n")
+                self.controlFileLines.append("file "+repr(os.path.basename(self.meshName))+"\n")
+                if self.swapYZ:
+                   self.controlFileLines.append("swapyz 1\n")
+                else:
+                   self.controlFileLines.append("swapyz 0\n")
                 self.controlFileLines.append("#credits [add?]\n")
                 self.controlFileLines.append("#url [add?]\n")
                 self.controlFileLines.append("#urlgz [add?]\n")
@@ -177,24 +436,24 @@ class Mesh(object):
              self.size /= 2
 
     def getFile(self, tryDownload=True):
-        if os.path.isfile(self.objName):
-            if self.objName.endswith(".gz"):
-                return self.objName, gzip.open
+        if os.path.isfile(self.meshName):
+            if self.meshName.endswith(".gz"):
+                return self.meshName, gzip.open
             else:
-                return self.objName, open
-        if os.path.isfile(self.objName+".gz"):
-            return self.objName+".gz", gzip.open
+                return self.meshName, open
+        if os.path.isfile(self.meshName+".gz"):
+            return self.meshName+".gz", gzip.open
         if tryDownload and (self.url or self.urlgz):
             self.mc.postToChat("Downloading mesh")
             if self.urlgz:
                 url = self.urlgz
-                if not self.objName.endswith(".gz"):
-                    outName = self.objName+".gz"
+                if not self.meshName.endswith(".gz"):
+                    outName = self.meshName+".gz"
                 else:
-                    outName = self.objName
+                    outName = self.meshName
             else:
                 url = self.url
-                outName = self.objName
+                outName = self.meshName
             content = urllib.request.urlopen(url).read()
             with open(outName+".tempDownload","wb") as f:
                 f.write(content)
@@ -206,15 +465,12 @@ class Mesh(object):
 
     def read(self, rewriteControlFile = None):
         if self.swapYZ:
-            fix = lambda list : V3(list[0], list[2], list[1])
+            fix = lambda list : V3(list[0], list[2], -list[1])
         else:
             fix = lambda list : V3(list)
 
         warned = set()
         currentMaterialIndex = 0
-        self.materialBlocks = [ self.default ]
-        self.materialOrders = [ 0 ]
-        self.materialIndexDict = { Mesh.UNSPECIFIED: 0 }
         if self.preYaw != 0 or self.prePitch != 0 or self.preRoll != 0:
             matrix = makeMatrix(self.preYaw, self.prePitch, self.preRoll)
         else:
@@ -223,40 +479,59 @@ class Mesh(object):
         name,myopen = self.getFile()
         if self.credits:
             self.mc.postToChat("Credits: "+self.credits)
-        with myopen(name) as fh:
-            for line in fh :
-                line = line.strip()
-                if len(line) == 0 or line[0] == '#' : continue
-                line = re.split('\s+', line)
-                if line[0] == 'v' :
-                    self.baseVertices.append(applyMatrix(matrix,V3(fix([float(x) for x in line[1:]]))))
-                #elif line[0] == 'vt' : #tex-coord
-                #    self.textures.append(fix(line[1:]))
-                #elif line[0] == 'vn' : #normal vector
-                #    self.normals.append(fix(line[1:]))
-                elif line[0] == 'f' : #face
-                    face = line[1:]
-                    for i in range(0, len(face)) :
-                        face[i] = face[i].split('/')
-                        # OBJ indexies are 1 based not 0 based hence the -1
-                        # convert indexes to integer
-                        for j in range(0, len(face[i])) :
-                            if face[i][j] != "":
-                                face[i][j] = int(face[i][j]) - 1
-                    #prepend the material currently in use to the face
-                    self.faces.append((currentMaterialIndex,face))
-                elif line[0] == 'usemtl': # material
-                    name = line[1]
-                    try:
-                        currentMaterialIndex = self.materialIndexDict[name]
-                    except KeyError:
-                        currentMaterialIndex = len(self.materialBlocks)
-                        self.materialIndexDict[name] = currentMaterialIndex
-                        self.materialOrders.append(self.materialOrderDict.get(name, 0))
-                        self.materialBlocks.append(self.materialBlockDict.get(name, self.default))
-                        if name not in self.materialBlockDict and name not in warned:
-                            self.mc.postToChat("Material "+name+" not defined")
-                            warned.add(name)
+
+        if name.endswith(".3ds") or name.endswith(".3ds.gz"):
+            mesh = Mesh3DS(name,myopen=myopen,swapYZ=self.swapYZ)
+            self.baseVertices = mesh.vertices
+            self.faces = mesh.faces
+            self.materialBlocks = []
+            self.materialOrders = []
+            for name in mesh.materials:
+                self.materialOrders.append(self.materialOrderDict.get(name, 0))
+                self.materialBlocks.append(self.materialBlockDict.get(name, self.default))
+                if name not in self.materialBlockDict and name not in warned:
+                    self.mc.postToChat("Material "+name+" not defined")
+                    warned.add(name)
+        else:
+            self.materialBlocks = [ self.default ]
+            self.materialOrders = [ 0 ]
+            materialIndexDict = { Mesh.UNSPECIFIED: 0 }
+
+            with myopen(name) as fh:
+                for line in fh :
+                    line = line.strip()
+                    if len(line) == 0 or line[0] == '#' : continue
+                    line = re.split('\s+', line)
+                    if line[0] == 'v' :
+                        self.baseVertices.append(applyMatrix(matrix,V3(fix([float(x) for x in line[1:]]))))
+                    #elif line[0] == 'vt' : #tex-coord
+                    #    self.textures.append(fix(line[1:]))
+                    #elif line[0] == 'vn' : #normal vector
+                    #    self.normals.append(fix(line[1:]))
+                    elif line[0] == 'f' : #face
+                        face = line[1:]
+                        for i in range(0, len(face)) :
+                            # OBJ indexies are 1 based not 0 based hence the -1
+                            # convert indexes to integer
+                            face[i] = int( face[i].split('/')[0] ) - 1
+                            # skip texture and normal
+    #                        for j in xrange(0, len(face[i])) :
+    #                            if face[i][j] != "":
+    #                                face[i][j] = int(face[i][j]) - 1
+                        #prepend the material currently in use to the face
+                        self.faces.append((currentMaterialIndex,face))
+                    elif line[0] == 'usemtl': # material
+                        name = line[1]
+                        try:
+                            currentMaterialIndex = materialIndexDict[name]
+                        except KeyError:
+                            currentMaterialIndex = len(self.materialBlocks)
+                            materialIndexDict[name] = currentMaterialIndex
+                            self.materialOrders.append(self.materialOrderDict.get(name, 0))
+                            self.materialBlocks.append(self.materialBlockDict.get(name, self.default))
+                            if name not in self.materialBlockDict and name not in warned:
+                                self.mc.postToChat("Material "+name+" not defined")
+                                warned.add(name)
 
         if self.rewrite and warned:
             try:
@@ -279,11 +554,6 @@ class Mesh(object):
                 os.rename(self.controlFile+".tempFile", self.controlFile)
             except:
                 self.mc.postToChat("Couldn't rewrite control file")
-#        print 'self.materials',self.materials
-#        print 'self.materialBlocks',self.materialBlocks
-#        print 'self.materialIndexDict',self.materialIndexDict
-#        print 'self.materialBlockDict',self.materialBlockDict
-#        exit()
 
     def scale(self, bottomCenter, matrix=None):
         minimum = [None, None, None]
@@ -332,7 +602,7 @@ class Mesh(object):
             if faceCount % 4000 == 0:
                 self.mc.postToChat("{0:.1f}%".format(100. * faceCount / len(self.faces)))
 
-            faceVertices = [self.vertices[vertex[0]] for vertex in face]
+            faceVertices = [self.vertices[v] for v in face]
             self.drawVertices(getFace(faceVertices), material)
 
 def go(filename, args=[]):
