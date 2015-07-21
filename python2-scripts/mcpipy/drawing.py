@@ -91,15 +91,6 @@ TO_DEGREES = 180. / pi
 ICOS = [1,0,-1,0]
 ISIN = [0,1,0,-1]
 
-def determinant33(a):
-    return a[0][0]*(a[1][1]*a[2][2]-a[2][1]*a[1][2])-a[0][1]*(a[1][0]*a[2][2]-a[1][2]*a[2][0])+a[0][2]*(a[1][0]*a[2][1]-a[1][1]*a[2][0])
-
-def invert3x3(a):
-    z = 1./determinant33(a)
-    return ( ((a[1][1]*a[2][2]-a[2][1]*a[1][2])*z, -(a[1][0]*a[2][2]-a[1][2]*a[2][0])*z, (a[1][0]*a[2][1]-a[2][0]*a[1][1])*z ),
-             (-(a[0][1]*a[2][2]-a[0][2]*a[2][1])*z, (a[0][0]*a[2][2]-a[0][2]*a[2][0])*z, -(a[0][0]*a[2][1]-a[2][0]*a[0][1])*z),
-             ((a[0][1]*a[1][2]-a[0][2]*a[1][1])*z, -(a[0][0]*a[1][2]-a[1][0]*a[0][2])*z, (a[0][0]*a[1][1]-a[1][0]*a[0][1])*z))
-
 def makeMatrix(compass,vertical,roll):
     m0 = matrixMultiply(yawMatrix(compass), pitchMatrix(vertical))
     return matrixMultiply(m0, rollMatrix(roll))

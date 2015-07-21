@@ -2,19 +2,20 @@ file 'yt1300.3ds'
 swapyz 1
 credits Model by MOJO courtesy of ROBOTFARM and scifi3d.com. Star Wars is copyright (c) Lucasfilm. Non-commercial use only.
 urlgz https://raw.githubusercontent.com/arpruss/raspberryjammod/master/models/yt1300.3ds.gz
-yaw 0
+yaw 180
 pitch 0
 roll 0
 size 100
 default STONE
-#order material position
+order LIGHTS 2
+order GLASS 1
 materials
-LIGHTS default
+LIGHTS SEA_LANTERN
 Default default
 HULL default
 SOLAR_PANALS default
 GUN default
-GLASS default
+GLASS GLASS
 radar default
 Material_#13 default
 detail1 default
