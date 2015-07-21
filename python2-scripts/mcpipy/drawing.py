@@ -117,11 +117,11 @@ def iatan2(y,x):
 
 def icos(angleDegrees):
     """Calculate a cosine of an angle that must be a multiple of 90 degrees"""
-    return ICOS[(angleDegrees % 360) / 90]
+    return ICOS[(angleDegrees % 360) // 90]
 
 def isin(angleDegrees):
     """Calculate a sine of an angle that must be a multiple of 90 degrees"""
-    return ISIN[(angleDegrees % 360) / 90]
+    return ISIN[(angleDegrees % 360) // 90]
 
 def matrixMultiply(a,b):
     c = [[0,0,0],[0,0,0],[0,0,0]]

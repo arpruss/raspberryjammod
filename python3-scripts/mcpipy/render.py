@@ -76,6 +76,9 @@ class Mesh3DS(object):
     TRI_MATERIAL = 0x4130
 
     def __init__(self, filename, myopen=open, swapYZ=False):
+        if int(sys.version[0]) >= 3:
+            self.readAsciiz = self.readAsciiz_python3
+
         self.vertices = []
         self.faces = []
         self.materialIndexDict = {None:0}
@@ -166,6 +169,16 @@ class Mesh3DS(object):
             if ord(byte) == 0:
                 return lengthRemaining, name
             name += byte
+        raise IOError("Name overflowing chunk")
+
+    def readAsciiz_python3(self,lengthRemaining):
+        name = ""
+        while lengthRemaining > 0:
+            byte = self.file.read(1)
+            lengthRemaining -= 1
+            if ord(byte) == 0:
+                return lengthRemaining, name
+            name += byte.decode("cp1252")
         raise IOError("Name overflowing chunk")
 
     def handle_EDIT3DS(self,lengthRemaining):
