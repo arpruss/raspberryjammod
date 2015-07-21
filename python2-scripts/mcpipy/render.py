@@ -160,15 +160,16 @@ class Mesh3DS(object):
             if not object_vertices:
                  continue
 
-            if pivot != (0,0,0):
-               transform = mulMatrix44(object_matrix, mulMatrix44(translMatrix44(-pivot), invertMatrix44(object_matrix)))
+            if pivot != V3(0,0,0):
+               delta = applyMatrix(object_matrix, -pivot)
             else:
-               transform = None
+               delta = None
 
             firstObjectVertex = len(self.vertices)
 
             for v in object_vertices:
-                v1 = applyMatrix44(transform, v)
+                if delta is not None:
+                    v1 = v + delta
 
                 if self.swapYZ:
                     self.vertices.append(V3(v1[0],v1[2],v1[1]))
