@@ -681,7 +681,7 @@ def go(filename, args=[]):
 
     opts = ""
 
-    if args and re.match(args[0], "[a-zA-Z]"):
+    if args and re.match("^-?[a-zA-Z]", args[0]):
        opts = args.pop(0)
 
     if args:
@@ -701,7 +701,8 @@ def go(filename, args=[]):
 
     mesh.scale(mc.player.getPos(), matrix)
     mc.postToChat("Clearing")
-    mc.setBlocks(mesh.corner1,mesh.corner2,AIR)
+    if 'n' not in opts:
+        mc.setBlocks(mesh.corner1,mesh.corner2,AIR)
     mc.postToChat("Rendering")
     mesh.render()
     mc.postToChat("Done!")
