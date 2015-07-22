@@ -41,6 +41,55 @@ import math
 import os
 import re
 
+IDENTITY44 = ((1.,0.,0.,0.),(0.,1.,0.,0.),(0.,0.,1.,0.),(0.,0.,0.,1.))
+
+def determinant44(m):
+   inv00=m[1][1]*m[2][2]*m[3][3]-m[1][1]*m[3][2]*m[2][3]-m[1][2]*m[2][1]*m[3][3]+m[1][2]*m[3][1]*m[2][3]+m[1][3]*m[2][1]*m[3][2]-m[1][3]*m[3][1]*m[2][2]
+   inv01=-m[0][1]*m[2][2]*m[3][3]+m[0][1]*m[3][2]*m[2][3]+m[0][2]*m[2][1]*m[3][3]-m[0][2]*m[3][1]*m[2][3]-m[0][3]*m[2][1]*m[3][2]+m[0][3]*m[3][1]*m[2][2]
+   inv02=m[0][1]*m[1][2]*m[3][3]-m[0][1]*m[3][2]*m[1][3]-m[0][2]*m[1][1]*m[3][3]+m[0][2]*m[3][1]*m[1][3]+m[0][3]*m[1][1]*m[3][2]-m[0][3]*m[3][1]*m[1][2]
+   inv03=-m[0][1]*m[1][2]*m[2][3]+m[0][1]*m[2][2]*m[1][3]+m[0][2]*m[1][1]*m[2][3]-m[0][2]*m[2][1]*m[1][3]-m[0][3]*m[1][1]*m[2][2]+m[0][3]*m[2][1]*m[1][2]
+   return m[0][0]*inv00 + m[1][0]*inv01 + m[2][0]*inv02 + m[3][0]*inv03
+
+def invertMatrix44(m):
+   inv = [[0 for i in range(4)] for j in range(4)]
+
+   inv[0][0]=m[1][1]*m[2][2]*m[3][3]-m[1][1]*m[3][2]*m[2][3]-m[1][2]*m[2][1]*m[3][3]+m[1][2]*m[3][1]*m[2][3]+m[1][3]*m[2][1]*m[3][2]-m[1][3]*m[3][1]*m[2][2]
+   inv[0][1]=-m[0][1]*m[2][2]*m[3][3]+m[0][1]*m[3][2]*m[2][3]+m[0][2]*m[2][1]*m[3][3]-m[0][2]*m[3][1]*m[2][3]-m[0][3]*m[2][1]*m[3][2]+m[0][3]*m[3][1]*m[2][2]
+   inv[0][2]=m[0][1]*m[1][2]*m[3][3]-m[0][1]*m[3][2]*m[1][3]-m[0][2]*m[1][1]*m[3][3]+m[0][2]*m[3][1]*m[1][3]+m[0][3]*m[1][1]*m[3][2]-m[0][3]*m[3][1]*m[1][2]
+   inv[0][3]=-m[0][1]*m[1][2]*m[2][3]+m[0][1]*m[2][2]*m[1][3]+m[0][2]*m[1][1]*m[2][3]-m[0][2]*m[2][1]*m[1][3]-m[0][3]*m[1][1]*m[2][2]+m[0][3]*m[2][1]*m[1][2]
+
+   inv[1][0]=-m[1][0]*m[2][2]*m[3][3]+m[1][0]*m[3][2]*m[2][3]+m[1][2]*m[2][0]*m[3][3]-m[1][2]*m[3][0]*m[2][3]-m[1][3]*m[2][0]*m[3][2]+m[1][3]*m[3][0]*m[2][2]
+   inv[1][1]=m[0][0]*m[2][2]*m[3][3]-m[0][0]*m[3][2]*m[2][3]-m[0][2]*m[2][0]*m[3][3]+m[0][2]*m[3][0]*m[2][3]+m[0][3]*m[2][0]*m[3][2]-m[0][3]*m[3][0]*m[2][2]
+   inv[1][2]=-m[0][0]*m[1][2]*m[3][3]+m[0][0]*m[3][2]*m[1][3]+m[0][2]*m[1][0]*m[3][3]-m[0][2]*m[3][0]*m[1][3]-m[0][3]*m[1][0]*m[3][2]+m[0][3]*m[3][0]*m[1][2]
+   inv[1][3]=m[0][0]*m[1][2]*m[2][3]-m[0][0]*m[2][2]*m[1][3]-m[0][2]*m[1][0]*m[2][3]+m[0][2]*m[2][0]*m[1][3]+m[0][3]*m[1][0]*m[2][2]-m[0][3]*m[2][0]*m[1][2]
+
+   inv[2][0]=m[1][0]*m[2][1]*m[3][3]-m[1][0]*m[3][1]*m[2][3]-m[1][1]*m[2][0]*m[3][3]+m[1][1]*m[3][0]*m[2][3]+m[1][3]*m[2][0]*m[3][1]-m[1][3]*m[3][0]*m[2][1]
+   inv[2][1]=-m[0][0]*m[2][1]*m[3][3]+m[0][0]*m[3][1]*m[2][3]+m[0][1]*m[2][0]*m[3][3]-m[0][1]*m[3][0]*m[2][3]-m[0][3]*m[2][0]*m[3][1]+m[0][3]*m[3][0]*m[2][1]
+   inv[2][2]=m[0][0]*m[1][1]*m[3][3]-m[0][0]*m[3][1]*m[1][3]-m[0][1]*m[1][0]*m[3][3]+m[0][1]*m[3][0]*m[1][3]+m[0][3]*m[1][0]*m[3][1]-m[0][3]*m[3][0]*m[1][1]
+   inv[2][3]=-m[0][0]*m[1][1]*m[2][3]+m[0][0]*m[2][1]*m[1][3]+m[0][1]*m[1][0]*m[2][3]-m[0][1]*m[2][0]*m[1][3]-m[0][3]*m[1][0]*m[2][1]+m[0][3]*m[2][0]*m[1][1]
+
+   inv[3][0]=-m[1][0]*m[2][1]*m[3][2]+m[1][0]*m[3][1]*m[2][2]+m[1][1]*m[2][0]*m[3][2]-m[1][1]*m[3][0]*m[2][2]-m[1][2]*m[2][0]*m[3][1]+m[1][2]*m[3][0]*m[2][1]
+   inv[3][1]=m[0][0]*m[2][1]*m[3][2]-m[0][0]*m[3][1]*m[2][2]-m[0][1]*m[2][0]*m[3][2]+m[0][1]*m[3][0]*m[2][2]+m[0][2]*m[2][0]*m[3][1]-m[0][2]*m[3][0]*m[2][1]
+   inv[3][2]=-m[0][0]*m[1][1]*m[3][2]+m[0][0]*m[3][1]*m[1][2]+m[0][1]*m[1][0]*m[3][2]-m[0][1]*m[3][0]*m[1][2]-m[0][2]*m[1][0]*m[3][1]+m[0][2]*m[3][0]*m[1][1]
+   inv[3][3]=m[0][0]*m[1][1]*m[2][2]-m[0][0]*m[2][1]*m[1][2]-m[0][1]*m[1][0]*m[2][2]+m[0][1]*m[2][0]*m[1][2]+m[0][2]*m[1][0]*m[2][1]-m[0][2]*m[2][0]*m[1][1]
+
+   invdet = 1./ (m[0][0]*inv[0][0] + m[1][0]*inv[0][1] + m[2][0]*inv[0][2] + m[3][0]*inv[0][3])
+   for i in range(4):
+       for j in range(4):
+           inv[i][j] = invdet * inv[i][j]
+   return inv
+
+def mulMatrix44(a,b):
+    return tuple( tuple(a[i][0]*b[0][j]+a[i][1]*b[1][j]+a[i][2]*b[2][j]+a[i][3]*b[3][j] for j in xrange(4)) for i in xrange(4) )
+
+def applyMatrix44(a,v):
+    if a is None:
+        return v
+    return V3(a[i][0]*v[0]+a[i][1]*v[1]+a[i][2]*v[2]+a[i][3] for i in range(3))
+
+def translMatrix44(v):
+    return tuple( tuple((IDENTITY44[i][j] if j < 3 or i == 3 else v[i]) for j in range(4)) for i in range(4))
+
 def safeEval(p):
     if '__' in p:
         raise ValueError("Insecure entry")
@@ -114,12 +163,17 @@ class Mesh3DS(object):
         i = 0
         for (name,parent,pivot) in self.objects:
             try:
-                (object_vertices,object_faces,object_material_data,object_matrix,object_translation) = self.objectData[name]
+                (object_vertices,object_faces,object_material_data,object_matrix) = self.objectData[name]
             except KeyError:
                  continue
 
             if not object_vertices:
                  continue
+
+            if determinant44(object_matrix) < 0:
+                transform = mulMatrix44(object_matrix, mulMatrix44(((-1,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1)), invertMatrix44(object_matrix)))
+            else:
+                transform = None
 
             if pivot != V3(0,0,0):
                delta = applyMatrix(object_matrix, -pivot)
@@ -129,13 +183,14 @@ class Mesh3DS(object):
             firstObjectVertex = len(self.vertices)
 
             for v in object_vertices:
-                if delta is not None:
-                    v1 = v + delta
-                else:
-                    v1 = v
+                if transform:
+                    v = applyMatrix44(transform, v)
+
+                if delta:
+                    v = v + delta
 
                 if self.swapYZ:
-                    self.vertices.append(V3(v1[0],v1[2],-v1[1]))
+                    self.vertices.append(V3(v[0],v[2],-v[1]))
                 else:
                     self.vertices.append(v1)
 
@@ -240,7 +295,6 @@ class Mesh3DS(object):
         self.object_faces = []
         self.object_material_data = []
         self.object_matrix = None
-        self.object_translation = None
 
         lengthRemaining, self.object_name = self.readAsciiz(lengthRemaining)
         while lengthRemaining > 0:
@@ -271,9 +325,8 @@ class Mesh3DS(object):
                 lengthRemaining -= chunkLength - 6
 
         if self.object_matrix is None:
-            self.object_matrix = ((1,0,0),(0,1,0),(0,0,1))
-            self.object_translation = 0
-        self.objectData[self.object_name] = (self.object_vertices,self.object_faces,self.object_material_data, self.object_matrix, self.object_translation)
+            self.object_matrix = IDENTITY44
+        self.objectData[self.object_name] = (self.object_vertices,self.object_faces,self.object_material_data, self.object_matrix)
 
 
     def handle_TRI_VERTEXL(self,lengthRemaining):
@@ -303,13 +356,12 @@ class Mesh3DS(object):
                 lengthRemaining -= chunkLength - 6
 
     def handle_TRI_LOCAL(self,lengthRemaining):
-        self.object_matrix = [ [0,0,0], [0,0,0], [0,0,0] ]
-        for i in xrange(3):
+        m = [ [1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1] ]
+        for i in xrange(4):
             for j in xrange(3):
-                self.object_matrix[j][i] = struct.unpack("<f", self.file.read(4))[0]
+                m[j][i] = struct.unpack("<f", self.file.read(4))[0]
                 lengthRemaining -= 4
-        self.object_translation = V3(struct.unpack("<fff", self.file.read(3*4)))
-        lengthRemaining -= 3*4
+        self.object_matrix = m
         self.skip(lengthRemaining)
 
     def handle_TRI_MATERIAL(self,lengthRemaining):
