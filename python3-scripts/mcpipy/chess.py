@@ -221,7 +221,7 @@ def animateMovePiece(start,stop):
     b = getCoords(stop[0],stop[1])
     piece = pieces[start]
     if not fast:
-        line = drawing.Drawing.getLine(a[0],a[1],a[2],b[0],b[1],b[2])
+        line = drawing.getLine(a[0],a[1],a[2],b[0],b[1],b[2])
         for point in line[1:]:
             piece.moveTo(point[0],point[1],point[2])
             time.sleep(0.1)
