@@ -58,6 +58,7 @@ public class RaspberryJamMod
 	private APIServer fullAPIServer = null;
 	private PythonExternalCommand pythonExternalCommand = null;
 	private NightVisionExternalCommand nightVisionExternalCommand = null;
+	private CameraCommand cameraCommand = null;
 	public static ScriptExternalCommand[] scriptExternalCommands = null;
 	public static Configuration configFile;
 	public static int portNumber = 4711;
@@ -107,6 +108,8 @@ public class RaspberryJamMod
 		FMLCommonHandler.instance().bus().register(clientEventHandler);
 		nightVisionExternalCommand = new NightVisionExternalCommand(clientEventHandler);
 		net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(nightVisionExternalCommand);
+		cameraCommand = new CameraCommand();
+		net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(cameraCommand);
 	}
 
 	public static void synchronizeConfig() {

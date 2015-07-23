@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -75,6 +76,7 @@ public class APIHandler {
 	protected static final String SETNORMAL = "setNormal";
 	protected static final String GETENTITYID = "getEntityId";
 	protected static final String SETDEBUG = "setDebug"; // EXPERIMENTAL AND UNSUPPORTED
+	protected static final String SETDISTANCE = "setDistance"; // EXPERIMENTAL AND UNSUPPORTED
 
 	// player.* or entity.*
 	protected static final String GETDIRECTION = "getDirection";
@@ -485,6 +487,26 @@ public class APIHandler {
 				return;
 			
 			mc.gameSettings.debugCamEnable = true;
+		}
+		else if (cmd.equals(SETDISTANCE)) {
+			Float d = scan.nextFloat();
+			Class c = net.minecraft.client.renderer.EntityRenderer.class;
+			try {
+				Field f = c.getDeclaredField("thirdPersonDistance");
+				f.setAccessible(true);
+				f.set(mc.entityRenderer,d);
+			}
+			catch (Exception e) {
+				System.out.println(""+e);
+			}
+			try {
+				Field f = c.getDeclaredField("thirdPersonDistanceTemp");
+				f.setAccessible(true);
+				f.set(mc.entityRenderer,d);
+			}
+			catch (Exception e) {
+				System.out.println(""+e);
+			}
 		}
 	}
 
