@@ -41,14 +41,17 @@ public class CameraCommand implements ICommand {
 
 		if (args.length == 1) {
 			List<String> options = new ArrayList<String>();
-			options.add("distance");
-			options.add("debug");
+			if ("distance".startsWith(args[0])) 
+				options.add("distance");
+			if ("debug".startsWith(args[0]))
+				options.add("debug");
 			return options;
 		}
 		else if (args.length == 2 && args[0].equals("debug")) {
 			List<String> options = new ArrayList<String>();
 			options.add("on");
 			options.add("off");
+			options.add("toggle");
 			return options;
 		}
 		return null;
