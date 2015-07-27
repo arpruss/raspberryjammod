@@ -26,9 +26,9 @@ SOFTWARE.
 from zipfile import ZipFile
 from StringIO import StringIO
 import sys
-import contextlib
 import urllib2
 import struct
+from collections import OrderedDict
 import mcpi.minecraft as minecraft
 from copy import copy
 from mcpi.block import *
@@ -383,8 +383,19 @@ class Mesh(object):
     UNSPECIFIED = None
     SUPPORTED_ARCHIVES = set(['gz','zip'])
 
-    def __init__(self,mc,infile,rewrite=True):
-         self.mc = mc
+    def __init__(self,infile,minecraft=None,rewrite=True):
+         if minecraft:
+             self.setBlock = minecraft.setBlock
+             self.message = minecraft.postToChat
+         else:
+             self.output = OrderedDict()
+             def setBlock(v,b):
+                 self.output[v] = b
+             self.setBlock = setBlock
+             def message(m):
+                 print m
+             self.message = message
+
          self.rewrite = rewrite
          self.url = None
          self.urlgz = None
@@ -491,7 +502,7 @@ class Mesh(object):
                  raise IOError("Cannot find mesh file")
              if self.meshName.lower().endswith(".3ds"):
                  self.swapYZ = True
-             mc.postToChat("Creating a default control file")
+             self.message("Creating a default control file")
              with open(self.controlFile,"w") as f:
                 self.controlFileLines = []
                 self.controlFileLines.append("file "+repr(os.path.basename(self.meshName))+"\n")
@@ -530,7 +541,7 @@ class Mesh(object):
         if os.path.isfile(self.meshName+".gz"):
             return self.meshName+".gz", gzip.open, None
         if tryDownload and (self.url or self.urlgz):
-            self.mc.postToChat("Downloading mesh")
+            self.message("Downloading mesh")
             urlzip = False
             if self.urlgz:
                 url = self.urlgz
@@ -545,7 +556,7 @@ class Mesh(object):
             with open(outName+".tempDownload","wb") as f:
                 f.write(content)
             os.rename(outName+".tempDownload", outName)
-            self.mc.postToChat("Downloaded")
+            self.message("Downloaded")
             return self.getFile()
         else:
             raise IOError("File not found")
@@ -565,7 +576,7 @@ class Mesh(object):
 
         name,myopen,closeArchive = self.getFile()
         if self.credits:
-            self.mc.postToChat("Credits: "+self.credits)
+            self.message("Credits: "+self.credits)
 
         if name.endswith(".3ds") or name.endswith(".3ds.gz"):
             mesh = Mesh3DS(name,myopen=myopen,swapYZ=self.swapYZ)
@@ -577,7 +588,7 @@ class Mesh(object):
                 self.materialOrders.append(self.materialOrderDict.get(name, 0))
                 self.materialBlocks.append(self.materialBlockDict.get(name, self.default))
                 if name not in self.materialBlockDict and name not in warned:
-                    self.mc.postToChat("Material "+name+" not defined")
+                    self.message("Material "+name+" not defined")
                     warned.add(name)
         else:
             self.materialBlocks = [ self.default ]
@@ -617,7 +628,7 @@ class Mesh(object):
                             self.materialOrders.append(self.materialOrderDict.get(name, 0))
                             self.materialBlocks.append(self.materialBlockDict.get(name, self.default))
                             if name not in self.materialBlockDict and name not in warned:
-                                self.mc.postToChat("Material "+name+" not defined")
+                                self.message("Material "+name+" not defined")
                                 warned.add(name)
 
         if closeArchive:
@@ -625,7 +636,7 @@ class Mesh(object):
 
         if self.rewrite and warned:
             try:
-                self.mc.postToChat("Rewriting control file to include missing materials")
+                self.message("Rewriting control file to include missing materials")
                 with open(self.controlFile+".tempFile", "w") as f:
                     f.write(''.join(self.controlFileLines[:self.endLineIndex]))
                     if not self.haveMaterialArea:
@@ -643,9 +654,11 @@ class Mesh(object):
                     pass
                 os.rename(self.controlFile+".tempFile", self.controlFile)
             except:
-                self.mc.postToChat("Couldn't rewrite control file")
+                self.message("Couldn't rewrite control file")
 
     def scale(self, bottomCenter, matrix=None):
+        bottomCenter = V3(bottomCenter)
+        
         minimum = [None, None, None]
         maximum = [None, None, None]
 
@@ -677,7 +690,7 @@ class Mesh(object):
         block = self.materialBlocks[material]
         for vertex in vertices:
             if material != self.drawRecord.get(vertex):
-                self.mc.setBlock(vertex, block)
+                self.setBlock(vertex, block)
                 self.drawRecord[vertex] = material
 
     def render(self):
@@ -690,16 +703,18 @@ class Mesh(object):
 
         for faceCount,(material,face) in enumerate(faces):
             if faceCount % 4000 == 0:
-                self.mc.postToChat("{0:.1f}%".format(100. * faceCount / len(self.faces)))
+                self.message("{0:.1f}%".format(100. * faceCount / len(self.faces)))
 
             faceVertices = [self.vertices[v] for v in face]
             self.drawVertices(getFace(faceVertices), material)
 
 def go(filename, args=[]):
     mc = minecraft.Minecraft()
+    
+    playerPos = mc.player.getPos()
 
     mc.postToChat("Preparing")
-    mesh = Mesh(mc, filename)
+    mesh = Mesh(filename, minecraft=mc)
     mc.postToChat("Reading")
     mesh.read()
     mc.postToChat("Scaling")
@@ -724,9 +739,10 @@ def go(filename, args=[]):
              roll = float(args.pop(0))
        matrix = makeMatrix(yaw, pitch, roll)
 
-    mesh.scale(mc.player.getPos(), matrix)
-    mc.postToChat("Clearing")
+    mesh.scale(playerPos, matrix)
+    
     if 'n' not in opts:
+        mc.postToChat("Clearing")
         mc.setBlocks(mesh.corner1,mesh.corner2,AIR)
     mc.postToChat("Rendering")
     mesh.render()
