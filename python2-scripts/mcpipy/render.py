@@ -26,6 +26,7 @@ SOFTWARE.
 from zipfile import ZipFile
 from StringIO import StringIO
 import sys
+import contextlib
 import urllib2
 import struct
 import mcpi.minecraft as minecraft
@@ -377,9 +378,10 @@ class Mesh3DS(object):
             lengthRemaining -= 2
         self.object_material_data.append( (name, faces) )
         self.skip(lengthRemaining)
-        
+
 class Mesh(object):
     UNSPECIFIED = None
+    SUPPORTED_ARCHIVES = set(['gz','zip'])
 
     def __init__(self,mc,infile,rewrite=True):
          self.mc = mc
@@ -387,12 +389,13 @@ class Mesh(object):
          self.url = None
          self.urlgz = None
          self.urlzip = None
-         self.swapYZ = False
+         self.swapYZ = None
          self.credits = None
          self.size = 100
          self.preYaw = 0
          self.prePitch = 0
          self.preRoll = 0
+         self.archive = None
          self.default = STONE
          self.materialBlockDict = {}
          self.materialOrderDict = {}
@@ -435,15 +438,21 @@ class Mesh(object):
                      continue
                  found = re.match('([^\\s]+) (.*)$', line)
                  if found:
+                     def getString():
+                         if found.group(2).startswith('"') or found.group(2).startswith("'"):
+                             return safeEval(found.group(2))
+                         else:
+                             return found.group(2)
                      token = found.group(1).lower()
                      if materialMode:
                          self.materialBlockDict[found.group(1)] = parseBlock(found.group(2),self.default)
                      elif token == "file":
-                         if found.group(2).startswith('"') or found.group(2).startswith("'"):
-                             self.specifiedMeshName = safeEval(found.group(2))
-                         else:
-                             self.specifiedMeshName = found.group(2)
+                         self.specifiedMeshName = getString()
                          self.meshName = dirname + "/" + self.specifiedMeshName
+                     elif token == "archive":
+                         self.archive = getString()
+                         if self.archive.lower() not in Mesh.SUPPORTED_ARCHIVES:
+                             self.archive = dirname + '/' + self.archive
                      elif token == "swapyz":
                          self.swapYZ = bool(safeEval(found.group(2).capitalize()))
                      elif token == "credits":
@@ -452,8 +461,6 @@ class Mesh(object):
                          self.url = found.group(2)
                      elif token == "urlgz":
                          self.urlgz = found.group(2)
-                     elif token == "urlzip":
-                         self.urlzip = found.group(2)
                      elif token == "size":
                          self.size = safeEval(found.group(2))
                      elif token == "default":
@@ -475,10 +482,14 @@ class Mesh(object):
                      break
              if self.endLineIndex is None:
                  self.endLineIndex = len(self.controlFileLines)
+             if self.archive in Mesh.SUPPORTED_ARCHIVES:
+                 self.archive = self.meshName + "." + self.archive
+             if self.swapYZ is None:
+                 self.swapYZ = self.meshName.lower().endswith(".3ds")
          elif rewrite:
              if not os.path.isfile(self.meshName):
                  raise IOError("Cannot find mesh file")
-             if self.meshName.endswith(".3ds") or self.meshName.endswith(".3ds.gz"):
+             if self.meshName.lower().endswith(".3ds"):
                  self.swapYZ = True
              mc.postToChat("Creating a default control file")
              with open(self.controlFile,"w") as f:
@@ -488,9 +499,7 @@ class Mesh(object):
                    self.controlFileLines.append("swapyz 1\n")
                 else:
                    self.controlFileLines.append("swapyz 0\n")
-                self.controlFileLines.append("#credits [add?]\n")
-                self.controlFileLines.append("#url [add?]\n")
-                self.controlFileLines.append("#urlgz [add?]\n")
+                self.controlFileLines.append("#credits Mesh by ..., copyright (c) ...\n")
                 self.controlFileLines.append("yaw 0\n")
                 self.controlFileLines.append("pitch 0\n")
                 self.controlFileLines.append("roll 0\n")
@@ -508,32 +517,31 @@ class Mesh(object):
              self.size /= 2
 
     def getFile(self, tryDownload=True):
-        if os.path.isfile(self.meshName):
-            if self.meshName.endswith(".gz"):
-                return self.meshName, gzip.open
+        if self.archive and os.path.isfile(self.archive):
+            if self.archive.lower().endswith(".gz"):
+                return self.archive, gzip.open, None
+            elif self.archive.lower().endswith(".zip"):
+                z = ZipFile(self.archive)
+                return self.specifiedMeshName, z.open, z.close
             else:
-                return self.meshName, open
+                raise IOError("Unsupported archive type")
+        if os.path.isfile(self.meshName):
+            return self.meshName, open, None
         if os.path.isfile(self.meshName+".gz"):
-            return self.meshName+".gz", gzip.open
-        if tryDownload and (self.url or self.urlgz or self.urlzip):
+            return self.meshName+".gz", gzip.open, None
+        if tryDownload and (self.url or self.urlgz):
             self.mc.postToChat("Downloading mesh")
             urlzip = False
             if self.urlgz:
                 url = self.urlgz
-                if not self.meshName.endswith(".gz"):
-                    outName = self.meshName+".gz"
-                else:
-                    outName = self.meshName
+                outName = self.meshName+".gz"
             elif self.url:
                 url = self.url
-                outName = self.meshName
-            elif self.urlzip:
-                urlZip = True
-                url = self.urlzip
-                outName = self.meshName
+                if self.archive:
+                    outName = self.archive
+                else:
+                    outName = self.meshName
             content = urllib2.urlopen(url).read()
-            if urlZip:
-                content = ZipFile(StringIO(content)).open(self.specifiedMeshName,'r').read()
             with open(outName+".tempDownload","wb") as f:
                 f.write(content)
             os.rename(outName+".tempDownload", outName)
@@ -555,7 +563,7 @@ class Mesh(object):
         else:
             matrix = None
 
-        name,myopen = self.getFile()
+        name,myopen,closeArchive = self.getFile()
         if self.credits:
             self.mc.postToChat("Credits: "+self.credits)
 
@@ -611,6 +619,9 @@ class Mesh(object):
                             if name not in self.materialBlockDict and name not in warned:
                                 self.mc.postToChat("Material "+name+" not defined")
                                 warned.add(name)
+
+        if closeArchive:
+            closeArchive()
 
         if self.rewrite and warned:
             try:
