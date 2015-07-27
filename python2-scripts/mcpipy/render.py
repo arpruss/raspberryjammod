@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from zipfile import ZipFile
+from StringIO import StringIO
 import sys
 import urllib2
 import struct
@@ -384,6 +386,7 @@ class Mesh(object):
          self.rewrite = rewrite
          self.url = None
          self.urlgz = None
+         self.urlzip = None
          self.swapYZ = False
          self.credits = None
          self.size = 100
@@ -404,6 +407,7 @@ class Mesh(object):
          self.corner1 = None
          self.corner2 = None
          self.endLineIndex = None
+         self.specifiedMeshName = None
 
          base,ext = os.path.splitext(infile)
          if ext.lower() == '.obj' or ext.lower() == ".3ds":
@@ -436,9 +440,10 @@ class Mesh(object):
                          self.materialBlockDict[found.group(1)] = parseBlock(found.group(2),self.default)
                      elif token == "file":
                          if found.group(2).startswith('"') or found.group(2).startswith("'"):
-                             self.meshName = dirname + "/" + safeEval(found.group(2))
+                             self.specifiedMeshName = safeEval(found.group(2))
                          else:
-                             self.meshName = dirname + "/" + found.group(2)
+                             self.specifiedMeshName = found.group(2)
+                         self.meshName = dirname + "/" + self.specifiedMeshName
                      elif token == "swapyz":
                          self.swapYZ = bool(safeEval(found.group(2).capitalize()))
                      elif token == "credits":
@@ -447,6 +452,8 @@ class Mesh(object):
                          self.url = found.group(2)
                      elif token == "urlgz":
                          self.urlgz = found.group(2)
+                     elif token == "urlzip":
+                         self.urlzip = found.group(2)
                      elif token == "size":
                          self.size = safeEval(found.group(2))
                      elif token == "default":
@@ -508,18 +515,25 @@ class Mesh(object):
                 return self.meshName, open
         if os.path.isfile(self.meshName+".gz"):
             return self.meshName+".gz", gzip.open
-        if tryDownload and (self.url or self.urlgz):
+        if tryDownload and (self.url or self.urlgz or self.urlzip):
             self.mc.postToChat("Downloading mesh")
+            urlzip = False
             if self.urlgz:
                 url = self.urlgz
                 if not self.meshName.endswith(".gz"):
                     outName = self.meshName+".gz"
                 else:
                     outName = self.meshName
-            else:
+            elif self.url:
                 url = self.url
                 outName = self.meshName
+            elif self.urlzip:
+                urlZip = True
+                url = self.urlzip
+                outName = self.meshName
             content = urllib2.urlopen(url).read()
+            if urlZip:
+                content = ZipFile(StringIO(content)).open(self.specifiedMeshName,'r').read()
             with open(outName+".tempDownload","wb") as f:
                 f.write(content)
             os.rename(outName+".tempDownload", outName)
