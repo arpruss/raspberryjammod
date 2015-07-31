@@ -710,7 +710,7 @@ class Mesh(object):
 
 def go(filename, args=[]):
     mc = minecraft.Minecraft()
-    
+
     playerPos = mc.player.getPos()
 
     mc.postToChat("Preparing")
@@ -721,11 +721,13 @@ def go(filename, args=[]):
 
     opts = ""
 
-    if args and re.match("^-?[a-zA-Z]", args[0]):
+    if args and (args[0] == '-' or re.match("^-?[a-zA-Z]", args[0])):
        opts = args.pop(0)
 
     if args:
-       mesh.size = int(args.pop(0))
+       s = args.pop(0)
+       if s and int(s):
+           mesh.size = int(s)
 
     matrix = None
 
@@ -740,7 +742,7 @@ def go(filename, args=[]):
        matrix = makeMatrix(yaw, pitch, roll)
 
     mesh.scale(playerPos, matrix)
-    
+
     if 'n' not in opts:
         mc.postToChat("Clearing")
         mc.setBlocks(mesh.corner1,mesh.corner2,AIR)
@@ -751,6 +753,47 @@ def go(filename, args=[]):
 # main program
 if __name__ == "__main__":
     if len(sys.argv)<2:
-        go("models/RaspberryPi.txt")
+        if settings.isPE:
+            go("models/RaspberryPi.txt")
+        else:
+            from Tkinter import *
+            from tkFileDialog import askopenfilename
+            master = Tk()
+            Label(master, text='Size').grid(row=0)
+            size = Entry(master)
+            size.grid(row=0,column=1)
+            size.delete(0,END)
+            Label(master, text='Yaw').grid(row=1)
+            yaw = Entry(master)
+            yaw.grid(row=1,column=1)
+            yaw.delete(0,END)
+            yaw.insert(0,"0")
+            Label(master, text='Pitch:').grid(row=2)
+            pitch = Entry(master)
+            pitch.grid(row=2,column=1)
+            pitch.delete(0,END)
+            pitch.insert(0,"0")
+            Label(master, text='Roll:').grid(row=3)
+            roll = Entry(master)
+            roll.grid(row=3,column=1)
+            roll.delete(0,END)
+            roll.insert(0,"0")
+            clearing = IntVar()
+            c = Checkbutton(master, text="Clear area", variable = clearing)
+            c.grid(row=4,column=0,columnspan=2)
+            c.select()
+
+            def selectFileAndGo():
+                master.withdraw()
+                name=askopenfilename(initialdir='models',filetypes=['controlfile {txt}'])
+                if name:
+                     options = '-'
+                     if not clearing:
+                         options += 'n'
+                     go(name, [options, size.get(), yaw.get(), pitch.get(), roll.get()])
+            b = Button(master, text="Select file and go",command = selectFileAndGo)
+            b.grid(row=5,column=0,columnspan=2,rowspan=2)
+
+            mainloop()
     else:
         go("models/" + sys.argv[1] + ".txt", sys.argv[2:])
