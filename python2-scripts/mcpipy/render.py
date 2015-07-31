@@ -759,6 +759,7 @@ if __name__ == "__main__":
             from Tkinter import *
             from tkFileDialog import askopenfilename
             master = Tk()
+            master.wm_title("render")
             master.attributes("-topmost", True)
             Label(master, text='Size').grid(row=0)
             size = Entry(master)
