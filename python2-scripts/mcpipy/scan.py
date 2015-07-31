@@ -51,7 +51,7 @@ def save(vehicle,name):
 def restore(vehicle,name,pos):
     directory = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
     if name and name != '-':
-        path = os.path.join(dir,name+".py")
+        path = os.path.join(directory,name+".py")
     else:
         path = getLoadPath('vehicles', 'py')
         if not path:
