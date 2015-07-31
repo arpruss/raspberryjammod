@@ -759,6 +759,7 @@ if __name__ == "__main__":
             from Tkinter import *
             from tkFileDialog import askopenfilename
             master = Tk()
+            master.attributes("-topmost", True)
             Label(master, text='Size').grid(row=0)
             size = Entry(master)
             size.grid(row=0,column=1)
@@ -784,13 +785,17 @@ if __name__ == "__main__":
             c.select()
 
             def selectFileAndGo():
-                master.withdraw()
-                name=askopenfilename(initialdir='models',filetypes=['controlfile {txt}'])
+                name=askopenfilename(initialdir='models',filetypes=['controlfile {*.txt}'])
                 if name:
                      options = '-'
                      if not clearing:
                          options += 'n'
-                     go(name, [options, size.get(), yaw.get(), pitch.get(), roll.get()])
+                     args = [options, size.get(), yaw.get(), pitch.get(), roll.get()]
+                     master.destroy()
+                     go(name, args)
+                else:
+                     master.destroy()
+
             b = Button(master, text="Select file and go",command = selectFileAndGo)
             b.grid(row=5,column=0,columnspan=2,rowspan=2)
 
