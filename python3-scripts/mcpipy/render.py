@@ -23,9 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from zipfile import ZipFile
+from StringIO import StringIO
 import sys
 import urllib.request, urllib.error, urllib.parse
 import struct
+from collections import OrderedDict
 import mcpi.minecraft as minecraft
 from copy import copy
 from mcpi.block import *
@@ -375,21 +378,35 @@ class Mesh3DS(object):
             lengthRemaining -= 2
         self.object_material_data.append( (name, faces) )
         self.skip(lengthRemaining)
-        
+
 class Mesh(object):
     UNSPECIFIED = None
+    SUPPORTED_ARCHIVES = set(['gz','zip'])
 
-    def __init__(self,mc,infile,rewrite=True):
-         self.mc = mc
+    def __init__(self,infile,minecraft=None,rewrite=True):
+         if minecraft:
+             self.setBlock = minecraft.setBlock
+             self.message = minecraft.postToChat
+         else:
+             self.output = OrderedDict()
+             def setBlock(v,b):
+                 self.output[v] = b
+             self.setBlock = setBlock
+             def message(m):
+                 print(m)
+             self.message = message
+
          self.rewrite = rewrite
          self.url = None
          self.urlgz = None
-         self.swapYZ = False
+         self.urlzip = None
+         self.swapYZ = None
          self.credits = None
          self.size = 100
          self.preYaw = 0
          self.prePitch = 0
          self.preRoll = 0
+         self.archive = None
          self.default = STONE
          self.materialBlockDict = {}
          self.materialOrderDict = {}
@@ -404,6 +421,7 @@ class Mesh(object):
          self.corner1 = None
          self.corner2 = None
          self.endLineIndex = None
+         self.specifiedMeshName = None
 
          base,ext = os.path.splitext(infile)
          if ext.lower() == '.obj' or ext.lower() == ".3ds":
@@ -431,14 +449,21 @@ class Mesh(object):
                      continue
                  found = re.match('([^\\s]+) (.*)$', line)
                  if found:
+                     def getString():
+                         if found.group(2).startswith('"') or found.group(2).startswith("'"):
+                             return safeEval(found.group(2))
+                         else:
+                             return found.group(2)
                      token = found.group(1).lower()
                      if materialMode:
                          self.materialBlockDict[found.group(1)] = parseBlock(found.group(2),self.default)
                      elif token == "file":
-                         if found.group(2).startswith('"') or found.group(2).startswith("'"):
-                             self.meshName = dirname + "/" + safeEval(found.group(2))
-                         else:
-                             self.meshName = dirname + "/" + found.group(2)
+                         self.specifiedMeshName = getString()
+                         self.meshName = dirname + "/" + self.specifiedMeshName
+                     elif token == "archive":
+                         self.archive = getString()
+                         if self.archive.lower() not in Mesh.SUPPORTED_ARCHIVES:
+                             self.archive = dirname + '/' + self.archive
                      elif token == "swapyz":
                          self.swapYZ = bool(safeEval(found.group(2).capitalize()))
                      elif token == "credits":
@@ -468,12 +493,16 @@ class Mesh(object):
                      break
              if self.endLineIndex is None:
                  self.endLineIndex = len(self.controlFileLines)
+             if self.archive in Mesh.SUPPORTED_ARCHIVES:
+                 self.archive = self.meshName + "." + self.archive
+             if self.swapYZ is None:
+                 self.swapYZ = self.meshName.lower().endswith(".3ds")
          elif rewrite:
              if not os.path.isfile(self.meshName):
                  raise IOError("Cannot find mesh file")
-             if self.meshName.endswith(".3ds") or self.meshName.endswith(".3ds.gz"):
+             if self.meshName.lower().endswith(".3ds"):
                  self.swapYZ = True
-             mc.postToChat("Creating a default control file")
+             self.message("Creating a default control file")
              with open(self.controlFile,"w") as f:
                 self.controlFileLines = []
                 self.controlFileLines.append("file "+repr(os.path.basename(self.meshName))+"\n")
@@ -481,9 +510,7 @@ class Mesh(object):
                    self.controlFileLines.append("swapyz 1\n")
                 else:
                    self.controlFileLines.append("swapyz 0\n")
-                self.controlFileLines.append("#credits [add?]\n")
-                self.controlFileLines.append("#url [add?]\n")
-                self.controlFileLines.append("#urlgz [add?]\n")
+                self.controlFileLines.append("#credits Mesh by ..., copyright (c) ...\n")
                 self.controlFileLines.append("yaw 0\n")
                 self.controlFileLines.append("pitch 0\n")
                 self.controlFileLines.append("roll 0\n")
@@ -501,29 +528,35 @@ class Mesh(object):
              self.size /= 2
 
     def getFile(self, tryDownload=True):
-        if os.path.isfile(self.meshName):
-            if self.meshName.endswith(".gz"):
-                return self.meshName, gzip.open
+        if self.archive and os.path.isfile(self.archive):
+            if self.archive.lower().endswith(".gz"):
+                return self.archive, gzip.open, None
+            elif self.archive.lower().endswith(".zip"):
+                z = ZipFile(self.archive)
+                return self.specifiedMeshName, z.open, z.close
             else:
-                return self.meshName, open
+                raise IOError("Unsupported archive type")
+        if os.path.isfile(self.meshName):
+            return self.meshName, open, None
         if os.path.isfile(self.meshName+".gz"):
-            return self.meshName+".gz", gzip.open
+            return self.meshName+".gz", gzip.open, None
         if tryDownload and (self.url or self.urlgz):
-            self.mc.postToChat("Downloading mesh")
+            self.message("Downloading mesh")
+            urlzip = False
             if self.urlgz:
                 url = self.urlgz
-                if not self.meshName.endswith(".gz"):
-                    outName = self.meshName+".gz"
+                outName = self.meshName+".gz"
+            elif self.url:
+                url = self.url
+                if self.archive:
+                    outName = self.archive
                 else:
                     outName = self.meshName
-            else:
-                url = self.url
-                outName = self.meshName
             content = urllib.request.urlopen(url).read()
             with open(outName+".tempDownload","wb") as f:
                 f.write(content)
             os.rename(outName+".tempDownload", outName)
-            self.mc.postToChat("Downloaded")
+            self.message("Downloaded")
             return self.getFile()
         else:
             raise IOError("File not found")
@@ -541,9 +574,9 @@ class Mesh(object):
         else:
             matrix = None
 
-        name,myopen = self.getFile()
+        name,myopen,closeArchive = self.getFile()
         if self.credits:
-            self.mc.postToChat("Credits: "+self.credits)
+            self.message("Credits: "+self.credits)
 
         if name.endswith(".3ds") or name.endswith(".3ds.gz"):
             mesh = Mesh3DS(name,myopen=myopen,swapYZ=self.swapYZ)
@@ -555,7 +588,7 @@ class Mesh(object):
                 self.materialOrders.append(self.materialOrderDict.get(name, 0))
                 self.materialBlocks.append(self.materialBlockDict.get(name, self.default))
                 if name not in self.materialBlockDict and name not in warned:
-                    self.mc.postToChat("Material "+name+" not defined")
+                    self.message("Material "+name+" not defined")
                     warned.add(name)
         else:
             self.materialBlocks = [ self.default ]
@@ -595,12 +628,15 @@ class Mesh(object):
                             self.materialOrders.append(self.materialOrderDict.get(name, 0))
                             self.materialBlocks.append(self.materialBlockDict.get(name, self.default))
                             if name not in self.materialBlockDict and name not in warned:
-                                self.mc.postToChat("Material "+name+" not defined")
+                                self.message("Material "+name+" not defined")
                                 warned.add(name)
+
+        if closeArchive:
+            closeArchive()
 
         if self.rewrite and warned:
             try:
-                self.mc.postToChat("Rewriting control file to include missing materials")
+                self.message("Rewriting control file to include missing materials")
                 with open(self.controlFile+".tempFile", "w") as f:
                     f.write(''.join(self.controlFileLines[:self.endLineIndex]))
                     if not self.haveMaterialArea:
@@ -618,9 +654,11 @@ class Mesh(object):
                     pass
                 os.rename(self.controlFile+".tempFile", self.controlFile)
             except:
-                self.mc.postToChat("Couldn't rewrite control file")
+                self.message("Couldn't rewrite control file")
 
     def scale(self, bottomCenter, matrix=None):
+        bottomCenter = V3(bottomCenter)
+        
         minimum = [None, None, None]
         maximum = [None, None, None]
 
@@ -652,7 +690,7 @@ class Mesh(object):
         block = self.materialBlocks[material]
         for vertex in vertices:
             if material != self.drawRecord.get(vertex):
-                self.mc.setBlock(vertex, block)
+                self.setBlock(vertex, block)
                 self.drawRecord[vertex] = material
 
     def render(self):
@@ -665,7 +703,7 @@ class Mesh(object):
 
         for faceCount,(material,face) in enumerate(faces):
             if faceCount % 4000 == 0:
-                self.mc.postToChat("{0:.1f}%".format(100. * faceCount / len(self.faces)))
+                self.message("{0:.1f}%".format(100. * faceCount / len(self.faces)))
 
             faceVertices = [self.vertices[v] for v in face]
             self.drawVertices(getFace(faceVertices), material)
@@ -673,19 +711,23 @@ class Mesh(object):
 def go(filename, args=[]):
     mc = minecraft.Minecraft()
 
+    playerPos = mc.player.getPos()
+
     mc.postToChat("Preparing")
-    mesh = Mesh(mc, filename)
+    mesh = Mesh(filename, minecraft=mc)
     mc.postToChat("Reading")
     mesh.read()
     mc.postToChat("Scaling")
 
     opts = ""
 
-    if args and re.match("^-?[a-zA-Z]", args[0]):
+    if args and (args[0] == '-' or re.match("^-?[a-zA-Z]", args[0])):
        opts = args.pop(0)
 
     if args:
-       mesh.size = int(args.pop(0))
+       s = args.pop(0)
+       if s and int(s):
+           mesh.size = int(s)
 
     matrix = None
 
@@ -699,9 +741,10 @@ def go(filename, args=[]):
              roll = float(args.pop(0))
        matrix = makeMatrix(yaw, pitch, roll)
 
-    mesh.scale(mc.player.getPos(), matrix)
-    mc.postToChat("Clearing")
+    mesh.scale(playerPos, matrix)
+
     if 'n' not in opts:
+        mc.postToChat("Clearing")
         mc.setBlocks(mesh.corner1,mesh.corner2,AIR)
     mc.postToChat("Rendering")
     mesh.render()
@@ -710,6 +753,53 @@ def go(filename, args=[]):
 # main program
 if __name__ == "__main__":
     if len(sys.argv)<2:
-        go("models/RaspberryPi.txt")
+        if settings.isPE:
+            go("models/RaspberryPi.txt")
+        else:
+            from Tkinter import *
+            from tkFileDialog import askopenfilename
+            master = Tk()
+            master.wm_title("render")
+            master.attributes("-topmost", True)
+            Label(master, text='Size').grid(row=0)
+            size = Entry(master)
+            size.grid(row=0,column=1)
+            size.delete(0,END)
+            Label(master, text='Yaw').grid(row=1)
+            yaw = Entry(master)
+            yaw.grid(row=1,column=1)
+            yaw.delete(0,END)
+            yaw.insert(0,"0")
+            Label(master, text='Pitch:').grid(row=2)
+            pitch = Entry(master)
+            pitch.grid(row=2,column=1)
+            pitch.delete(0,END)
+            pitch.insert(0,"0")
+            Label(master, text='Roll:').grid(row=3)
+            roll = Entry(master)
+            roll.grid(row=3,column=1)
+            roll.delete(0,END)
+            roll.insert(0,"0")
+            clearing = IntVar()
+            c = Checkbutton(master, text="Clear area", variable = clearing)
+            c.grid(row=4,column=0,columnspan=2)
+            c.select()
+
+            def selectFileAndGo():
+                name=askopenfilename(initialdir='models',filetypes=['controlfile {*.txt}'])
+                if name:
+                     options = '-'
+                     if not clearing:
+                         options += 'n'
+                     args = [options, size.get(), yaw.get(), pitch.get(), roll.get()]
+                     master.destroy()
+                     go(name, args)
+                else:
+                     master.destroy()
+
+            b = Button(master, text="Select file and go",command = selectFileAndGo)
+            b.grid(row=5,column=0,columnspan=2,rowspan=2)
+
+            mainloop()
     else:
         go("models/" + sys.argv[1] + ".txt", sys.argv[2:])

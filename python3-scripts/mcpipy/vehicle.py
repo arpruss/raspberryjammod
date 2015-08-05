@@ -28,6 +28,24 @@ from sys import maxsize
 from copy import copy
 import re
 
+def getSavePath(directory, extension):
+    import Tkinter
+    from tkFileDialog import asksaveasfilename
+    master = Tkinter.Tk()
+    master.attributes("-topmost", True)
+    path = asksaveasfilename(initialdir=directory,filetypes=['vehicle {*.'+extension+'}'],defaultextension="."+extension,title="Save")
+    master.destroy()
+    return path
+
+def getLoadPath(directory, extension):
+    import Tkinter
+    from tkFileDialog import askopenfilename
+    master = Tkinter.Tk()
+    master.attributes("-topmost", True)
+    path = askopenfilename(initialdir=directory,filetypes=['vehicle {*.'+extension+'}'],title="Open")
+    master.destroy()
+    return path
+
 class Vehicle():
     # the following blocks do not count as part of the vehicle
     TERRAIN = set((AIR.id,WATER_FLOWING.id,WATER_STATIONARY.id,GRASS.id,DIRT.id,LAVA_FLOWING.id,
@@ -350,24 +368,39 @@ if __name__ == '__main__':
     import os
 
     def save(name):
-        dir = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
+        directory = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
         try:
-            os.mkdir(dir)
+            os.mkdir(directory)
         except:
             pass
-        vehicle.save(os.path.join(dir,name+".py"))
-        minecraft.postToChat('Vehicle saved as "'+name+'".')
+        if name:
+            path = os.path.join(directory,name+".py")
+        else:
+            path = getSavePath(directory, "py")
+            if not path:
+                minecraft.postToChat('Canceled')
+                return
+        vehicle.save(path)
+        minecraft.postToChat('Vehicle saved in '+path)
 
     def load(name):
-        dir = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
-        vehicle.load(os.path.join(dir,name+".py"))
-        minecraft.postToChat('Vehicle "'+name+'" loaded.')
+        directory = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
+        if name:
+            path = os.path.join(directory,name+".py")
+        else:
+            path = getLoadPath(directory, "py")
+            if not path:
+                minecraft.postToChat('Canceled')
+                return
+
+        vehicle.load(path)
+        minecraft.postToChat('Vehicle loaded from '+path)
 
     def chatHelp():
         minecraft.postToChat("vlist: list vehicles")
         minecraft.postToChat("verase: erase vehicle and exit")
-        minecraft.postToChat("vsave filename: save vehicle")
-        minecraft.postToChat("vload filename: load vehicle")
+        minecraft.postToChat("vsave [filename]: save vehicle")
+        minecraft.postToChat("vload [filename]: load vehicle")
         minecraft.postToChat("vdriver [EntityName]: set driver to entity (omit for player) [Jam only]")
 
     def doScanRectangularPrism(vehicle, basePos, startRot):
@@ -414,8 +447,8 @@ if __name__ == '__main__':
     bubble = False
     nondestructive = False
     flash = True
-    loadName = None
-    saveName = None
+    doLoad = False
+    doSave = False
     scanRectangularPrism = False
     exitAfterDraw = False
     noInitialRotate = False
@@ -429,11 +462,14 @@ if __name__ == '__main__':
             elif x == 'q':
                 flash = False
             elif x == 's':
-                saveName = sys.argv[2]
-            elif x == 'l' and len(sys.argv)>2:
-                loadName = sys.argv[2]
-            elif x == 'L' and len(sys.argv)>2:
-                loadName = sys.argv[2]
+                saveName = sys.argv[2] if len(sys.argv)>2 else None
+                doSave = True
+            elif x == 'l':
+                loadName = sys.argv[2] if len(sys.argv)>2 else None
+                doLoad = True
+            elif x == 'L':
+                loadName = sys.argv[2] if len(sys.argv)>2 else None
+                doLoad = True
                 exitAfterDraw = True
             elif x == 'r':
                 scanRectangularPrism = True
@@ -447,7 +483,7 @@ if __name__ == '__main__':
     startRot = getRotation()
 
     vehicle = Vehicle(minecraft,nondestructive)
-    if loadName:
+    if doLoad:
         load(loadName)
     elif scanRectangularPrism:
         doScanRectangularPrism(vehicle,vehiclePos,startRot)
@@ -462,7 +498,7 @@ if __name__ == '__main__':
             minecraft.postToChat("Make a vehicle and then stand on or in it when starting this script.")
             exit()
 
-    if saveName:
+    if doSave:
         save(saveName)
         exit()
         minecraft.postToChat("Saved: exiting.")
@@ -498,7 +534,8 @@ if __name__ == '__main__':
                         if len(args) > 1:
                             save(args[1])
                         else:
-                            chatHelp()
+                            save(None)
+                            #chatHelp()
                     elif args[0] == 'vlist':
                         try:
                              out = None
@@ -516,15 +553,12 @@ if __name__ == '__main__':
                         except:
                              minecraft.postToChat('Error listing (maybe no directory?)')
                     elif args[0] == 'vload':
-                        if len(args) > 1:
-                            try:
-                                save("_backup")
-                                minecraft.postToChat('Old vehicle saved as "_backup".')
-                                load(args[1])
-                            except:
-                                minecraft.postToChat("Error loading "+args[1])
-                        else:
-                            chatHelp()
+                        try:
+                            save("_backup")
+                            minecraft.postToChat('Old vehicle saved as "_backup".')
+                            load(args[1] if len(args)>=2 else None)
+                        except:
+                            minecraft.postToChat("Error loading")
                     elif args[0] == 'vdriver':
                         if entity != None:
                             minecraft.removeEntity(entity)

@@ -1,4 +1,4 @@
-import vehicle
+from vehicle import Vehicle,getSavePath,getLoadPath
 import sys
 from mc import *
 from time import sleep
@@ -9,6 +9,8 @@ import os
 #   scan name x0 y0 z0 x1 y1 z1 : scan from (x0,y0,z0) relative to player to (x1,y1,z1) relative to player
 #   scan name y0 : scan from y0 to sky in sword-right-click specified rectangle
 #   scan name : scan from player feet to sky in sword-right-click specified rectangle
+#   scan name r : restore scan
+# Put a - for the name to be asked.
 #
 
 def getArea(basePos,depth):
@@ -28,21 +30,35 @@ def getArea(basePos,depth):
             if y > maxY:
                 maxY = y
     return (c1[0]-basePos.x,c1[1]-basePos.y,c1[2]-basePos.z),(c2[0]-basePos.x,maxY-basePos.y,c2[2]-basePos.z)
-        
+
 
 def save(vehicle,name):
-    dir = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
+    directory = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
     try:
-        os.mkdir(dir)
+        os.mkdir(directory)
     except:
         pass
-    vehicle.save(os.path.join(dir,name+".py"))
-    mc.postToChat('Saved as "'+name+'".')
+    if name and name != '-':
+        path = os.path.join(dir,name+".py")
+    else:
+        path = getSavePath('vehicles', 'py')
+        if not path:
+            mc.postToChat('Canceled')
+            return
+    vehicle.save(path)
+    mc.postToChat('Saved in '+path)
 
 def restore(vehicle,name,pos):
-    dir = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
-    mc.postToChat('Loading "'+name+'".')
-    vehicle.load(os.path.join(dir,name+".py"))
+    directory = os.path.join(os.path.dirname(sys.argv[0]),"vehicles")
+    if name and name != '-':
+        path = os.path.join(directory,name+".py")
+    else:
+        path = getLoadPath('vehicles', 'py')
+        if not path:
+            mc.postToChat('Canceled')
+            return
+    vehicle.load(path)
+    mc.postToChat('Loaded from '+path)
     minX = min(x for (x,y,z) in vehicle.baseVehicle)
     minY = min(y for (x,y,z) in vehicle.baseVehicle)
     minZ = min(z for (x,y,z) in vehicle.baseVehicle)
@@ -58,7 +74,7 @@ def restore(vehicle,name,pos):
 mc = Minecraft()
 basePos = mc.player.getTilePos()
 rot = mc.player.getRotation()
-vehicle = vehicle.Vehicle(mc)
+vehicle = Vehicle(mc)
 #restore(vehicle, "cottage", basePos)
 #exit()
 
