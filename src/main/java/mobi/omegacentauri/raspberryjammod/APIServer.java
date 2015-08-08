@@ -44,22 +44,41 @@ import net.minecraft.world.chunk.Chunk;
 
 public class APIServer {
 	private static final int MAX_CONNECTIONS = 64;
-	final private ServerSocket serverSocket;
+	private ServerSocket serverSocket;
 	private MCEventHandler eventHandler;
 	private boolean listening = true;
 	private List<Socket> socketList;
 	private boolean controlServer;
+	private int portNumber;
 
-	public APIServer(MCEventHandler eventHandler, int portNumber, boolean clientSide) throws IOException {
+	public APIServer(MCEventHandler eventHandler, int startPort, int endPort, boolean clientSide) throws IOException {
 		socketList = new ArrayList<Socket>();
 		this.eventHandler = eventHandler;
 		this.controlServer = ! clientSide;
-		if (RaspberryJamMod.allowRemote) {
-			serverSocket = new ServerSocket(portNumber);
+		this.serverSocket = null;
+
+		for (portNumber = startPort ; ; portNumber++ ) {
+			try {
+				if (RaspberryJamMod.allowRemote) {
+					serverSocket = new ServerSocket(portNumber);
+				}
+				else {
+					serverSocket = new ServerSocket(portNumber, 50, InetAddress.getByName("127.0.0.1"));
+				}
+				System.out.println("RaspberryJamMod listening on port "+portNumber);
+				return;
+			}
+			catch(IOException e) {
+				if (portNumber == endPort) {
+					portNumber = -1;
+					throw(e);
+				}
+			}
 		}
-		else {
-			serverSocket = new ServerSocket(portNumber, 50, InetAddress.getByName("127.0.0.1"));
-		}
+	}
+	
+	public int getPortNumber() {
+		return portNumber;
 	}
 
 	void communicate() throws IOException {

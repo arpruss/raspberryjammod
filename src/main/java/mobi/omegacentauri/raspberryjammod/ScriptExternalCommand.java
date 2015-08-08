@@ -254,7 +254,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 			environment.put("MINECRAFT_PLAYER_NAME", senderEntity.getName());
 			environment.put("MINECRAFT_PLAYER_ID", ""+senderEntity.getEntityId());
 		}
-		environment.put("MINECRAFT_API_PORT", ""+RaspberryJamMod.portNumber);
+		environment.put("MINECRAFT_API_PORT", ""+RaspberryJamMod.currentPortNumber);
 
 		pb.command(cmd);
 		try {

@@ -61,7 +61,7 @@ public class RaspberryJamMod
 	private CameraCommand cameraCommand = null;
 	public static ScriptExternalCommand[] scriptExternalCommands = null;
 	public static Configuration configFile;
-	public static int portNumber = 4711;
+	static int portNumber = 4711;
 	public static boolean concurrent = true;
 	public static boolean leftClickToo = true;
 	public static boolean allowRemote = true;
@@ -71,8 +71,10 @@ public class RaspberryJamMod
 	public static volatile boolean apiActive = false;
 	private ClientEventHandler clientEventHandler = null;
 	static boolean clientOnlyAPI = false;
+	static boolean searchForPort = false;
 	private MCEventHandler serverEventHandler = null;
 	private MinecraftServer s;
+	public static int currentPortNumber;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -114,6 +116,7 @@ public class RaspberryJamMod
 
 	public static void synchronizeConfig() {
 		portNumber = configFile.getInt("Port Number", Configuration.CATEGORY_GENERAL, 4711, 0, 65535, "Port number");
+		searchForPort = configFile.getBoolean("Port Search if Needed", Configuration.CATEGORY_GENERAL, false, "Port search if needed");
 		concurrent = configFile.getBoolean("Multiple Connections", Configuration.CATEGORY_GENERAL, true, "Multiple connections");
 		allowRemote = configFile.getBoolean("Remote Connections", Configuration.CATEGORY_GENERAL, true, "Remote connections");
 		leftClickToo = configFile.getBoolean("Detect Sword Left-Click", Configuration.CATEGORY_GENERAL, false, "Detect sword left-click");
@@ -180,7 +183,9 @@ public class RaspberryJamMod
 		FMLCommonHandler.instance().bus().register(serverEventHandler);
 		MinecraftForge.EVENT_BUS.register(serverEventHandler);
 		try {
-			fullAPIServer = new APIServer(serverEventHandler, portNumber, false);
+			currentPortNumber = -1;
+			fullAPIServer = new APIServer(serverEventHandler, portNumber, searchForPort ? 65535 : portNumber, false);
+			currentPortNumber = fullAPIServer.getPortNumber(); 
 
 			new Thread(new Runnable() {
 				@Override
