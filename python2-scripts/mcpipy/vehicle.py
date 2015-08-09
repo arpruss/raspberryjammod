@@ -569,7 +569,7 @@ if __name__ == '__main__':
                             minecraft.player.setPos(pos + direction)
                         if len(args) > 1:
                             try:
-                                entity = minecraft.spawnEntity(args[1],pos.x,pos.y,pos.z)
+                                entity = minecraft.spawnEntity(args[1],pos.x,pos.y,pos.z,'{CustomName:"'+args[1]+'"}')
                                 getRotation = lambda: minecraft.entity.getRotation(entity)
                                 getTilePos = lambda: minecraft.entity.getTilePos(entity)
                             except:
