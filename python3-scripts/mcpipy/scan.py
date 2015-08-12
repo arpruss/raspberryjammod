@@ -5,7 +5,7 @@ from time import sleep
 import os
 
 #
-# Either:
+# Either:len
 #   scan name x0 y0 z0 x1 y1 z1 : scan from (x0,y0,z0) relative to player to (x1,y1,z1) relative to player
 #   scan name y0 : scan from y0 to sky in sword-right-click specified rectangle
 #   scan name : scan from player feet to sky in sword-right-click specified rectangle
@@ -39,7 +39,7 @@ def save(vehicle,name):
     except:
         pass
     if name and name != '-':
-        path = os.path.join(dir,name+".py")
+        path = os.path.join(directory,name+".py")
     else:
         path = getSavePath('vehicles', 'py')
         if not path:
