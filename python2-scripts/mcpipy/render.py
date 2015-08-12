@@ -113,7 +113,55 @@ def parseBlock(data,default):
         b.data = int(eval(tokens[1]))
     return Block(b.id,b.data)
 
-class Mesh3DS(object):
+class MeshFile(object):
+    def __init__(self):
+        self.vertices = []
+        self.faces = []
+        self.materialIndexDict = {None:0}
+        self.materials = []
+        self.objectData = {}
+        self.objects = []
+
+class MeshPLY(MeshFile):
+    """
+    Currently doesn't support materials or binary data or any data. :-)
+    """
+    def __init__(self, filename, myopen=open, swapYZ=False):
+        super(MeshPLY,self).__init__()
+
+        with myopen(filename, "r") as f:
+             assert f.readline().strip() == "ply"
+             assert f.readline().strip().startswith("format ascii")
+             elementCounts = []
+             while True:
+                 line = f.readline().strip()
+                 if line == "end_header":
+                     break
+                 args = re.split("\\s+",line)
+                 if len(args)>=3 and args[0]=='element':
+                     elementCounts.append((args[1],int(args[2])))
+             assert len(elementCounts) >= 2
+             for element,count in elementCounts:
+                 for i in range(count):
+                     line = f.readline().strip()
+                     if element == 'vertex':
+                         args = re.split("\\s+",line)
+                         if swapYZ:
+                             v = V3(float(args[0]),float(args[2]),-float(args[1]))
+                         else:
+                             v = V3(float(args[0]),float(args[1]),float(args[2]))
+                         self.vertices.append(v)
+                     elif element == 'face':
+                         args = re.split("\\s+",line)
+                         count = int(args.pop(0))
+                         v = tuple(int(args[j]) for j in range(count))
+                         self.faces.append((0,v))
+
+        assert self.vertices
+        assert self.faces
+
+
+class Mesh3DS(MeshFile):
     MAIN3DS = 0x4D4D
     EDIT3DS = 0x3D3D
     KEYF3DS = 0xB000
@@ -128,16 +176,12 @@ class Mesh3DS(object):
     TRI_MATERIAL = 0x4130
 
     def __init__(self, filename, myopen=open, swapYZ=False):
+        super(Mesh3DS,self).__init__()
+
+        self.swapYZ = swapYZ
+
         if int(sys.version[0]) >= 3:
             self.readAsciiz = self.readAsciiz_python3
-
-        self.vertices = []
-        self.faces = []
-        self.materialIndexDict = {None:0}
-        self.materials = []
-        self.objectData = {}
-        self.swapYZ = swapYZ
-        self.objects = []
 
         with myopen(filename, "rb") as self.file:
             id,lengthRemaining = self.readChunkHeader()
@@ -424,12 +468,14 @@ class Mesh(object):
          self.specifiedMeshName = None
 
          base,ext = os.path.splitext(infile)
-         if ext.lower() == '.obj' or ext.lower() == ".3ds":
+         if ext.lower() == '.obj' or ext.lower() == ".3ds" or ext.lower() == ".ply":
              self.meshName = infile
              self.controlFile = base + ".txt"
          else:
              if os.path.isfile(base + ".3ds") or os.path.isfile(base + ".3ds.gz"):
                  self.meshName = base + ".3ds"
+             elif os.path.isfile(base + ".ply") or os.path.isfile(base + ".ply.gz"):
+                 self.meshName = base + ".ply"
              else:
                  self.meshName = base + ".obj"
 
@@ -578,8 +624,9 @@ class Mesh(object):
         if self.credits:
             self.message("Credits: "+self.credits)
 
-        if name.endswith(".3ds") or name.endswith(".3ds.gz"):
-            mesh = Mesh3DS(name,myopen=myopen,swapYZ=self.swapYZ)
+        if name.endswith(".3ds") or name.endswith(".3ds.gz") or name.endswith(".ply") or name.endswith(".ply.gz"):
+            MeshFormat = Mesh3DS if name.endswith(".3ds") or name.endswith(".3ds.gz") else MeshPLY
+            mesh = MeshFormat(name,myopen=myopen,swapYZ=self.swapYZ)
             self.baseVertices = mesh.vertices
             self.faces = mesh.faces
             self.materialBlocks = []
@@ -590,6 +637,8 @@ class Mesh(object):
                 if name not in self.materialBlockDict and name not in warned:
                     self.message("Material "+name+" not defined")
                     warned.add(name)
+            if len(self.materialBlocks) == 0:
+                self.materialBlocks.append(self.default)
         else:
             self.materialBlocks = [ self.default ]
             self.materialOrders = [ 0 ]
