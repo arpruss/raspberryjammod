@@ -1,4 +1,4 @@
-file 'jemcruiser.3ds.gz'
+file 'jemcruiser.3ds'
 urlgz https://raw.githubusercontent.com/arpruss/raspberryjammod/master/models/jemcruiser.3ds.gz
 swapyz 1
 credits Jemhadar Cruiser by William Burningham, 3DS conversion by Erik Timmermans. trekmeshes.ch. Star Trek is copyright Paramount Pictures. Non-commercial use only.

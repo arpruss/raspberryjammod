@@ -1,0 +1,20 @@
+file 'Empire-Shuttle.obj'
+archive Model-Space-Janitors-M01-Empire-Shuttle.zip
+swapyz 0
+url http://www.spacejanitors.com/locker-assets/Model-Space-Janitors-M01-Empire-Shuttle.zip
+yaw 0
+pitch 0
+roll 0
+size 100
+credits Space Janitors model from Janitor's Locker.
+
+
+materials
+09___Default default
+wire_008061138 default
+19___Default default
+wire_135006006 default
+07___Default default
+GRATE default
+01___Default default
+end

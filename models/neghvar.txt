@@ -1,4 +1,4 @@
-file 'neghvar.3ds.gz'
+file 'neghvar.3ds'
 swapyz 1
 credits Klingon Negh'Var Flagship by William Burningham, 3DS conversion by Erik Timmermans. trekmeshes.ch. Star Trek is copyright Paramount Pictures. Non-commercial use only.
 urlgz https://raw.githubusercontent.com/arpruss/raspberryjammod/master/models/neghvar.3ds.gz

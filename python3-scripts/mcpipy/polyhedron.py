@@ -1,5 +1,5 @@
 #The software in this file is copyright 2003,2004 Simon Tatham and copyright 2015 Alexander Pruss
-#Based on code from # http://www.chiark.greenend.org.uk/~sgtatham/polyhedra/
+#Based on code from http://www.chiark.greenend.org.uk/~sgtatham/polyhedra/
 #
 #Permission is hereby granted, free of charge, to any person
 #obtaining a copy of this software and associated documentation files
@@ -755,4 +755,3 @@ if __name__ == "__main__":
 
     pos = d.mc.player.getPos()
     polyhedron(d,n,faceMode,pos.x, pos.y, pos.z, size,drawing.GLASS,drawing.STONE)
-

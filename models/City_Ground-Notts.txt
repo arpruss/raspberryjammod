@@ -1,0 +1,49 @@
+file City_Ground-Notts.obj
+url https://raw.githubusercontent.com/martinohanlon/minecraft-renderObj/master/City_Ground-Notts.obj
+credits Downloaded from Martin O'Hanlon's repository
+size 200
+default DIRT
+materials
+Default_Material STONE.id
+Black WOOL.id 15
+Asphalt_Old WOOL.id 7
+GhostWhite WOOL
+Brick_Flemish_Bond BRICK_BLOCK
+Concrete_Brushed STONE.id
+Metal_Brushed IRON_BLOCK
+Roofing_Metal_Standing_Seam_Blue WOOL.id 8
+White WOOL
+Metal_Brushed1 IRON_BLOCK
+Rouge3141 WOOL.id 14
+roof WOOL.id 8
+Metal_Aluminum_Anodized IRON_BLOCK
+Translucent_Glass_Safety GLASS.id
+Translucent_Glass_Safety1 GLASS.id
+Safety_Glass2 GLASS.id
+Red WOOL.id 14
+goal_net1 WOOL
+Black WOOL.id 15
+
+end
+I do not know the credits for the .obj original mesh.
+
+License for material selection only:
+Copyright (c) Martin O'Hanlon
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

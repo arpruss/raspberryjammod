@@ -1,0 +1,16 @@
+file 'Empire-Fighter.obj'
+archive Model-Space-Janitors-M02-Empire-Fighter.zip
+swapyz 0
+url http://www.spacejanitors.com/locker-assets/Model-Space-Janitors-M02-Empire-Fighter.zip
+yaw 90
+pitch 0
+roll 0
+size 100
+default WOOL_GRAY
+credits Space Janitors model from Janitor's Locker.
+
+
+materials
+wire_000000000 WOOL_BLACK
+10___Default default
+end
