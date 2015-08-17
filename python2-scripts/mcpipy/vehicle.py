@@ -10,6 +10,7 @@
    b: want an airtight bubble in the vehicle for going underwater
    n: non-destructive mode
    q: don't want the vehicle to flash as it is scanned
+   d: liquids don't count as terrain
    l: load vehicle from vehicles/name.py
    s: save vehicle to vehicles/name.py and quit
 
@@ -50,6 +51,7 @@ class Vehicle():
     # the following blocks do not count as part of the vehicle
     TERRAIN = set((AIR.id,WATER_FLOWING.id,WATER_STATIONARY.id,GRASS.id,DIRT.id,LAVA_FLOWING.id,
                     LAVA_STATIONARY.id,GRASS.id,DOUBLE_TALLGRASS.id,GRASS_TALL.id,BEDROCK.id,GRAVEL.id,SAND.id))
+    LIQUIDS = set((WATER_FLOWING.id,WATER_STATIONARY.id,LAVA_FLOWING.id,LAVA_STATIONARY.id))
 
     # ideally, the following blocks are drawn last and erased first
     NEED_SUPPORT = set((SAPLING.id,WATER_FLOWING.id,LAVA_FLOWING.id,GRASS_TALL.id,34,FLOWER_YELLOW.id,
@@ -66,7 +68,7 @@ class Vehicle():
     chestDirectionsClockwise = [2,5,3,4]
     STAIRS = set((STAIRS_COBBLESTONE.id, STAIRS_WOOD.id, 108, 109, 114, 128, 134, 135, 136, 156, 163, 164, 180))
     DOORS = set((DOOR_WOOD.id,193,194,195,196,197,DOOR_IRON.id))
-    LADDERS_FURNACES_CHESTS_SIGNS = set((LADDER.id, FURNACE_ACTIVE.id, FURNACE_INACTIVE.id, CHEST.id, 130, 146, 68))
+    LADDERS_FURNACES_CHESTS_SIGNS_ETC = set((LADDER.id, FURNACE_ACTIVE.id, FURNACE_INACTIVE.id, CHEST.id, 130, 146, 68, 154, 23, 33, 36))
     REDSTONE_COMPARATORS_REPEATERS = set((93,94,149,150,356,404))
     EMPTY = {}
 
@@ -276,10 +278,13 @@ class Vehicle():
             meta = block.data
             return Block(block.id, (meta & ~0x03) |
                          Vehicle.stairDirectionsClockwise[(Vehicle.stairToClockwise[meta & 0x03] + amount) % 4])
-        elif block.id in Vehicle.LADDERS_FURNACES_CHESTS_SIGNS:
+        elif block.id in Vehicle.LADDERS_FURNACES_CHESTS_SIGNS_ETC:
+            high = block.data & 0x08
             meta = block.data & 0x07
+            if meta < 2:
+                return block
             block = copy(block)
-            block.data = Vehicle.chestDirectionsClockwise[(Vehicle.chestToClockwise[meta] + amount) % 4]
+            block.data = high | Vehicle.chestDirectionsClockwise[(Vehicle.chestToClockwise[meta] + amount) % 4]
             return block
         elif block.id == STONE_BUTTON.id or block.id == WOOD_BUTTON.id:
             direction = block.data & 0x07
@@ -461,6 +466,8 @@ if __name__ == '__main__':
                 nondestructive = True
             elif x == 'q':
                 flash = False
+            elif x == 'd':
+                Vehicle.TERRAIN -= Vehicle.LIQUIDS
             elif x == 's':
                 saveName = sys.argv[2] if len(sys.argv)>2 else None
                 doSave = True
