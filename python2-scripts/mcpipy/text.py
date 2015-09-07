@@ -26,7 +26,10 @@ def drawGlyph(mc, pos, forwardVec, upVec, glyph, foreground, background=None):
 
 
 def drawText(mc, font, pos, forwardVec, upVec, text, foreground, background=None):
-    text = text.decode("cp1252")
+    try:
+        text = text.decode("cp1252")
+    except:
+        text = text.decode("iso8859_1")
     pixelPos = pos.clone()
     height = len(font[32][3])
     numLines = text.count("\n")+1
