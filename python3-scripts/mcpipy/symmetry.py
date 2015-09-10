@@ -157,6 +157,7 @@ if __name__ == "__main__":
 #        mc.conn.send("world.spawnParticle", "footstep", center, 0.0,0.0,0.0, 0, 1)
 
     mc.conn.send("events.setting","restrict_to_sword",0)
+    mc.conn.send("events.setting","detect_left_click",1)
 
     mc.postToChat("Will be drawing {} copies".format(1+len(transforms)))
 

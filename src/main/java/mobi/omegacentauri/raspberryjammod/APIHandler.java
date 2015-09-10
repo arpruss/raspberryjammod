@@ -359,8 +359,11 @@ public class APIHandler {
 			// name_tags not supported
 		}
 		else if (cmd.equals(EVENTSSETTING)) {
-			if (scan.next().equals("restrict_to_sword")) // across connections
+			String setting = scan.next();
+			if (setting.equals("restrict_to_sword")) // across connections
 				eventHandler.setRestrictToSword(scan.nextInt() != 0);
+			else if (setting.equals("detect_left_click")) // across connections
+				eventHandler.setDetectLeftClick(scan.nextInt() != 0);
 		}
 		else if (cmd.startsWith("camera.")) {
 			cameraCommand(cmd.substring(7), scan);

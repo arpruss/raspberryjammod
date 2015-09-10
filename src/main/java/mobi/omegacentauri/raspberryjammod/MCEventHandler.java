@@ -48,10 +48,15 @@ abstract public class MCEventHandler {
 	private static final int MAX_HITS = 512;
 	private volatile boolean stopChanges = false;
 	private volatile boolean restrictToSword = true;
+	private volatile boolean detectLeftClick = false;
 	protected volatile boolean pause = false;
 	private ServerChatEvent chatEvents;
 	protected static final int MAX_CHATS = 512;
 	protected boolean doRemote;
+	
+	public MCEventHandler() {
+		detectLeftClick = RaspberryJamMod.leftClickToo;
+	}
 
 	public void setStopChanges(boolean stopChanges) {
 		this.stopChanges = stopChanges;
@@ -77,7 +82,7 @@ abstract public class MCEventHandler {
 			return;
 		
 		if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK ||
-			(RaspberryJamMod.leftClickToo && event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)) {
+			(detectLeftClick && event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)) {
 			if (! restrictToSword || holdingSword(event.entityPlayer)) {
 				synchronized(hits) {
 					if (hits.size() >= MAX_HITS)
@@ -295,5 +300,9 @@ abstract public class MCEventHandler {
 
 	public void setPause(boolean b) {
 		pause = b;
+	}
+
+	public void setDetectLeftClick(boolean b) {
+		detectLeftClick = b;
 	}
 }

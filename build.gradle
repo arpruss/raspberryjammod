@@ -17,7 +17,7 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "0.42"
+version = "0.43"
 group= "mobi.omegacentauri.raspberryjammod" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "RaspberryJamMod"
 
