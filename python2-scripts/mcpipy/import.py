@@ -10,6 +10,13 @@ from sys import argv
 import mcpi.nbt as nbt
 import json
 
+NEED_SUPPORT = set((SAPLING.id,WATER_FLOWING.id,LAVA_FLOWING.id,GRASS_TALL.id,34,FLOWER_YELLOW.id,
+                    FLOWER_CYAN.id,MUSHROOM_BROWN.id,MUSHROOM_RED.id,TORCH.id,63,DOOR_WOOD.id,LADDER.id,
+                    66,68,69,70,DOOR_IRON.id,72,75,76,77,SUGAR_CANE.id,93,94,96,104,105,106,108,111,
+                    113,115,116,117,122,127,131,132,141,142,143,145,147,148,149,150,151,154,157,
+                    167,CARPET.id,SUNFLOWER.id,176,177,178,183,184,185,186,187,188,189,190,191,192,
+                    193,194,195,196,197))
+
 def getValue(v):
     if isinstance(v,nbt.TAG_Compound):
        return getCompound(v)
@@ -30,7 +37,7 @@ def getCompound(nbt):
 def nbtToJson(nbt):
     return json.dumps(getCompound(nbt))
 
-def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,clear=False):
+def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,clear=False,movePlayer=True):
     schematic = nbt.NBTFile(path, "rb")
     sizeX = schematic["Width"].value
     sizeY = schematic["Height"].value
@@ -38,6 +45,8 @@ def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,c
 
     def offset(x,y,z):
         return x + (y*sizeZ + z)*sizeX
+
+    px,pz = x0,z0
 
     if centerX:
         x0 -= sizeX // 2
@@ -63,18 +72,21 @@ def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,c
             e['y'].value += y0
             e['z'].value += z0
             tileEntityDict[origCoords] = e
-    for y in range(sizeY):
-        for x in range(sizeX):
-            for z in range(sizeZ):
-                i = offset(x,y,z)
-                b = blocks[i]
-                if b == AIR.id:
-                    continue
-                d = data[i]
-                if (x,y,z) in tileEntityDict:
-                    mc.setBlockWithNBT(x0+x,y0+y,z0+z,b,d,nbtToJson(tileEntityDict[(x,y,z0)]))
-                else:
-                    mc.setBlock(x0+x,y0+y,z0+z,b,d)
+    for needSupport in (False,True):
+        for y in range(sizeY):
+            if not needSupport and movePlayer:
+                mc.player.setTilePos(px,y0+y,pz)
+            for x in range(sizeX):
+                for z in range(sizeZ):
+                    i = offset(x,y,z)
+                    b = blocks[i]
+                    if b == AIR.id or (needSupport != (b in NEED_SUPPORT)):
+                        continue
+                    d = data[i]
+                    if (x,y,z) in tileEntityDict:
+                        mc.setBlockWithNBT(x0+x,y0+y,z0+z,b,d,nbtToJson(tileEntityDict[(x,y,z0)]))
+                    else:
+                        mc.setBlock(x0+x,y0+y,z0+z,b,d)
     # TODO: entities
     return corner1,corner2
 
