@@ -1,4 +1,4 @@
-#
+﻿#
 # Import .schematic file
 # Copyright (c) 2015 Alexander Pruss
 #
@@ -14,7 +14,7 @@ NEED_SUPPORT = set((SAPLING.id,WATER_FLOWING.id,LAVA_FLOWING.id,GRASS_TALL.id,34
                     FLOWER_CYAN.id,MUSHROOM_BROWN.id,MUSHROOM_RED.id,TORCH.id,63,DOOR_WOOD.id,LADDER.id,
                     66,68,69,70,DOOR_IRON.id,72,75,76,77,SUGAR_CANE.id,93,94,96,104,105,106,108,111,
                     113,115,116,117,122,127,131,132,141,142,143,145,147,148,149,150,151,154,157,
-                    167,CARPET.id,SUNFLOWER.id,176,177,178,183,184,185,186,187,188,189,190,191,192,
+                    167,SUNFLOWER.id,176,177,178,183,184,185,186,187,188,189,190,191,192,
                     193,194,195,196,197))
 
 def getValue(v):
@@ -67,26 +67,36 @@ def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,c
     tileEntityDict = {}
     if not isPE:
         for e in tileEntities:
-            origCoords = e['x'],e['y'],e['z']
+            origCoords = e['x'].value,e['y'].value,e['z'].value
             e['x'].value += x0
             e['y'].value += y0
             e['z'].value += z0
             tileEntityDict[origCoords] = e
-    for needSupport in (False,True):
+    check1 = lambda b : b != CARPET.id and b not in NEED_SUPPORT
+    check2 = lambda b : b in NEED_SUPPORT
+    check3 = lambda b : b == CARPET.id
+    for check in (check1,check2,check3):
         for y in range(sizeY):
-            if not needSupport and movePlayer:
+            if check == check1 and movePlayer:
                 mc.player.setTilePos(px,y0+y,pz)
             for x in range(sizeX):
                 for z in range(sizeZ):
                     i = offset(x,y,z)
                     b = blocks[i]
-                    if b == AIR.id or (needSupport != (b in NEED_SUPPORT)):
+                    if b == AIR.id:
                         continue
                     d = data[i]
+                    if not check(b):
+                        if check == check1:
+                            b = AIR.id
+                            d = 0
+                        else:
+                            continue
                     if (x,y,z) in tileEntityDict:
-                        mc.setBlockWithNBT(x0+x,y0+y,z0+z,b,d,nbtToJson(tileEntityDict[(x,y,z0)]))
+                        mc.setBlockWithNBT(x0+x,y0+y,z0+z,b,d,nbtToJson(tileEntityDict[(x,y,z)]))
                     else:
                         mc.setBlock(x0+x,y0+y,z0+z,b,d)
+
     # TODO: entities
     return corner1,corner2
 
