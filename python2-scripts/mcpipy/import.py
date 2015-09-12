@@ -7,7 +7,7 @@
 
 from mc import *
 from sys import argv
-import _nbt as nbt
+import mcpi.nbt as nbt
 import json
 
 def getValue(v):
@@ -56,12 +56,13 @@ def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,c
     data = schematic["Data"].value
     tileEntities = schematic["TileEntities"]
     tileEntityDict = {}
-    for e in tileEntities:
-        origCoords = e['x'],e['y'],e['z']
-        e['x'].value += x0
-        e['y'].value += y0
-        e['z'].value += z0
-        tileEntityDict[origCoords] = e
+    if not isPE:
+        for e in tileEntities:
+            origCoords = e['x'],e['y'],e['z']
+            e['x'].value += x0
+            e['y'].value += y0
+            e['z'].value += z0
+            tileEntityDict[origCoords] = e
     for y in range(sizeY):
         for x in range(sizeX):
             for z in range(sizeZ):
@@ -85,8 +86,10 @@ if __name__=='__main__':
         from tkFileDialog import askopenfilename
         master = Tkinter.Tk()
         master.attributes("-topmost", True)
-        path = askopenfilename(filetypes=['vehicle {*.schematic}'],title="Open")
+        path = askopenfilename(filetypes=['schematic {*.schematic}'],title="Open")
         master.destroy()
+        if not path:
+            exit()
 
     mc = Minecraft()
     pos = mc.player.getTilePos()
