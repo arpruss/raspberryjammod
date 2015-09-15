@@ -38,6 +38,7 @@ def nbtToJson(nbt):
     return json.dumps(getCompound(nbt))
 
 def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,clear=False,movePlayer=True):
+    mc.postToChat("Reading "+path);
     schematic = nbt.NBTFile(path, "rb")
     sizeX = schematic["Width"].value
     sizeY = schematic["Height"].value
@@ -71,10 +72,11 @@ def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,c
             e['x'].value += x0
             e['y'].value += y0
             e['z'].value += z0
-            tileEntityDict[origCoords] = e
+            tileEntityDict[origCoords] = nbtToJson(e)
     check1 = lambda b : b != CARPET.id and b not in NEED_SUPPORT
     check2 = lambda b : b in NEED_SUPPORT
     check3 = lambda b : b == CARPET.id
+    mc.postToChat("Rendering");
     for check in (check1,check2,check3):
         for y in range(sizeY):
             if check == check1 and movePlayer:
@@ -92,11 +94,16 @@ def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,c
                             d = 0
                         else:
                             continue
+                    if b==33 and (d&7)==7:
+                        d = (d&8)
                     if (x,y,z) in tileEntityDict:
-                        mc.setBlockWithNBT(x0+x,y0+y,z0+z,b,d,nbtToJson(tileEntityDict[(x,y,z)]))
+#                        if b==33: \print x0+x,y0+y,z0+z,x,y,z,b,d,e
+                        mc.setBlockWithNBT(x0+x,y0+y,z0+z,b,d,tileEntityDict[(x,y,z)])
                     else:
+#                        if b==33: print x0+x,y0+y,z0+z,x,y,z,b,d
                         mc.setBlock(x0+x,y0+y,z0+z,b,d)
 
+    print "done"
     # TODO: entities
     return corner1,corner2
 
