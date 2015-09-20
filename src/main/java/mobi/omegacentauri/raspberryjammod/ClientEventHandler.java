@@ -122,7 +122,9 @@ public class ClientEventHandler {
 				RaspberryJamMod.apiActive = true;
 				if (apiServer == null) {
 					RaspberryJamMod.currentPortNumber = -1;
-					apiServer = new APIServer(apiEventHandler, RaspberryJamMod.portNumber, RaspberryJamMod.searchForPort ? 65535 : RaspberryJamMod.portNumber, true);
+					apiServer = new APIServer(apiEventHandler, RaspberryJamMod.portNumber, RaspberryJamMod.searchForPort ? 65535 : RaspberryJamMod.portNumber, 
+							RaspberryJamMod.wsPort,
+							true);
 					RaspberryJamMod.currentPortNumber = apiServer.getPortNumber();
 	
 					new Thread(new Runnable() {

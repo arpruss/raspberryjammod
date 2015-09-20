@@ -2,6 +2,7 @@ package mobi.omegacentauri.raspberryjammod;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 import net.minecraft.client.Minecraft;
@@ -16,7 +17,7 @@ import net.minecraft.world.WorldServer;
 
 public class APIHandlerClientOnly extends APIHandler {
 
-	public APIHandlerClientOnly(MCEventHandler eventHandler, DataOutputStream writer) throws IOException {
+	public APIHandlerClientOnly(MCEventHandler eventHandler, PrintWriter writer) throws IOException {
 		super(eventHandler, writer);
 	}
 

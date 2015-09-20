@@ -53,7 +53,7 @@ guiFactory = "mobi.omegacentauri.raspberryjammod.GuiFactory", acceptableRemoteVe
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.43";
+	public static final String VERSION = "0.50";
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer fullAPIServer = null;
 	private PythonExternalCommand pythonExternalCommand = null;
@@ -62,6 +62,7 @@ public class RaspberryJamMod
 	public static ScriptExternalCommand[] scriptExternalCommands = null;
 	public static Configuration configFile;
 	static int portNumber = 4711;
+	static int wsPort = 14711;
 	public static boolean concurrent = true;
 	public static boolean leftClickToo = true;
 	public static boolean allowRemote = true;
@@ -116,6 +117,7 @@ public class RaspberryJamMod
 
 	public static void synchronizeConfig() {
 		portNumber = configFile.getInt("Port Number", Configuration.CATEGORY_GENERAL, 4711, 0, 65535, "Port number");
+		wsPort = configFile.getInt("Websocket Port", Configuration.CATEGORY_GENERAL, 14711, 0, 65535, "Websocket port");
 		searchForPort = configFile.getBoolean("Port Search if Needed", Configuration.CATEGORY_GENERAL, false, "Port search if needed");
 		concurrent = configFile.getBoolean("Multiple Connections", Configuration.CATEGORY_GENERAL, true, "Multiple connections");
 		allowRemote = configFile.getBoolean("Remote Connections", Configuration.CATEGORY_GENERAL, true, "Remote connections");
@@ -184,7 +186,7 @@ public class RaspberryJamMod
 		MinecraftForge.EVENT_BUS.register(serverEventHandler);
 		try {
 			currentPortNumber = -1;
-			fullAPIServer = new APIServer(serverEventHandler, portNumber, searchForPort ? 65535 : portNumber, false);
+			fullAPIServer = new APIServer(serverEventHandler, portNumber, searchForPort ? 65535 : portNumber, wsPort, false);
 			currentPortNumber = fullAPIServer.getPortNumber(); 
 
 			new Thread(new Runnable() {

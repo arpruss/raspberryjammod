@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
@@ -18,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -90,6 +93,7 @@ public class APIHandler {
 	protected static final String SETPOS = "setPos";
 	protected static final String SETROTATION = "setRotation";
 	protected static final String SETTILE = "setTile";
+	protected static final String SETFLYING = "setFlying";
 
 	protected static final float TOO_SMALL = (float) 1e-9;
 
@@ -97,13 +101,13 @@ public class APIHandler {
 	protected MCEventHandler eventHandler;
 	protected boolean listening = true;
 	protected Minecraft mc;
-	protected DataOutputStream writer = null;
+	protected PrintWriter writer = null;
 	protected boolean includeNBTWithData = false;
 	protected boolean havePlayer;
 	protected int playerId;
 	protected EntityPlayerMP playerMP;
 
-	public APIHandler(MCEventHandler eventHandler, DataOutputStream writer) throws IOException {
+	public APIHandler(MCEventHandler eventHandler, PrintWriter writer) throws IOException {
 		this.eventHandler = eventHandler;
 		this.writer = writer;
 		this.havePlayer = false;
@@ -781,7 +785,7 @@ public class APIHandler {
 
 	protected void sendLine(String string) {
 		try {
-			writer.writeBytes(string+"\n");
+			writer.print(string+"\n");
 			writer.flush();
 		}
 		catch(Exception e) {					

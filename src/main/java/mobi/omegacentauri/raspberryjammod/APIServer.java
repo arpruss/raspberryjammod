@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -50,12 +52,21 @@ public class APIServer {
 	private List<Socket> socketList;
 	private boolean controlServer;
 	private int portNumber;
+	private WSServer ws = null;
 
-	public APIServer(MCEventHandler eventHandler, int startPort, int endPort, boolean clientSide) throws IOException {
+	public APIServer(MCEventHandler eventHandler, int startPort, int endPort, int wsPort, boolean clientSide) throws IOException {
 		socketList = new ArrayList<Socket>();
 		this.eventHandler = eventHandler;
 		this.controlServer = ! clientSide;
 		this.serverSocket = null;
+
+		try {
+			ws = new WSServer(eventHandler, wsPort, clientSide);
+			ws.start();
+		}
+		catch (Exception e) {
+			ws = null;
+		}
 
 		for (portNumber = startPort ; ; portNumber++ ) {
 			try {
@@ -116,7 +127,7 @@ public class APIServer {
 	}
 
 	private void socketCommunicate(Socket connectionSocket) {
-		DataOutputStream writer = null;
+		PrintWriter writer = null;
 		BufferedReader reader = null;
 		synchronized(socketList) {
 			socketList.add(connectionSocket);
@@ -126,7 +137,7 @@ public class APIServer {
 			String clientSentence;
 
 			reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-			writer = new DataOutputStream(connectionSocket.getOutputStream());
+			writer = new PrintWriter(connectionSocket.getOutputStream());
 
 			APIHandler api = controlServer ? new APIHandler(eventHandler, writer) : 
 				new APIHandlerClientOnly(eventHandler, writer);
@@ -150,11 +161,9 @@ public class APIServer {
 					reader.close();
 				} catch (IOException e) {
 				}
-			if (writer != null)
-				try {
-					writer.close();
-				} catch (IOException e) {
-				}
+			if (writer != null) {
+				writer.close();
+			}
 		}
 	}
 
@@ -173,5 +182,12 @@ public class APIServer {
 				serverSocket.close();
 			} catch (IOException e) {
 			}
+		if (ws != null) {
+			try {
+				ws.stop();
+			} catch (IOException e) {
+			} catch (InterruptedException e) {
+			}
+		}
 	}
 }
