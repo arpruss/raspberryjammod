@@ -98,7 +98,7 @@ public class RaspberryJamMod
 	@Mod.EventHandler
 	@SideOnly(Side.CLIENT)
 	public void onConfigChanged(net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent event) {
-		System.out.println("config changed 0");
+		System.out.println("config changed");
 	}
 
 

@@ -52,7 +52,7 @@ public class APIServer {
 	private List<Socket> socketList;
 	private boolean controlServer;
 	private int portNumber;
-	private WSServer ws = null;
+	private WSServer ws;
 
 	public APIServer(MCEventHandler eventHandler, int startPort, int endPort, int wsPort, boolean clientSide) throws IOException {
 		socketList = new ArrayList<Socket>();
@@ -60,12 +60,17 @@ public class APIServer {
 		this.controlServer = ! clientSide;
 		this.serverSocket = null;
 
-		try {
-			ws = new WSServer(eventHandler, wsPort, clientSide);
-			ws.start();
-		}
-		catch (Exception e) {
-			ws = null;
+		ws = null;
+		if (wsPort != 0) {
+			try {
+				System.out.println("Opening websocket server on "+wsPort);
+				ws = new WSServer(eventHandler, wsPort, clientSide);
+				ws.start();
+			}
+			catch (Exception e) {
+				System.out.println("Error "+e);
+				ws = null;
+			}
 		}
 
 		for (portNumber = startPort ; ; portNumber++ ) {
@@ -168,6 +173,7 @@ public class APIServer {
 	}
 
 	public void close() {
+		System.out.println("Closing sockets");
 		listening = false;
 		synchronized(socketList) {
 			for (Socket s : socketList) {

@@ -7,7 +7,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.Writer;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,13 +31,30 @@ public class WSServer extends WebSocketServer {
 	
 	public WSServer( MCEventHandler eventHandler, int port, boolean clientSide ) throws UnknownHostException {
 		super( new InetSocketAddress( port ) );
+		System.out.println("Websocket server on "+port);
 		controlServer = ! clientSide;
 		this.eventHandler = eventHandler;
 		handlers = new HashMap<WebSocket,APIHandler>();
 	}
 
+	private static boolean isLocal(InetAddress addr) {
+		if (addr.isAnyLocalAddress() || addr.isLoopbackAddress())
+			return true;
+		try {
+			return null != NetworkInterface.getByInetAddress(addr);
+		}
+		catch (Exception e) {
+			return false;
+		}
+	}
+	
 	@Override
 	public void onOpen( final WebSocket conn, ClientHandshake handshake ) {
+		System.out.println("websocket connect from "+conn.getRemoteSocketAddress().getHostName());
+		if (!RaspberryJamMod.allowRemote && ! isLocal(conn.getRemoteSocketAddress().getAddress())) {
+			conn.closeConnection(1, "Remote connections disabled");
+			return;
+		}
 		Writer writer = new Writer() {
 			@Override
 			public void close() throws IOException {
@@ -61,6 +80,7 @@ public class WSServer extends WebSocketServer {
 
 	@Override
 	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
+		System.out.println("websocket closed for reason "+reason);
 		APIHandler apiHandler = handlers.get(conn);
 		if (apiHandler != null) {
 			apiHandler.writer.close();
@@ -79,5 +99,10 @@ public class WSServer extends WebSocketServer {
 
 	@Override
 	public void onError( WebSocket conn, Exception ex ) {
+	}
+	
+	@Override
+	public void stop() throws IOException, InterruptedException {
+		super.stop();
 	}
 }

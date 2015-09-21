@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.StandardSocketOptions;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
@@ -83,6 +84,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private AtomicInteger queuesize = new AtomicInteger( 0 );
 
 	private WebSocketServerFactory wsf = new DefaultWebSocketServerFactory();
+
+	private ServerSocket socket = null;
 
 	/**
 	 * Creates a WebSocketServer that will attempt to
@@ -222,6 +225,19 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					w.interrupt();
 				}
 			}
+//			if (socket != null) {
+//				try {
+//					socket.close();
+//				}
+//				catch (IOException e) {}
+//				socket = null;
+//			}
+			if ( selector != null) {
+				try {
+					selector.close();
+				} 
+				catch(Exception e) {}
+			}
 			if( server != null ) {
 				server.close();
 			}
@@ -278,9 +294,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		try {
 			server = ServerSocketChannel.open();
 			server.configureBlocking( false );
-			ServerSocket socket = server.socket();
-			socket.setReceiveBufferSize( WebSocketImpl.RCVBUF );
-			socket.bind( address );
+			server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+			server.setOption(StandardSocketOptions.SO_RCVBUF, WebSocketImpl.RCVBUF);
+			server.bind(address);
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
 		} catch ( IOException ex ) {
@@ -437,6 +453,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	private void handleFatal( WebSocket conn, Exception e ) {
 		onError( conn, e );
+		if (e != null)
+			System.out.println("Fatal error "+e);
 		try {
 			stop();
 		} catch ( IOException e1 ) {
