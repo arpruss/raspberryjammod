@@ -851,4 +851,4 @@ if __name__ == "__main__":
 
             mainloop()
     else:
-        go("models/" + sys.argv[1] + ".txt", sys.argv[2:])
+        go(os.path.dirname(os.path.realpath(sys.argv[0])) + "/" + "models/" + sys.argv[1] + ".txt", sys.argv[2:])
