@@ -27,6 +27,7 @@ from mcpi.block import *
 from math import *
 from sys import maxsize
 from copy import copy
+from ast import literal_eval
 import re
 
 def getSavePath(directory, extension):
@@ -122,19 +123,23 @@ class Vehicle():
         f.write("baseAngle,highWater,baseVehicle="+repr((self.baseAngle,self.highWater,self.baseVehicle))+"\n")
         f.close()
 
-    @staticmethod
-    def safeEval(string):
-        if "__" in string:
-            raise ValueError
-        return eval(string)
-
     def load(self,filename):
         with open(filename) as f:
             data = ''.join(f.readlines())
             result = re.search("=\\s*(.*)",data)
             if result is None:
                 raise ValueError
-            self.baseAngle,self.highWater,self.baseVehicle = Vehicle.safeEval(result.group(1))
+            self.baseAngle,self.highWater,v = literal_eval(result.group(1).replace("Block",""))
+            self.baseVehicle = {}
+            for key,value in v.items():
+                if isinstance(value,tuple):
+                   if len(value) > 1:
+                       self.baseVehicle[key] = Block(value[0], value[1])
+                   else:
+                       self.baseVehicle[key] = Block(value[0])
+                else:
+                   self.baseVehicle[key] = Block(value)  
+
         self.curLocation = None
 
     def safeSetBlockWithData(self,pos,block):
