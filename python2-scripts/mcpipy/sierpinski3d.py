@@ -28,7 +28,7 @@ def drawTetrahedron(height, apex, block):
         for point in bottom:
             a = float(i)/height
             triangle.append(((1-a)*apex[0]+a*point[0],apex[1]-i,(1-a)*apex[2]+a*point[2]))
-            d.face(triangle,block)
+        d.face(triangle,block)
     return triangle
 
 def average(a,b):
