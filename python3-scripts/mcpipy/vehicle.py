@@ -129,16 +129,14 @@ class Vehicle():
             result = re.search("=\\s*(.*)",data)
             if result is None:
                 raise ValueError
-            self.baseAngle,self.highWater,v = literal_eval(result.group(1).replace("Block",""))
-            self.baseVehicle = {}
-            for key,value in list(v.items()):
-                if isinstance(value,tuple):
-                   if len(value) > 1:
-                       self.baseVehicle[key] = Block(value[0], value[1])
-                   else:
-                       self.baseVehicle[key] = Block(value[0])
-                else:
-                   self.baseVehicle[key] = Block(value)  
+            
+            # Check to ensure only function called is Block() by getting literal_eval to
+            # raise an exception when "Block" is removed and the result isn't a literal.
+            # This SHOULD make the eval call safe, though USE AT YOUR OWN RISK. Ideally,
+            # one would walk the ast parse tree and use a whitelist.
+            literal_eval(result.group(1).replace("Block",""))
+
+            self.baseAngle,self.highWater,self.baseVehicle = eval(result.group(1))
 
         self.curLocation = None
 
@@ -301,7 +299,9 @@ class Vehicle():
             return Block(block.id, (block.data & ~0x03) | (((block.data & 0x03) + amount) & 0x03))
         elif block.id == 96 or block.id == 167:
             # trapdoors
-            return Block(block.id, (block.data & ~0x03) | (((block.data & 0x03) - amount) & 0x03))
+            meta = block.data
+            return Block(block.id, (meta & ~0x03) |
+                         Vehicle.stairDirectionsClockwise[(Vehicle.stairToClockwise[meta & 0x03] - amount) % 4])
         elif block.id in Vehicle.DOORS:
             meta = block.data
             if meta & 0x08:

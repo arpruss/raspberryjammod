@@ -299,7 +299,9 @@ class Vehicle():
             return Block(block.id, (block.data & ~0x03) | (((block.data & 0x03) + amount) & 0x03))
         elif block.id == 96 or block.id == 167:
             # trapdoors
-            return Block(block.id, (block.data & ~0x03) | (((block.data & 0x03) - amount) & 0x03))
+            meta = block.data
+            return Block(block.id, (meta & ~0x03) |
+                         Vehicle.stairDirectionsClockwise[(Vehicle.stairToClockwise[meta & 0x03] - amount) % 4])
         elif block.id in Vehicle.DOORS:
             meta = block.data
             if meta & 0x08:
