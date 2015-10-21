@@ -251,8 +251,8 @@ public class APIHandler {
 			int z1 = Math.min(pos1.getZ(), pos2.getZ());
 			int z2 = Math.max(pos1.getZ(), pos2.getZ());
 			for (int y = y1 ; y <= y2 ; y++)
-				for (int x = x1 ; x < x2; x++)
-					for (int z = z1 ; z < z2; z++) {
+				for (int x = x1 ; x <= x2; x++)
+					for (int z = z1 ; z <= z2; z++) {
 						if (out.length() != 0)
 							out.append(",");
 						out.append(eventHandler.getBlockId(new Location(pos1.world, x, y, z)));
@@ -270,8 +270,8 @@ public class APIHandler {
 			int z1 = Math.min(pos1.getZ(), pos2.getZ());
 			int z2 = Math.max(pos1.getZ(), pos2.getZ());
 			for (int y = y1 ; y <= y2 ; y++)
-				for (int x = x1 ; x < x2; x++)
-					for (int z = z1 ; z < z2; z++) {
+				for (int x = x1 ; x <= x2; x++)
+					for (int z = z1 ; z <= z2; z++) {
 						if (out.length() != 0)
 							out.append("|");
 						Location pos = new Location(pos1.world, x, y, z);

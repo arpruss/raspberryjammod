@@ -22,6 +22,23 @@ from util import flatten,floorFlatten
 #def strFloor(*args):
 #    return [str(int(math.floor(x))) for x in flatten(args)]
 
+def fixPipe(s):
+    return s.replace('&#124;', '|').replace('&amp;','&')
+
+def stringToBlockWithNBT(s, pipeFix = False):
+    data = s.split(",")
+    print data
+    id = int(data[0])
+    if len(data) <= 1:
+        return Block(id)
+    elif len(data) <= 2:
+        return Block(id,int(data[1]))
+    else:
+        nbt = ','.join(data[2:])
+        if pipeFix:
+            nbt = fixPipe(nbt)
+        return Block(id,int(data[1]),nbt)
+
 class CmdPositioner:
     """Methods for setting and getting positions"""
     def __init__(self, connection, packagePrefix):
@@ -157,7 +174,7 @@ class CmdEvents:
     def pollChatPosts(self):
         """Triggered by posts to chat => [ChatEvent]"""
         s = self.conn.sendReceive("events.chat.posts")
-        events = [e for e in s.split("|") if e]
+        events = [fixPipe(e) for e in s.split("|") if e]
         return [ChatEvent.Post(int(e[:e.find(",")]), e[e.find(",") + 1:]) for e in events]
 
 class Minecraft:
@@ -215,24 +232,38 @@ class Minecraft:
                 ans = self.conn.receive()
         else:
             ans = self.conn.sendReceive_flat("world.getBlockWithData", floorFlatten(args))
-        id,data = (map(int, ans.split(",")[:2]))
-        commas = 0
-        for i in range(0,len(ans)):
-            if ans[i] == ',':
-                commas += 1
-                if commas == 2:
-                    if '{' in ans[i+1:]:
-                        return Block(id,data,ans[i+1:])
-                    else:
-                        break
-        return Block(id,data)
+        return stringToBlockWithNBT(ans)
     """
         @TODO
     """
-    # must have no NBT tags in any Block instances
+
     def getBlocks(self, *args):
-        """Get a cuboid of blocks (x0,y0,z0,x1,y1,z1) => [id:int]"""
-        return int(self.conn.sendReceive_flat("world.getBlocks", floorFlatten(args)))
+        """
+        Get a cuboid of blocks (x0,y0,z0,x1,y1,z1) => [id:int]
+        Packed with a y-loop, x-loop, z-loop, in this order.
+        """
+        ans = self.conn.sendReceive_flat("world.getBlocks", floorFlatten(args))
+        return map(int, ans.split(","))
+
+    def getBlocksWithData(self, *args):
+        """Get a cuboid of blocks (x0,y0,z0,x1,y1,z1) => [Block(id:int, meta:int)]"""
+        ans = self.conn.sendReceive_flat("world.getBlocksWithData", floorFlatten(args))
+        return [Block(*map(int, x.split(",")[:2])) for x in ans.split("|")]
+
+    def getBlocksWithNBT(self, *args):
+        """Get a cuboid of blocks (x0,y0,z0,x1,y1,z1) => [Block(id, meta, nbt)]"""
+        if not self.enabledNBT:
+            self.setting("include_nbt_with_data",1)
+            self.enabledNBT = True
+            try:
+                ans = self.conn.sendReceive_flat("world.getBlocksWithData", floorFlatten(args))
+            except RequestError:
+                # retry in case we had a Fail from the setting
+                ans = self.conn.receive()
+        else:
+            ans = self.conn.sendReceive_flat("world.getBlocksWithData", floorFlatten(args))
+        ans = self.conn.sendReceive_flat("world.getBlocksWithData", floorFlatten(args))
+        return [stringToBlockWithNBT(x, pipeFix = True) for x in ans.split("|")]
 
     # must have no NBT tags in Block instance
     def setBlock(self, *args):
