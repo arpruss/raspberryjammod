@@ -136,7 +136,7 @@ abstract public class MCEventHandler {
 					out.append("|");
 				out.append(c.id);
 				out.append(",");
-				out.append(c.message.replace("|", "&#124;"));
+				out.append(c.message.replace("&","&amp;").replace("|", "&#124;"));
 			}
 			chats.clear();
 		}

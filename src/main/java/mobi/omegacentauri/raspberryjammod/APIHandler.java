@@ -57,6 +57,8 @@ public class APIHandler {
 	protected static final String SETBLOCKS = "world.setBlocks"; 
 	protected static final String GETBLOCK = "world.getBlock";
 	protected static final String GETBLOCKWITHDATA = "world.getBlockWithData";
+	protected static final String GETBLOCKS = "world.getBlocks";
+	protected static final String GETBLOCKSWITHDATA = "world.getBlocksWithData";
 	protected static final String GETHEIGHT = "world.getHeight"; 
 	protected static final String WORLDSPAWNENTITY = "world.spawnEntity";
 	protected static final String WORLDSPAWNPARTICLE = "world.spawnParticle";
@@ -237,6 +239,51 @@ public class APIHandler {
 				BlockState state = eventHandler.getBlockState(getBlockLocation(scan));
 				sendLine(""+state.id+","+state.meta);
 			}
+		}
+		else if (cmd.equals(GETBLOCKS)) {
+			Location pos1 = getBlockLocation(scan);
+			Location pos2 = getBlockLocation(scan);
+			StringBuilder out = new StringBuilder();
+			int x1 = Math.min(pos1.getX(), pos2.getX());
+			int x2 = Math.max(pos1.getX(), pos2.getX());
+			int y1 = Math.min(pos1.getY(), pos2.getY());
+			int y2 = Math.max(pos1.getY(), pos2.getY());
+			int z1 = Math.min(pos1.getZ(), pos2.getZ());
+			int z2 = Math.max(pos1.getZ(), pos2.getZ());
+			for (int y = y1 ; y <= y2 ; y++)
+				for (int x = x1 ; x < x2; x++)
+					for (int z = z1 ; z < z2; z++) {
+						if (out.length() != 0)
+							out.append(",");
+						out.append(eventHandler.getBlockId(new Location(pos1.world, x, y, z)));
+					}
+			sendLine(out.toString());
+		}
+		else if (cmd.equals(GETBLOCKSWITHDATA)) {
+			Location pos1 = getBlockLocation(scan);
+			Location pos2 = getBlockLocation(scan);
+			StringBuilder out = new StringBuilder();
+			int x1 = Math.min(pos1.getX(), pos2.getX());
+			int x2 = Math.max(pos1.getX(), pos2.getX());
+			int y1 = Math.min(pos1.getY(), pos2.getY());
+			int y2 = Math.max(pos1.getY(), pos2.getY());
+			int z1 = Math.min(pos1.getZ(), pos2.getZ());
+			int z2 = Math.max(pos1.getZ(), pos2.getZ());
+			for (int y = y1 ; y <= y2 ; y++)
+				for (int x = x1 ; x < x2; x++)
+					for (int z = z1 ; z < z2; z++) {
+						if (out.length() != 0)
+							out.append("|");
+						Location pos = new Location(pos1.world, x, y, z);
+						if (includeNBTWithData) {
+							out.append(eventHandler.describeBlockState(pos).replace("&","&amp;").replace("|","&#124;"));
+						}
+						else {
+							BlockState state = eventHandler.getBlockState(pos);
+							out.append(""+state.id+","+state.meta);
+						}
+					}
+			sendLine(out.toString());
 		}
 		else if (cmd.equals(GETHEIGHT)) {
 			int x0 = scan.nextInt();
