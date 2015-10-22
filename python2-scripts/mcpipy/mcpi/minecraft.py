@@ -27,7 +27,6 @@ def fixPipe(s):
 
 def stringToBlockWithNBT(s, pipeFix = False):
     data = s.split(",")
-    print data
     id = int(data[0])
     if len(data) <= 1:
         return Block(id)
