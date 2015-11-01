@@ -236,33 +236,63 @@ class Minecraft:
         @TODO
     """
 
+    def fallbackGetCuboid(self, getBlock, *args):
+        (x0,y0,z0,x1,y1,z1) = map(lambda x:int(math.floor(float(x))), flatten(args))
+        out = []
+        for y in range(min(y0,y1),max(y0,y1)+1):
+            for x in range(min(x0,x1),max(x0,x1)+1):
+                for z in range(min(z0,z1),max(z0,z1)+1):
+                    out.append(getBlock(x,y,z))                    
+        return out
+        
+    def fallbackGetBlocksWithData(self, *args):
+        return self.fallbackGetCuboid(self.getBlockWithData, args)
+
+    def fallbackGetBlocks(self, *args):
+        return self.fallbackGetCuboid(self.getBlock, args)
+
+    def fallbackGetBlocksWithNBT(self, *args):
+        return self.fallbackGetCuboid(self.getBlockWithNBT, args)
+
     def getBlocks(self, *args):
         """
         Get a cuboid of blocks (x0,y0,z0,x1,y1,z1) => [id:int]
         Packed with a y-loop, x-loop, z-loop, in this order.
         """
-        ans = self.conn.sendReceive_flat("world.getBlocks", floorFlatten(args))
-        return map(int, ans.split(","))
-
+        try:
+            ans = self.conn.sendReceive_flat("world.getBlocks", floorFlatten(args))
+            return map(int, ans.split(","))
+        except:
+            self.getBlocks = self.fallbackGetBlocks
+            return self.fallbackGetBlocks(*args)
+        
     def getBlocksWithData(self, *args):
         """Get a cuboid of blocks (x0,y0,z0,x1,y1,z1) => [Block(id:int, meta:int)]"""
-        ans = self.conn.sendReceive_flat("world.getBlocksWithData", floorFlatten(args))
-        return [Block(*map(int, x.split(",")[:2])) for x in ans.split("|")]
+        try:
+            ans = self.conn.sendReceive_flat("world.getBlocksWithData", floorFlatten(args))
+            return [Block(*map(int, x.split(",")[:2])) for x in ans.split("|")]
+        except:
+            self.getBlocksWithData = self.fallbackGetBlocksWithData
+            return self.fallbackGetBlocksWithData(*args)
 
     def getBlocksWithNBT(self, *args):
         """Get a cuboid of blocks (x0,y0,z0,x1,y1,z1) => [Block(id, meta, nbt)]"""
-        if not self.enabledNBT:
-            self.setting("include_nbt_with_data",1)
-            self.enabledNBT = True
-            try:
+        try:
+            if not self.enabledNBT:
+                self.setting("include_nbt_with_data",1)
+                self.enabledNBT = True
+                try:
+                    ans = self.conn.sendReceive_flat("world.getBlocksWithData", floorFlatten(args))
+                except RequestError:
+                    # retry in case we had a Fail from the setting
+                    ans = self.conn.receive()
+            else:
                 ans = self.conn.sendReceive_flat("world.getBlocksWithData", floorFlatten(args))
-            except RequestError:
-                # retry in case we had a Fail from the setting
-                ans = self.conn.receive()
-        else:
             ans = self.conn.sendReceive_flat("world.getBlocksWithData", floorFlatten(args))
-        ans = self.conn.sendReceive_flat("world.getBlocksWithData", floorFlatten(args))
-        return [stringToBlockWithNBT(x, pipeFix = True) for x in ans.split("|")]
+            return [stringToBlockWithNBT(x, pipeFix = True) for x in ans.split("|")]
+        except:
+            self.getBlocksWithNBT = self.fallbackGetBlocksWithNBT
+            return self.fallbackGetBlocksWithNBT(*args)
 
     # must have no NBT tags in Block instance
     def setBlock(self, *args):
