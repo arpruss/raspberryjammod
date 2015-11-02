@@ -50,9 +50,10 @@ def life(mc,x0,y0,z0,width,height,empty=AIR,full=GOLD_BLOCK,delay=0.5,board=None
     generation = 0
     if board == None:
         board = [[False for i in range(width)] for j in range(height)]
+        blocks = mc.getBlocks(x0,y0,z0,x0+width-1,y0,z0+height-1)
         for row in range(height):
             for col in range(width):
-                if mc.getBlock(x0+col,y0,z0+row) != AIR.id:
+                if blocks[col*width+row] != AIR.id:
                    board[row][col] = True
         draw(mc,x0,y0,z0,width,height,None,board,full,empty)
 
