@@ -18,6 +18,12 @@ def getHeightBelow(x,y,z):
         return min(mc.getHeight(x,z),y)
 
 def rectangularPrism(x1,y1,z1, x2,y2,z2, distribution):
+    x1 = int(round(x1))
+    y1 = int(round(y1))
+    z1 = int(round(z1))
+    x2 = int(round(x2))
+    y2 = int(round(y2))
+    z2 = int(round(z2))
     for x in range(min(x1,x2),max(x1,x2)+1):
         for y in range(min(y1,y2),max(y1,y2)+1):
             for z in range(min(z1,z2),max(z1,z2)+1):
