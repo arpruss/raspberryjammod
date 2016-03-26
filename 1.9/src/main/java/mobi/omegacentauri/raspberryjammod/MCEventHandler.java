@@ -46,14 +46,14 @@ abstract public class MCEventHandler {
 	private static final int MAX_HITS = 512;
 	private volatile boolean stopChanges = false;
 	private volatile boolean restrictToSword = true;
-	private volatile boolean detectLeftClick = false;
+	private volatile boolean detectLeftClick = true; // false;
 	protected volatile boolean pause = false;
 	private ServerChatEvent chatEvents;
 	protected static final int MAX_CHATS = 512;
 	protected boolean doRemote;
 	
 	public MCEventHandler() {
-		detectLeftClick = RaspberryJamMod.leftClickToo;
+		detectLeftClick = true; // RaspberryJamMod.leftClickToo;
 	}
 
 	public void setStopChanges(boolean stopChanges) {
@@ -77,6 +77,9 @@ abstract public class MCEventHandler {
 	@SubscribeEvent
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
 		EntityPlayer player = event.getEntityPlayer();
+		
+		System.out.println("player interact "+event.getAction());
+		
 		if (player == null || player.getEntityWorld().isRemote != RaspberryJamMod.clientOnlyAPI )
 			return;
 		

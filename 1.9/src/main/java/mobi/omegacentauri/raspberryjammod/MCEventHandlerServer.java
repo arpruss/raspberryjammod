@@ -15,6 +15,7 @@ public class MCEventHandlerServer extends MCEventHandler {
 	
 	@SubscribeEvent
 	public void onChatEvent(ServerChatEvent event) {
+		System.out.println("onChatEvent "+event.getMessage());
 		ChatDescription cd = new ChatDescription(event.getPlayer().getEntityId(), event.getMessage());
 		synchronized(chats) {
 			if (chats.size() >= MAX_CHATS)
