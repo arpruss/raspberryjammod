@@ -20,7 +20,7 @@ def egg(block=GOLD_BLOCK, h=40, a=2.5, b=1, c=0.1):
 
     for y in range(0,h):
         r = radius(y)
-        minimumr = min(r-3,radius(y-1),radius(y+1))
+        minimumr = min(r-2,radius(y-1),radius(y+1))
         for x in range(-h,h+1):
             for z in range(-h,h+1):
                 myr = sqrt(x*x + z*z)
@@ -82,7 +82,7 @@ def getBestColor(rgb):
     return bestColor
 
 def getPixel(image, x, y):
-    rgb = image.getpixel(( int( x * image.size[0] ), int( y * image.size[1] ) ))
+    rgb = image.getpixel(( floor( x * image.size[0] ), image.size[1]-1-floor( y * image.size[1] ) ))
     return getBestColor(rgb)
 
 mc = Minecraft()
