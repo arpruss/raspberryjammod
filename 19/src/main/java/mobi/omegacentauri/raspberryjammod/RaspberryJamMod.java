@@ -63,7 +63,7 @@ public class RaspberryJamMod
 	static int portNumber = 4711;
 	static int wsPort = 14711;
 	public static boolean concurrent = true;
-	public static boolean leftClickToo = true;
+	//public static boolean leftClickToo = true;
 	public static boolean allowRemote = true;
 	public static boolean globalChatMessages = true;
 	public static String pythonInterpreter = "python";

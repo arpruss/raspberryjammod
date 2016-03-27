@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RaspberryJamMod"
-#define MyAppVersion "0.52"
+#define MyAppVersion "0.60"
 #define MyAppPublisher "Omega Centauri Software"
 #define MyAppURL "http://github.com/arpruss/raspberryjammod"
 
@@ -33,7 +33,10 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 Source: "python2-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall
-Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\"
+Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8\"
+Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.8\"
+Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.9\"
+Source: "19\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.9\"
 Source: "py27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs; Components: Python27
 
 [Components]
@@ -43,9 +46,13 @@ Name: "Scripts27"; Description: "Sample scripts and Minecraft Python library"; T
 
 [InstallDelete]
 Type: files; Name: "{userappdata}\.minecraft\mods\RaspberryJamMod*.jar"; Components: Mod
+Type: files; Name: "{userappdata}\.minecraft\mods\1.8\RaspberryJamMod*.jar"; Components: Mod
+Type: files; Name: "{userappdata}\.minecraft\mods\1.8.8\RaspberryJamMod*.jar"; Components: Mod
+Type: files; Name: "{userappdata}\.minecraft\mods\1.8.9\RaspberryJamMod*.jar"; Components: Mod
+Type: files; Name: "{userappdata}\.minecraft\mods\1.9\RaspberryJamMod*.jar"; Components: Mod
 
 [Messages]
-WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT 1.8 ALREADY INSTALLED. Otherwise, this won't work.
+WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT 1.8/1.8.8/1.8.9/1.9 ALREADY INSTALLED. Otherwise, this won't work.
 ConfirmUninstall=Are you sure you want to completely remove %1 and all of its components? (Note that the scripts in the mcpipy folder of your Minecraft folder should NOT get deleted, however, in case you made changes.)
 
 [Icons]

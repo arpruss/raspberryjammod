@@ -457,6 +457,8 @@ public class APIHandler {
 			pos.world.spawnEntityInWorld(entity);
 			sendLine(entity.getEntityId());
 		}
+		
+		//TODO: antigravity for NoAI:1
 	}
 
 	protected void chat(String msg) {
