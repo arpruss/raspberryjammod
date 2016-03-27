@@ -1,3 +1,4 @@
+cd 19 && sh fast.sh
 ./zip.sh
 rm build/libs/*
 ./gradlew.bat --offline build
