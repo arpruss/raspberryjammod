@@ -20,7 +20,7 @@ def egg(block=GOLD_BLOCK, h=40, a=2.5, b=1, c=0.1):
 
     for y in range(0,h):
         r = radius(y)
-        minimumr = min(r-3,radius(y-1),radius(y+1))
+        minimumr = min(r-2,radius(y-1),radius(y+1))
         for x in range(-h,h+1):
             for z in range(-h,h+1):
                 myr = sqrt(x*x + z*z)
@@ -82,8 +82,8 @@ def getBestColor(rgb):
     return bestColor
 
 def getPixel(image, x, y):
-    rgb = image.getpixel(( int( x * image.size[0] ), int( y * image.size[1] ) ))
-    return getBestColor(rgb)
+    rgb = image.getpixel(( floor( x * image.size[0] ), image.size[1]-1-floor( y * image.size[1] ) ))
+    return getBestColor(rgb)[0:2]
 
 mc = Minecraft()
 
@@ -94,20 +94,65 @@ if len(sys.argv) > 1:
 else:
     filename = os.path.dirname(os.path.realpath(sys.argv[0])) + "/" + "pysanka.jpg"
 
-image = Image.open(filename).convert('RGB')
-
 if len(sys.argv) > 2:
     height = int(sys.argv[2])
 else:
     height = 100
     
+oval = False
+    
 if len(sys.argv) > 3:
-    repeat = int(sys.argv[3])
+    if sys.argv[3] == "oval":
+        oval = True
+    else:
+        repeat = int(sys.argv[3])
 else:
     repeat = 2
 
 pos = mc.player.getPos()
 
-for (x,y,z,block,theta) in egg(h=height,block=None):
-    mc.setBlock(x+pos.x,y+pos.y,z+pos.z,getPixel(image, (theta * repeat / (2*pi)) % 1, y / float(height)))
+if oval:
+    image = Image.open(filename).convert('RGBA')
+
+    first = None
+    last = None
+    
+    start = [None] * image.size[1]
+    stop = [None] * image.size[1]
+
+    for y in range(image.size[1]):
+        for x in range(image.size[0]):
+            _,_,_,alpha = image.getpixel((x,y))
+            if alpha == 255:
+                start[y] = x
+                break
+        for x in range(image.size[0]-1,-1,-1):
+            _,_,_,alpha = image.getpixel((x,y))
+            if alpha == 255:
+                stop[y] = x
+                break
+        if start[y] is not None:
+            if first is None:
+                first = y    
+            last = y
+            
+    assert first is not None
+
+    for (x,y,z,block,theta) in egg(h=height,block=None):
+        imageY = first + int(float(y)/height*(last-first+1))
+        if imageY < first:
+            imageY = first
+        if imageY > last:
+            imageY = last
+        imageX = start[imageY]+ int((0.5 + 0.5 * sin(theta)) * (stop[imageY]-start[imageY]))
+        if imageX < start[imageY]:
+            imageX = start[imageY]
+        if imageX > stop[imageY]:
+            imageX = stop[imageY]
+        mc.setBlock(x+pos.x,y+pos.y,z+pos.z, getBestColor(image.getpixel((imageX,imageY))[0:3])[0:2])
+else:
+    image = Image.open(filename).convert('RGB')
+
+    for (x,y,z,block,theta) in egg(h=height,block=None):
+        mc.setBlock(x+pos.x,y+pos.y,z+pos.z,getPixel(image, (theta * repeat / (2*pi)) % 1, y / float(height)))
    

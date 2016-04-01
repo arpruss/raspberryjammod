@@ -496,7 +496,7 @@ class Mesh(object):
                  found = re.match('([^\\s]+) (.*)$', line)
                  if found:
                      def getString():
-                         if found.group(2).startswith('"') or found.group(2).startswith("'"):
+                         if found.group(2).startswith('"') or found.group(2).startswith("'") or found.group(2).startswith('u"') or found.group(2).startswith("u'"):
                              return safeEval(found.group(2))
                          else:
                              return found.group(2)

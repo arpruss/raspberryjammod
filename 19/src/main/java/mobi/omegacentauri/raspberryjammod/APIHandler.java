@@ -31,9 +31,11 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.MobEffects;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.BlockPos;
@@ -434,29 +436,40 @@ public class APIHandler {
 		Vec3w pos = Location.decodeVec3w(serverWorlds, x0, y0, z0);
 		String tagString = getRest(scan);
 		Entity entity;
-		if (tagString.length() > 0) {
-			NBTTagCompound tags;
-			try {
-				tags = JsonToNBT.getTagFromJson(tagString);
-			} catch (NBTException e) {
-				fail("Cannot parse tags");
-				return;
+		boolean fixGravity = false;
+		
+		try {
+			if (tagString.length() > 0) {
+				NBTTagCompound tags;
+				try {
+					tags = JsonToNBT.getTagFromJson(tagString);
+					if (tags.hasKey("NoAI")) {
+						System.out.println("Has NoAI");
+						fixGravity = tags.getBoolean("NoAI");
+						System.out.println("NoAI "+fixGravity);
+					}
+				} catch (NBTException e) {
+					fail("Cannot parse tags");
+					return;
+				}
+				tags.setString("id", entityId);
+				entity = EntityList.createEntityFromNBT(tags, pos.world);
 			}
-			tags.setString("id", entityId);
-			entity = EntityList.createEntityFromNBT(tags, pos.world);
-		}
-		else {
-			entity = EntityList.createEntityByName(entityId, pos.world);
+			else {
+				entity = EntityList.createEntityByName(entityId, pos.world);
+			}
+			
+			if (entity == null) {
+				throw new Exception();
+			}
+		} catch(Exception e) {
+			fail("Cannot create entity");
+			return;
 		}
 
-		if (entity == null) {
-			fail("Cannot create entity");
-		}
-		else {
-			entity.setPositionAndUpdate(pos.xCoord, pos.yCoord, pos.zCoord);
-			pos.world.spawnEntityInWorld(entity);
-			sendLine(entity.getEntityId());
-		}
+		entity.setPositionAndUpdate(pos.xCoord, pos.yCoord, pos.zCoord);
+		pos.world.spawnEntityInWorld(entity);
+		sendLine(entity.getEntityId());
 		
 		//TODO: antigravity for NoAI:1
 	}
