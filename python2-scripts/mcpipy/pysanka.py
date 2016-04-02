@@ -82,7 +82,7 @@ def getBestColor(rgb):
     return bestColor
 
 def getPixel(image, x, y):
-    rgb = image.getpixel(( floor( x * image.size[0] ), image.size[1]-1-floor( y * image.size[1] ) ))
+    rgb = image.getpixel(( image.size[0]-1-floor( x * image.size[0] ), image.size[1]-1-floor( y * image.size[1] ) ))
     return getBestColor(rgb)[0:2]
 
 mc = Minecraft()
@@ -139,12 +139,12 @@ if oval:
     assert first is not None
 
     for (x,y,z,block,theta) in egg(h=height,block=None):
-        imageY = first + int(float(y)/height*(last-first+1))
+        imageY = first + int(float(height-1-y)/height*(last-first+1))
         if imageY < first:
             imageY = first
         if imageY > last:
             imageY = last
-        imageX = start[imageY]+ int((0.5 + 0.5 * sin(theta)) * (stop[imageY]-start[imageY]))
+        imageX = start[imageY]+ int((0.5 - 0.5 * sin(theta)) * (stop[imageY]-start[imageY]))
         if imageX < start[imageY]:
             imageX = start[imageY]
         if imageX > stop[imageY]:

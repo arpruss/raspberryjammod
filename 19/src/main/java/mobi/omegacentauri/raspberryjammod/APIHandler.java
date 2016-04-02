@@ -444,9 +444,7 @@ public class APIHandler {
 				try {
 					tags = JsonToNBT.getTagFromJson(tagString);
 					if (tags.hasKey("NoAI")) {
-						System.out.println("Has NoAI");
 						fixGravity = tags.getBoolean("NoAI");
-						System.out.println("NoAI "+fixGravity);
 					}
 				} catch (NBTException e) {
 					fail("Cannot parse tags");
@@ -454,6 +452,11 @@ public class APIHandler {
 				}
 				tags.setString("id", entityId);
 				entity = EntityList.createEntityFromNBT(tags, pos.world);
+				if (fixGravity && entity instanceof EntityLiving) {
+					System.out.println("fixGravity "+fixGravity);
+					((EntityLiving)entity).addPotionEffect(new PotionEffect(MobEffects.levitation, 
+							Integer.MAX_VALUE, -1));
+				}
 			}
 			else {
 				entity = EntityList.createEntityByName(entityId, pos.world);
