@@ -1,5 +1,275 @@
 Changelog:
-Build 1811:
+Build 1863:
+	LexManos: Expose a central place to access all of Vanilla and Forge's registries using the new registry API.
+
+Build 1.9-12.16.0.1862-1.9:
+	LexManos: Fix log spam from invalid key modifiers (#2746)
+
+Build 1.9-12.16.0.1861-1.9:
+	LexManos: make WorldSavedData implement NBTSerializable (#2745)
+
+Build 1.9-12.16.0.1860-1.9:
+	LexManos: Don't use import static with net.minecraft classes. Using the latest MCP snapshots this causes an import conflict. (#2742)
+
+Build 1.9-12.16.0.1859-1.9:
+	LexManos:
+		Add cancelable event for Potions shifting the gui position (#2667)
+		
+		Add cancelable event for Potions shifting the gui position
+
+Build 1.9-12.16.0.1858-1.9:
+	LexManos: Fix ForgeChunkManager world unloading check (#2736)
+
+Build 1.9-12.16.0.1857-1.9:
+	LexManos: Fix being kicked from server when climbing ladders.
+
+Build 1.9-12.16.0.1856-1.9:
+	LexManos: Fix potential desync between Forge's Villager profession and vanilla's int based system.
+
+Build 1.8.9-11.15.1.1855:
+	LexManos:
+		Update ore dictionary (#2721)
+		
+		Updated the Ore Dictionary with more vanilla items:
+		  -Prismarine Shard ( "gemPrismarine" )
+		  -Prismarine Crystals ( "dustPrismarine" )
+		  -Prismarine Block ( "blockPrismarine" )
+		  -Prismarine Brick ( "blockPrismarineBrick" )
+		  -Dark Prismarine ( "blockDarkPrismarine" )
+		  -Nether Wart ( "cropNetherWart" )
+		  -Sugarcane ( "sugarcane" )
+		  -Paper ( "paper" )
+		  -Ender Pearl ( "enderpearl" )
+		  -Bone ( "bone)
+		  -Gunpowder ( "gunpowder)
+		  -String ( "string" )
+		  -Nether Star ( "netherStar" )
+		  -Leather ( "leather" )
+		  -Feather ( "feather" )
+		  -Egg ( "egg" )
+		  -End Stone ( "endstone" )
+		  -Torch ( "torch" )
+		  -Vine ( "vine" )
+		  -Cactus ( "blockCactus" )
+		  -Grass ( "grass")
+		  -Obsidian ( "obsidian" )
+		  -Red Sandstone ( added to "sandstone" )
+		  -Crafting Table ( "workbench" )
+		  -Slime Block ( "blockSlime" )
+		  -Granite ( "stoneGranite" )
+		  -Polished Granite ( "stoneGranitePolished" )
+		  -Diorite ( "stoneDiorite" )
+		  -Polished Diorite ( "stoneDioritePolished" )
+		  -Andesite ( "stoneAndesite" )
+		  -Polished Andesite ( "stoneAndesitePolished" )
+
+Build 1.9-12.16.0.1854-1.9:
+	kashike:
+		Remove @SideOnly(Side.CLIENT) from BossInfo/BossInfoServer methods
+		
+		These methods can also be used by the server (see BossInfoServer, it sends packets to the client but the methods are @SideOnly(Side.CLIENT))
+
+Build 1.9-12.16.0.1853-1.9:
+	fry: Made forge fluids use smooth lighting.
+
+Build 1.9-12.16.0.1852-1.9:
+	LexManos: Fixed NPE in dedicated server languages. And fixed logger for main FML event bus.
+
+Build 1.9-12.16.0.1851-1.9:
+	LexManos: Enhance some error logging related to OBJLoader issues, and RegistryEntries.
+	LexManos:
+		Cleanup OBJLoader parse function and fix issues related to JVM differences.
+		Also fix support for sopme of the spec that was partially respected.
+
+Build 1.9-12.16.0.1850-1.9:
+	mezz: Fix some plain keybinds not working when a modifier is active
+
+Build 1.9-12.16.0.1849-1.9:
+	mezz: Fix #2717 Pick block hotkey not working in inventories
+
+Build 1.9-12.16.0.1848-1.9:
+	kat.swales: Corrected CapabilityItemHandler.readNBT ignoring anything in slot 0 in 1.9
+
+Build 1.8.9-11.15.1.1847:
+	kat.swales: Corrected readNBT ignoring anything in slot 0
+
+Build 1.9-12.16.0.1846-1.9:
+	fry: Fixed zip being closed too early in the server language loading.
+	fry: Fixed forge fluid having a collision box.
+
+Build 1.9-12.16.0.1845-1.9:
+	iTitus: Fix dynbucket item transformation.
+
+Build 1.9-12.16.0.1844-1.9:
+	fry: Fixed some test mods not being marked as client-only.
+
+Build 1.9-12.16.0.1843-1.9:
+	fry: Fixed mod languages not being loaded on the server.
+
+Build 1.9-12.16.0.1842-1.9:
+	Zaggy1024: Fixed using PlaySoundEvent to replace a sound with a PositionedSound causing an NPE due to the Sound field not being set by a call to ISound.createAccessor(SoundHandler).
+
+Build 1.9-12.16.0.1841-1.9:
+	mezz:
+		Add modifier support to vanilla keybindings.
+		
+		Add Orange conflict color for modifier/key conflicts
+		(like Ctrl and Ctrl-Z conflicting)
+		Related to #2692
+
+Build 1.9-12.16.0.1840-1.9:
+	vincent.lee: Player Interact Event
+
+Build 1.9-12.16.0.1839-1.9:
+	AEnterprise: onBlockHarvested is no longer called twice
+	LexManos: Fixed EntityJoinWorldEvent not being fired for some entitites on Server Worlds. Closes #2685
+	LexManos: Fix improper logic in ItemHandlerHelper.giveItemToPlayer causing some items to not be added. Closes #2705
+
+Build 1.9-12.16.0.1838-1.9:
+	LexManos: Fix issue caused by setting spawnRadius to 0. Closes #2624
+
+Build 1.9-12.16.0.1837-1.9:
+	fry: Made both exceptions occuring during item model loading print in the log; closes #2696.
+
+Build 1.9-12.16.0.1836-1.9:
+	fry: Added the ability to change the printed model error count; Added printing of actual exceptions causing missing variants related to blockstate loading, closes #2689.
+
+Build 1.9-12.16.0.1835-1.9:
+	mcjty1:
+		Added DimensionManager.createProviderFor() to WorldClient constructor similar to what is done
+		in WorldServer to make sure the correct provider is created client-side too.
+
+Build 1.9-12.16.0.1834-1.9:
+	iTitus:
+		Add flashing update notification icon made by @gigaherz, closes #2582
+		
+		It is added to the "Mods" button in the main menu and to out-of-date mods in the mod list (there it replaces the "U").
+		Also fixes a little typo.
+
+Build 1.9-12.16.0.1833-1.9:
+	mezz: Fix inability to attack while holding modifier keys
+
+Build 1.9-12.16.0.1832-1.9:
+	mezz: Re-Add key binding modifiers and contexts.
+
+Build 1.9-12.16.0.1831-1.9:
+	fry:
+		Revert "Add key binding modifiers and contexts.", until it's fixed.
+		
+		This reverts commit 34c3af7e853d578c8e17e1f0cdf886251fad74ae.
+
+Build 1.9-12.16.0.1830-1.9:
+	fry: Changed generic signature of GameRegistry.register methods to work around the type inference bug; updated all example mods to the new block/item registration method.
+
+Build 1.9-12.16.0.1829-1.9:
+	Adubbz: Fixed mismatch registry names and mod ids
+
+Build 1.9-12.16.0.1828-1.9:
+	mezz:
+		Add key binding modifiers and contexts.
+		
+		Same as #2674, but for Minecraft 1.9
+
+Build 1.9-12.16.0.1827-1.9:
+	LexManos: Properly deprecate and link the replacement methods in GameRegistry. Add helper method for registering a block with default ItemBlock because people keep complaining -.-
+
+Build 1.9-12.16.0.1826-1.9:
+	LexManos: Fixed compile error in registry code with Eclipse.
+
+Build 1.9-12.16.0.1825-1.9:
+	cpw: Capture a vanilla freeze - will be used when FML connects to vanilla servers, soon
+
+Build 1.9-12.16.0.1824-1.9:
+	cpw: Support ResLocations for IMC
+
+Build 1.9-12.16.0.1823-1.9:
+	fry: Improved UV offset hackery - should fix most visible custom model seams.
+
+Build 1.9-12.16.0.1822-1.9:
+	cpw: MinecraftForge-2684 [1.9] New Registry ignores keys
+
+Build 1.9-12.16.0.1821-1.9:
+	cpw: MinecraftForge-2683 InvocationTargetException for Forge 1820 for 1.9
+
+Build 1.9-12.16.0.1820-1.9:
+	cpw:
+		Add registries for soundevents, enchantments and potiontypes
+		MinecraftForge-2576 [1.9] SoundEvents (and Enchantments and PotionTypes) need a FML registry
+
+Build 1.9-12.16.0.1819-1.9:
+	cpw: Fix remapped blocks being overriden with dummy air blocks. Closes #2491
+	cpw:
+		Squashed commit of the following:
+		
+		commit b3b290aec9d3010a134859da6001ea28a96c2fdc
+		Merge: c6ce6a0 d803f7d
+		Author: cpw <cpw@weeksfamily.ca>
+		Date:   Fri Mar 25 13:28:04 2016 -0400
+		
+		    Merge branch 'RegistryRework' of https://github.com/LexManos/MinecraftForge into LexManos-RegistryRework
+		
+		    Implement proper registry slaves. Should help with rollback related issues.
+		
+		    Missing patch
+		
+		commit d803f7db76f65db9d27302c9804a643bc853dc22
+		Author: LexManos <LexManos@gmail.com>
+		Date:   Tue Mar 22 03:36:14 2016 -0700
+		
+		    Update VillagerRegistry and use it. Should in theory make custom villagers work now. Using string version instead of int id for networking.
+		
+		commit eb5e5b4b42fdca26d2a104e4dc1e6a3ea3051a7b
+		Author: LexManos <LexManos@gmail.com>
+		Date:   Tue Mar 22 02:14:16 2016 -0700
+		
+		    More cleanup.
+		
+		commit edbc56b2ff314629d0e402709f3cf29fc79c4a3d
+		Author: LexManos <LexManos@gmail.com>
+		Date:   Tue Mar 22 02:05:23 2016 -0700
+		
+		    More cleanups, removed deprecated UniqueIdentifier {ResourceLocation now}
+		
+		commit e2df8d1be3c97601508f83dc97b0e8853fa1e271
+		Author: LexManos <LexManos@gmail.com>
+		Date:   Tue Mar 22 01:29:19 2016 -0700
+		
+		    Stupid generics....
+		
+		commit 46d57dc4677fa5ff3923e64eaccfb33d7e5aad8d
+		Author: LexManos <LexManos@gmail.com>
+		Date:   Tue Mar 22 01:00:25 2016 -0700
+		
+		    Some registry tweaking to provde a non-complicated API modders can use.
+	cpw: Reconcile Block.patch
+
+Build 1.9-12.16.0.1817-1.9:
+	kashike:
+		Replace Forge's `BlockPos#getImmutable` method with the included `BlockPos#toImmutable` (func_185334_h), while keeping the override in PooledMutableBlockPos to prevent mutable leaks.
+		Also prevent a mutable blockpos leak in World#setTileEntity
+	gigaherz: Add wrapper methods for IStorage#readNBT/writeNBT.
+	LexManos: Fix landing particles not showing up. Cloes #2661
+	me: Forward ItemBlock#addInformation to Block#addInformation
+	tterrag1098: Add state param to canRenderInLayer
+
+Build 1.9-12.16.0.1816-1.9:
+	LexManos: Make NoteBlockEvent raw constructor protected to allow subclasses. Closes #2153
+
+Build 1.9-12.16.0.1815-1.9:
+	LexManos: Fix EntityPlayer still running old armor logic. Closes #2670
+	LexManos: Fix shrubs not generating correctly. Closes #2663
+	LexManos: Fix bows not animating properly when picking up ammo while using. Closes #2672
+
+Build 1.9-12.16.0.1814-1.9:
+	mezz: Fix Block.getPickBlock returning an ItemStack with a null Item
+
+Build 1.9-12.16.0.1813-1.9:
+	fry: Fixed StackOverflow caused by the previous commit, closes #2669.
+
+Build 1.9-12.16.0.1812-1.9:
+	fry: Prevent missing model from loading multiple times.
+
+Build 1.9-12.16.0.1811-1.9:
 	fry: Enabled diffuse lighting by default in UnpackedBakedQuad.Builder.
 	fry: Fixed crosshair always being white, closes #2653.
 
