@@ -30,7 +30,6 @@ import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -73,20 +72,35 @@ abstract public class MCEventHandler {
 //            Minecraft.getMinecraft().displayGuiScreen(new MyChat());
 //        }
 //    }
+	private enum Action {
+		RIGHT_CLICK_BLOCK,
+		LEFT_CLICK_BLOCK
+	}
+	
 	
 	@SubscribeEvent
-	public void onPlayerInteractEvent(PlayerInteractEvent event) {
+	public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+		onClick(event,  Action.RIGHT_CLICK_BLOCK);
+	}
+	
+	
+	@SubscribeEvent
+	public void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+		onClick(event, Action.LEFT_CLICK_BLOCK);
+	}
+	
+	private void onClick(PlayerInteractEvent event, Action action) {
 		EntityPlayer player = event.getEntityPlayer();
 		
-		System.out.println("player interact "+event.getAction());
+		System.out.println("player interact "+action);
 		
 		if (player == null || player.getEntityWorld().isRemote != RaspberryJamMod.clientOnlyAPI )
 			return;
 		
-		Action action = event.getAction();
 		
-		if (action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK ||
-			(detectLeftClick && action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)) {
+		
+		if (action == Action.RIGHT_CLICK_BLOCK ||
+			(detectLeftClick && action == Action.LEFT_CLICK_BLOCK)) {
 			if (! restrictToSword || holdingSword(player)) {
 				synchronized(hits) {
 					if (hits.size() >= MAX_HITS)
