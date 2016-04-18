@@ -30,7 +30,6 @@ import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -46,14 +45,14 @@ abstract public class MCEventHandler {
 	private static final int MAX_HITS = 512;
 	private volatile boolean stopChanges = false;
 	private volatile boolean restrictToSword = true;
-	private volatile boolean detectLeftClick = true; // false;
+	private volatile boolean detectLeftClick = false;
 	protected volatile boolean pause = false;
 	private ServerChatEvent chatEvents;
 	protected static final int MAX_CHATS = 512;
 	protected boolean doRemote;
 	
 	public MCEventHandler() {
-		detectLeftClick = true; // RaspberryJamMod.leftClickToo;
+		detectLeftClick = RaspberryJamMod.leftClickToo;
 	}
 
 	public void setStopChanges(boolean stopChanges) {
@@ -74,19 +73,35 @@ abstract public class MCEventHandler {
 //        }
 //    }
 	
-	@SubscribeEvent
-	public void onPlayerInteractEvent(PlayerInteractEvent event) {
+	@SubscribeEvent 
+	public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+		click(event, true);
+	}
+	
+	@SubscribeEvent 
+	public void onRightClickEmpty(PlayerInteractEvent.RightClickEmpty event) {
+		click(event, true);
+	}
+	
+	@SubscribeEvent 
+	public void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+		click(event, true);
+	}
+	
+	@SubscribeEvent 
+	public void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+		click(event, false);
+	}
+	
+	private void click(PlayerInteractEvent event, boolean right) {
 		EntityPlayer player = event.getEntityPlayer();
 		
-		System.out.println("player interact "+event.getAction());
+		System.out.println("Click "+right);
 		
 		if (player == null || player.getEntityWorld().isRemote != RaspberryJamMod.clientOnlyAPI )
 			return;
 		
-		Action action = event.getAction();
-		
-		if (action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK ||
-			(detectLeftClick && action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)) {
+		if (right || detectLeftClick) {
 			if (! restrictToSword || holdingSword(player)) {
 				synchronized(hits) {
 					if (hits.size() >= MAX_HITS)
