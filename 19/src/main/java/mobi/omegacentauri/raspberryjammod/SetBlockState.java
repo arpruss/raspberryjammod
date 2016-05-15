@@ -3,6 +3,7 @@ package mobi.omegacentauri.raspberryjammod;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class SetBlockState extends ServerAction {
@@ -21,6 +22,15 @@ public class SetBlockState extends ServerAction {
 		this.meta = meta;
 	}
 	
+	public IBlockState safeGetStateFromMeta(Block b, int meta) {
+		try {
+			return b.getStateFromMeta(meta);
+		}
+		catch(Exception e) {
+			return b.getStateFromMeta(0);
+		}
+	}
+	
 	@Override
 	public int getBlockId() {
 		return (int)id;
@@ -35,7 +45,7 @@ public class SetBlockState extends ServerAction {
 	public BlockState getBlockState() {
 		return new BlockState(id, meta);
 	}
-
+	
 	@Override
 	public void execute() {
 		IBlockState oldState = pos.world.getBlockState(pos);
@@ -46,7 +56,7 @@ public class SetBlockState extends ServerAction {
 
 		if (Block.getIdFromBlock(oldBlock) != (int)id ||
 				oldBlock.getMetaFromState(oldState) != (int)meta )
-			pos.world.setBlockState(pos, Block.getBlockById(id).getStateFromMeta(meta), 3);
+			pos.world.setBlockState(pos, safeGetStateFromMeta(Block.getBlockById(id),meta), 3);
 		// Maybe the update code should be 2? I don't really know.
 	}
 	

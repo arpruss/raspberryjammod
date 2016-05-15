@@ -51,7 +51,7 @@ public class SetBlocksState extends SetBlockState {
 					}
 
 					if (Block.getIdFromBlock(oldBlock) != intId ||
-							oldBlock.getMetaFromState(oldState) != intMeta) {
+							oldBlock.getMetaFromState(oldState) != intMeta) {						
 						pos.world.setBlockState(here, state, 3);
 					}
 				}

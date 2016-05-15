@@ -22,7 +22,8 @@ public class SetBlockNBT extends SetBlockState {
 	
 	@Override
 	public void execute() {
-		pos.world.setBlockState(pos, Block.getBlockById((int)id).getStateFromMeta((int)meta), 2);
+		pos.world.setBlockState(pos, 
+				safeGetStateFromMeta(Block.getBlockById((int)id),(int)meta), 2);
 		TileEntity tileEntity = pos.world.getTileEntity(pos);
 		if (tileEntity != null) {
 			nbt.setInteger("x", pos.getX());
