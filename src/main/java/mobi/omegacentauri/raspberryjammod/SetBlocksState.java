@@ -32,7 +32,7 @@ public class SetBlocksState extends SetBlockState {
 		int z1 = pos.getZ();
 		int intId = (int)id;
 		int intMeta = (int)meta;
-		IBlockState state = Block.getBlockById(intId).getStateFromMeta(intMeta);
+		IBlockState state = safeGetStateFromMeta(Block.getBlockById(intId),intMeta);
 		
 		for (int x = pos.getX() ; x <= x2 ; x++)
 			for (int y = y1 ; y <= y2 ; y++)

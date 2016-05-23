@@ -8,7 +8,7 @@ import math
 def draw_horizontal_disc(cx, cy, cz, radius, block_type, meta):
   for x in range(-radius, radius):
     for z in range(-radius, radius):
-      if (x**2 + z**2 <= radius):
+      if (x**2 + z**2 <= radius**2):
          mc.setBlock(cx + x, cy, cz + z, block_type, meta)
 
 def draw_spiral(mcx,mcy,mcz,major_radius,minor_radius,height,period,phase,block_type,meta):

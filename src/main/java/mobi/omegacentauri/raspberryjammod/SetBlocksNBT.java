@@ -21,7 +21,7 @@ public class SetBlocksNBT extends SetBlocksState {
 	public void execute() {
 		int y1 = pos.getY();
 		int z1 = pos.getZ();
-		IBlockState state = Block.getBlockById(id).getStateFromMeta(meta);
+		IBlockState state = safeGetStateFromMeta(Block.getBlockById(id),meta);
 		
 		for (int x = pos.getX() ; x <= x2 ; x++)
 			for (int y = y1 ; y <= y2 ; y++)

@@ -19,7 +19,16 @@ public class SetBlockState extends ServerAction {
 	public SetBlockState(Location pos, short id, short meta) {
 		this.pos = pos;
 		this.id = id;
-		this.meta = meta;
+//		this.meta = meta;
+	}
+	
+	public IBlockState safeGetStateFromMeta(Block b, int meta) {
+		try {
+			return b.getStateFromMeta(meta);
+		}
+		catch(Exception e) {
+			return b.getStateFromMeta(0);
+		}
 	}
 	
 	@Override
@@ -47,7 +56,7 @@ public class SetBlockState extends ServerAction {
 
 		if (Block.getIdFromBlock(oldBlock) != (int)id ||
 				oldBlock.getMetaFromState(oldState) != (int)meta )
-			pos.world.setBlockState(pos, Block.getBlockById(id).getStateFromMeta(meta), 3);
+			pos.world.setBlockState(pos, safeGetStateFromMeta(Block.getBlockById(id),meta), 3);
 		// Maybe the update code should be 2? I don't really know.
 	}
 	
