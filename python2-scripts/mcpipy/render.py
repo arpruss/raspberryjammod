@@ -841,6 +841,7 @@ if __name__ == "__main__":
             go("models/RaspberryPi.txt")
         else:
             from tkFileDialog import askopenfilename
+            from Tkinter import *
             master = Tk()
             master.wm_title("render")
             master.attributes("-topmost", True)
@@ -869,7 +870,7 @@ if __name__ == "__main__":
             c.select()
 
             def selectFileAndGo():
-                name = askopenfilename(initialdir='models',filetypes=['controlfile {*.txt}'])
+                name = askopenfilename(initialdir='models',filetypes=['controlfile {*.txt}', 'all {*}'])
                 if name:
                      options = '-'
                      if not clearing:
