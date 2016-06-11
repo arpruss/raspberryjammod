@@ -370,7 +370,7 @@ public class APIHandler {
 					for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities) {
 						if (p.getName().equals(name)) {
 							sendLine(p.getEntityId());
-							break;
+							return;
 						}
 					}
 				}

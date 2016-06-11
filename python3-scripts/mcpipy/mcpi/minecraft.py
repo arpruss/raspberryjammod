@@ -320,7 +320,7 @@ class Minecraft:
 
     def getPlayerId(self, *args):
         """Get the id of the current player"""
-        return int(self.conn.sendReceive_flat("world.getPlayerId", floorFlatten(args)))
+        return int(self.conn.sendReceive_flat("world.getPlayerId", flatten(args)))
 
     def getPlayerEntityIds(self):
         """Get the entity ids of the connected players => [id:int]"""
