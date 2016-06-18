@@ -3,6 +3,9 @@ package mobi.omegacentauri.raspberryjammod;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.Packet;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.client.CPacketPlayerBlockPlacement;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -55,8 +58,9 @@ public class SetBlockState extends ServerAction {
 			pos.world.removeTileEntity(pos);
 
 		if (Block.getIdFromBlock(oldBlock) != (int)id ||
-				oldBlock.getMetaFromState(oldState) != (int)meta )
+				oldBlock.getMetaFromState(oldState) != (int)meta ) {
 			pos.world.setBlockState(pos, safeGetStateFromMeta(Block.getBlockById(id),meta), 3);
+		}
 		// Maybe the update code should be 2? I don't really know.
 	}
 	

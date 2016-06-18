@@ -9,27 +9,27 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 
 public class PythonExternalCommand extends ScriptExternalCommand {
-
+	
 	public PythonExternalCommand(boolean clientSide) {
 		super(clientSide);
 	}
 	
 	@Override
 	public String getCommandName() {
-		return /* clientSide ? "lpython" : */ "python";
+		return "python";
 	}
 
 	@Override
 	public List getCommandAliases() {
 		List<String> aliases = new ArrayList<String>();
 		aliases.add(getCommandName());
-		aliases.add(/* clientSide ? "lpy" : */ "py");
+		aliases.add("py");
 		return aliases;
 	}
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "python script [arguments]: run script, stopping old one(s) (omit script to stop previous script)";
+		return "python script [arguments]: run script, stopping old one(s) (omit script to stop previous script(s))";
 	}
 
 	@Override

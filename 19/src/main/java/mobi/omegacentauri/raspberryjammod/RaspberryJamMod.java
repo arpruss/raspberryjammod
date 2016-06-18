@@ -1,3 +1,4 @@
+
 package mobi.omegacentauri.raspberryjammod;
 
 import ibxm.Player;
@@ -9,6 +10,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.event.FMLStateEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -58,7 +61,7 @@ public class RaspberryJamMod
 	private PythonExternalCommand pythonExternalCommand = null;
 	private NightVisionExternalCommand nightVisionExternalCommand = null;
 	private CameraCommand cameraCommand = null;
-	public static ScriptExternalCommand[] scriptExternalCommands = null;
+	public static List<ScriptExternalCommand> scriptExternalCommands = new ArrayList<ScriptExternalCommand>();
 	public static Configuration configFile;
 	static int portNumber = 4711;
 	static int wsPort = 14711;
@@ -69,6 +72,7 @@ public class RaspberryJamMod
 	public static String pythonInterpreter = "python";
 	public static boolean integrated = true;
 	public static volatile boolean apiActive = false;
+	public static String serverAddress = null;
 	private ClientEventHandler clientEventHandler = null;
 	static boolean clientOnlyAPI = false;
 	static boolean searchForPort = false;
@@ -101,7 +105,6 @@ public class RaspberryJamMod
 		System.out.println("config changed");
 	}
 
-
 	@Mod.EventHandler
 	@SideOnly(Side.CLIENT)
 	public void Init(FMLInitializationEvent event) {
@@ -132,14 +135,12 @@ public class RaspberryJamMod
 	}
 
 	public static int closeAllScripts() {
-		if (scriptExternalCommands == null)
-			return 0;
 		int count = 0;
 		for (ScriptExternalCommand c : scriptExternalCommands)
 			count += c.close();
 		return count;
 	}
-
+	
 	@EventHandler
 	public void onServerStopping(FMLServerStoppingEvent event) {
 		if (clientOnlyAPI) {
@@ -158,21 +159,20 @@ public class RaspberryJamMod
 			fullAPIServer.close();
 		}
 		closeAllScripts();
-		if (scriptExternalCommands != null && minecraftServer != null) {
-			for (ICommand c : scriptExternalCommands) {
+		for (int i = scriptExternalCommands.size() - 1; i >= 0 ; i--) {
+			ScriptExternalCommand c = scriptExternalCommands.get(i);
+			if (!c.clientSide) {
 				unregisterCommand((CommandHandler)minecraftServer.getCommandManager(), c);
+				scriptExternalCommands.remove(i);
 			}
-			scriptExternalCommands = null;
 		}
 		minecraftServer = null;
 	}
-
+	
 	@EventHandler
 	public void onServerStarting(FMLServerStartingEvent event) {
-		System.out.println("Server started event");
-		
 		synchronizeConfig();
-
+		
 		if (clientOnlyAPI)
 			return;
 
@@ -190,6 +190,7 @@ public class RaspberryJamMod
 			currentPortNumber = -1;
 			fullAPIServer = new APIServer(serverEventHandler, portNumber, searchForPort ? 65535 : portNumber, wsPort, false);
 			currentPortNumber = fullAPIServer.getPortNumber(); 
+			System.out.println("Current port number "+currentPortNumber);
 
 			new Thread(new Runnable() {
 				@Override
@@ -211,12 +212,13 @@ public class RaspberryJamMod
 			System.out.println("Threw "+e1);
 		}
 
-		scriptExternalCommands = new ScriptExternalCommand[] {
+		ScriptExternalCommand[] commands = new ScriptExternalCommand[] {
 				new PythonExternalCommand(false),
 				new AddPythonExternalCommand(false)
 		};
-		for (ScriptExternalCommand c : scriptExternalCommands) {
+		for (ScriptExternalCommand c : commands) {
 			event.registerServerCommand(c);
+			scriptExternalCommands.add(c);
 		}
 	}
 

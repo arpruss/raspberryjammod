@@ -177,6 +177,15 @@ public class APIHandler {
 				return;
 			String cmd = clientSentence.substring(0, paren);
 			String args = clientSentence.substring(paren + 1).replaceAll("[\\s\r\n]+$", "").replaceAll("\\)$", "");
+			if (cmd.startsWith("player.")) {
+				// Compatibility with the mcpi library included with Juice
+				if (args.startsWith("None,")) {
+					args = args.substring(5);
+				}
+				else if (args.equals("None")) {
+					args = "";
+				}
+			}
 
 			scan = new Scanner(args);
 			scan.useDelimiter(",");

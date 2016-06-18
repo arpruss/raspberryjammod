@@ -26,6 +26,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 public abstract class ScriptExternalCommand implements ICommand {
 	abstract protected String getScriptProcessorCommand();
@@ -44,6 +45,10 @@ public abstract class ScriptExternalCommand implements ICommand {
 			scriptProcessorPath = new File(path).getAbsolutePath().toString();
 		else
 			scriptProcessorPath = path;
+	}
+	
+	public boolean isClientSide() {
+		return clientSide;
 	}
 
 	private boolean sandboxedScriptPath(String path) {
@@ -191,8 +196,8 @@ public abstract class ScriptExternalCommand implements ICommand {
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args)
 			throws CommandException {
 		
-		if (clientSide != RaspberryJamMod.clientOnlyAPI) 
-			return;
+//		if (clientSide != RaspberryJamMod.clientOnlyAPI) 
+//			return;
 
 		if (! clientSide) {
 			World serverWorld = RaspberryJamMod.minecraftServer.getEntityWorld();
@@ -247,13 +252,23 @@ public abstract class ScriptExternalCommand implements ICommand {
 		Map<String, String> environment = pb.environment();
 		EntityPlayer player = null;
 		Entity senderEntity = sender.getCommandSenderEntity();
+		
 		if (senderEntity instanceof EntityPlayer) {
 			environment.put("MINECRAFT_PLAYER_NAME", senderEntity.getName());
 			environment.put("MINECRAFT_PLAYER_ID", ""+senderEntity.getEntityId());
 		}
-		environment.put("MINECRAFT_API_PORT", ""+RaspberryJamMod.currentPortNumber);
 
+		if (clientSide && ! RaspberryJamMod.clientOnlyAPI && RaspberryJamMod.serverAddress != null) {
+			environment.put("MINECRAFT_API_HOST", RaspberryJamMod.serverAddress);
+			environment.put("MINECRAFT_API_PORT", "4711"); // presumed server port
+		}
+		else {
+			environment.put("MINECRAFT_API_HOST","localhost");
+			environment.put("MINECRAFT_API_PORT", ""+RaspberryJamMod.currentPortNumber);
+		}
+		
 		pb.command(cmd);
+
 		try {
 			System.out.println("Running "+script);
 			Process runningScript = pb.start();

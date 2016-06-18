@@ -192,7 +192,11 @@ class Minecraft:
                  playerId = int(environ['MINECRAFT_PLAYER_ID'])
                  self.player = CmdPlayer(self.conn,playerId=playerId)
             except:
-                 self.player = CmdPlayer(self.conn)
+                try:
+                    playerId = self.getPlayerId(environ['MINECRAFT_PLAYER_NAME'])
+                    self.player = CmdPlayer(self.conn,playerId=playerId)
+                except:
+                    self.player = CmdPlayer(self.conn)
         else:
             self.player = CmdPlayer(self.conn)
         self.events = CmdEvents(self.conn)

@@ -77,6 +77,7 @@ public class RaspberryJamMod
 	private MCEventHandler serverEventHandler = null;
 	private MinecraftServer s;
 	public static int currentPortNumber;
+	public static String serverAddress = null;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {

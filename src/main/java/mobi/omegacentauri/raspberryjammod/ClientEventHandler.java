@@ -3,6 +3,7 @@ package mobi.omegacentauri.raspberryjammod;
 import java.beans.EventSetDescriptor;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -45,6 +46,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -78,6 +80,24 @@ public class ClientEventHandler {
 	public boolean getNightVision() {
 		return nightVision;
 	}
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onClientConnectedToServer(FMLNetworkEvent.ClientConnectedToServerEvent event) {
+		try {
+			Object address = event.manager.getRemoteAddress();
+			if (address instanceof InetSocketAddress) {
+				RaspberryJamMod.serverAddress = ((InetSocketAddress) address).getAddress().getHostAddress();
+				System.out.println("Server address "+RaspberryJamMod.serverAddress);
+			}
+			else {
+				System.out.println("No IP address");
+			}
+		} catch(Exception e) {
+			RaspberryJamMod.serverAddress = null;
+		}
+	}
+
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent

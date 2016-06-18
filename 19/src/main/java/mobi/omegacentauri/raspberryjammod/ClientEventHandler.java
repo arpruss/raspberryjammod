@@ -3,6 +3,7 @@ package mobi.omegacentauri.raspberryjammod;
 import java.beans.EventSetDescriptor;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -38,11 +39,13 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -79,6 +82,24 @@ public class ClientEventHandler {
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
+	public void onClientConnectedToServer(FMLNetworkEvent.ClientConnectedToServerEvent event) {
+		try {
+			Object address = event.getManager().getRemoteAddress();
+			if (address instanceof InetSocketAddress) {
+				RaspberryJamMod.serverAddress = ((InetSocketAddress) address).getAddress().getHostAddress();
+				System.out.println("Server address "+RaspberryJamMod.serverAddress);
+			}
+			else {
+				System.out.println("No IP address");
+			}
+		} catch(Exception e) {
+			RaspberryJamMod.serverAddress = null;
+		}
+	}
+
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
 	public void onWorldUnloaded(WorldEvent.Unload event) {
 		if (! RaspberryJamMod.clientOnlyAPI)
 			return;
@@ -89,25 +110,29 @@ public class ClientEventHandler {
 	}	
 	
 	@SideOnly(Side.CLIENT)
+	public void registerCommand(ScriptExternalCommand c) {
+		net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(c);
+		RaspberryJamMod.scriptExternalCommands.add(c);
+	}
+	
+	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void onWorldLoaded(WorldEvent.Load event) {
 		RaspberryJamMod.synchronizeConfig();
 		System.out.println("Loading world: "+event.getWorld());
 
-		if (! RaspberryJamMod.clientOnlyAPI)
+		if (RaspberryJamMod.clientOnlyAPI) {
+			registerCommand(new PythonExternalCommand(true));
+			registerCommand(new AddPythonExternalCommand(true));
+		}
+		else {
+			registerCommand(new LocalPythonExternalCommand(true));
+			registerCommand(new AddLocalPythonExternalCommand(true));
+		}
+		
+		if (!RaspberryJamMod.clientOnlyAPI)
 			return;
-			
-//		if (! registeredCommands) {
-		System.out.println("Registering commands");
-			RaspberryJamMod.scriptExternalCommands = new ScriptExternalCommand[] {
-					new PythonExternalCommand(true),
-					new AddPythonExternalCommand(true)
-			};
-			for (ScriptExternalCommand c : RaspberryJamMod.scriptExternalCommands) {
-				net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(c);
-			}
-//		}
-
+		
 		if (apiEventHandler == null) {
             apiEventHandler = new MCEventHandlerClientOnly();
 			FMLCommonHandler.instance().bus().register(apiEventHandler);
@@ -145,12 +170,13 @@ public class ClientEventHandler {
 
 	public void closeAPI() {
 		RaspberryJamMod.closeAllScripts();
-		if (RaspberryJamMod.scriptExternalCommands != null) {
-			for (ICommand c : RaspberryJamMod.scriptExternalCommands) {
+		for (int i = RaspberryJamMod.scriptExternalCommands.size()-1; i>=0; i--) {
+			ScriptExternalCommand c = RaspberryJamMod.scriptExternalCommands.get(i);
+			if (c.clientSide) {
 				System.out.println("Unregistering "+c.getClass());
 				RaspberryJamMod.unregisterCommand(net.minecraftforge.client.ClientCommandHandler.instance,c);
-			}
-			RaspberryJamMod.scriptExternalCommands = null;
+				RaspberryJamMod.scriptExternalCommands.remove(i);
+			}		
 		}
 		RaspberryJamMod.apiActive = false;
 		if (apiEventHandler != null) {

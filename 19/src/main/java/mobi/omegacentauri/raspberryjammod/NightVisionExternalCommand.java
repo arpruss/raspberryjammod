@@ -76,6 +76,7 @@ public class NightVisionExternalCommand implements ICommand {
 
 		eventHandler.setNightVision(nv);
 		EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+		
 		if (player != null) {
 			if (nv) {
 				player.addPotionEffect(new PotionEffect(MobEffects.nightVision, 4096));
