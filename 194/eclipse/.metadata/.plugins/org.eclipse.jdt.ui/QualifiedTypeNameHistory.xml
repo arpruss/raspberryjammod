@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="net.minecraft.entity.Entity"/>
+<fullyQualifiedTypeName name="net.minecraft.potion.PotionEffect"/>
+<fullyQualifiedTypeName name="net.minecraft.init.MobEffects"/>
+<fullyQualifiedTypeName name="net.minecraftforge.fml.common.eventhandler.SubscribeEvent"/>
+<fullyQualifiedTypeName name="net.minecraftforge.event.entity.player.PlayerInteractEvent"/>
+<fullyQualifiedTypeName name="net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock"/>
+<fullyQualifiedTypeName name="net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem"/>
+<fullyQualifiedTypeName name="net.minecraft.util.math.BlockPos"/>
+<fullyQualifiedTypeName name="net.minecraft.client.Minecraft"/>
+<fullyQualifiedTypeName name="net.minecraftforge.fml.common.network.FMLNetworkEvent"/>
+<fullyQualifiedTypeName name="net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent"/>
+<fullyQualifiedTypeName name="java.net.InetSocketAddress"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
+<fullyQualifiedTypeName name="mobi.omegacentauri.raspberryjammod.ScriptExternalCommand"/>
+<fullyQualifiedTypeName name="mobi.omegacentauri.raspberryjammod.RaspberryJamMod"/>
+<fullyQualifiedTypeName name="net.minecraft.network.PacketBuffer"/>
+<fullyQualifiedTypeName name="net.minecraft.network.Packet"/>
+<fullyQualifiedTypeName name="net.minecraft.network.play.client.CPacketPlayerBlockPlacement"/>
+</qualifiedTypeNameHistroy>
