@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RaspberryJamMod"
-#define MyAppVersion "0.67"
+#define MyAppVersion "0.68"
 #define MyAppPublisher "Omega Centauri Software"
 #define MyAppURL "http://github.com/arpruss/raspberryjammod"
 
@@ -37,7 +37,7 @@ Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mod
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.8\"
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.9\"
 Source: "19\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.9\"
-Source: "19\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.9.4\"
+Source: "194\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.9.4\"
 Source: "py27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs; Components: Python27
 
 [Components]

@@ -1,3 +1,8 @@
+NOTE:
+Do NOT edit data in the src directory here. fast.sh overwrites it all.
+
+
+
 -------------------------------------------
 Source installation information for modders
 -------------------------------------------

@@ -51,11 +51,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @Mod(modid = RaspberryJamMod.MODID, version = RaspberryJamMod.VERSION, name = RaspberryJamMod.NAME,
 guiFactory = "mobi.omegacentauri.raspberryjammod.GuiFactory", acceptableRemoteVersions="*", 
-acceptedMinecraftVersions="[1.9,1.10)")
+acceptedMinecraftVersions="[1.9,1.9.4)")
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.67";
+	public static final String VERSION = "0.68";
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer fullAPIServer = null;
 	private PythonExternalCommand pythonExternalCommand = null;

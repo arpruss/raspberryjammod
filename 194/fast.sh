@@ -1,3 +1,10 @@
+if [ -d src ]; then
+   rm -rf src
+fi
+cp -r ../19/src .
+for x in src/main/java/mobi/omegacentauri/raspberryjammod/*.java ; do
+    sed -i -f fix.sed $x 
+done
 rm build/libs/Raspberr*.jar
 ./gradlew.bat build
 # --offline build

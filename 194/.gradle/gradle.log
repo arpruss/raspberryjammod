@@ -1,7 +1,5 @@
-This mapping 'snapshot_20160312' was designed for MC 1.9! Use at your own peril.This mapping 'snapshot_20160312' was designed for MC 1.9! Use at your own peril.
-
 #################################################
-         ForgeGradle 2.1-SNAPSHOT-da90449        
+         ForgeGradle 2.2-SNAPSHOT-59f33ec        
   https://github.com/MinecraftForge/ForgeGradle  
 #################################################
                Powered by MCP unknown               
@@ -9,8 +7,43 @@ This mapping 'snapshot_20160312' was designed for MC 1.9! Use at your own peril.
          by: Searge, ProfMobius, Fesh0r,         
          R4wk, ZeuX, IngisKahn, bspkrs           
 #################################################
-:clean
+:deobfCompileDummyTask
+:deobfProvidedDummyTask
+:sourceApiJava UP-TO-DATE
+:compileApiJava UP-TO-DATE
+:processApiResources UP-TO-DATE
+:apiClasses UP-TO-DATE
+:sourceMainJava
+:compileJavawarning: [options] bootstrap class path not set in conjunction with -source 1.6
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+1 warning
+
+:processResources
+:classes
+:jar
+:sourceTestJava UP-TO-DATE
+:compileTestJava UP-TO-DATE
+:processTestResources UP-TO-DATE
+:testClasses UP-TO-DATE
+:test UP-TO-DATE
+:extractMcpData SKIPPED
+:extractMcpMappings SKIPPED
+:getVersionJson
+:extractUserdev UP-TO-DATE
+:genSrgs SKIPPED
+:reobfJar
+:extractRangemapReplacedMain
+C:\Devel\mc\194\build\sources\main\java
+:retromapReplacedMain
+remapping source...
+:sourceJar
+:assemble
+:check UP-TO-DATE
+:build
 
 BUILD SUCCESSFUL
 
-Total time: 45.985 secs
+Total time: 48.431 secs

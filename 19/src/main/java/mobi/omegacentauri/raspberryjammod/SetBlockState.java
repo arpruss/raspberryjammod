@@ -5,7 +5,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.client.CPacketPlayerBlockPlacement;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
