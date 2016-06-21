@@ -1,4 +1,8 @@
 #
+# WARNING: If you're running RJM on a server, do NOT include this script server-side for security reasons.
+#
+
+#
 # Code under the MIT license by Alexander Pruss
 #
 # This script only works on Raspberry Jam
