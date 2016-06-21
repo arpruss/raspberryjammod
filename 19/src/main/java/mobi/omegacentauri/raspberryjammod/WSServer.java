@@ -92,7 +92,12 @@ public class WSServer extends WebSocketServer {
 	public void onMessage( WebSocket conn, String message ) {
 		APIHandler apiHandler = handlers.get(conn);
 		if (apiHandler != null) {
-			apiHandler.process(message);
+			try {
+				apiHandler.process(message);
+			}
+			catch (Exception e) {
+				conn.close();
+			}
 		}
 	}
 

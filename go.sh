@@ -1,5 +1,5 @@
 (cd 19 && sh fast.sh)
-(cd 194 && ln -s  sh fast.sh)
+(cd 194 && sh fast.sh)
 ./zip.sh
 rm build/libs/*
 ./gradlew.bat build

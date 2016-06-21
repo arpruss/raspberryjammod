@@ -4,6 +4,8 @@ package mobi.omegacentauri.raspberryjammod;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -11,6 +13,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,6 +25,8 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -107,12 +113,60 @@ public class APIHandler {
 	protected boolean havePlayer;
 	protected int playerId;
 	protected EntityPlayerMP playerMP;
+	protected List<String> usernames = null;
+	protected List<String> passwords = null;
+	protected boolean authenticated;
+	public static final String PASSWORD_DATA = "passwords.dat";
+	private String salt = null;
+	private boolean authenticationSetup;
 
 	public APIHandler(MCEventHandler eventHandler, PrintWriter writer) throws IOException {
+		this(eventHandler, writer, true);
+	}
+	
+	public APIHandler(MCEventHandler eventHandler, PrintWriter writer, Boolean needAuthentication) throws IOException {
 		this.eventHandler = eventHandler;
 		this.writer = writer;
 		this.havePlayer = false;
 		this.playerMP = null;
+
+		if (needAuthentication) {
+			File pass = new File(PASSWORD_DATA); 
+			if (pass.exists()) {
+				passwords = new ArrayList<String>();
+				usernames = new ArrayList<String>();
+				BufferedReader r = new BufferedReader(new FileReader(pass));
+				String l;
+				while (null != (l=r.readLine())) {
+					String[] data = l.trim().split("\\s+");
+					usernames.add(data[0]);
+					passwords.add(data[1]);
+				}
+				r.close();
+			}
+			
+			if (passwords != null) {
+				authenticated = false;
+				salt = null;
+				try {
+					MessageDigest md = MessageDigest.getInstance("MD5");
+					md.reset();
+					
+					byte[] b = ("RaspberryJamMod"+System.currentTimeMillis()).getBytes("UTF-8"); 
+					
+					md.update(b);
+					
+					salt = Base64.encode(md.digest());
+				} catch (Exception e) {
+				}
+			}
+			else {
+				authenticated = true;
+			}
+		}
+		else {
+			this.authenticated = true;
+		}
 	}
 	
 	protected boolean setup() {
@@ -164,11 +218,52 @@ public class APIHandler {
 		}
 		return true;
 	}
+	
+	void handleAuthentication(String input) throws IOException {
+		if (salt == null)
+			throw new IOException("salt generation error");
 
-	void process(String clientSentence) {
+		if (input.startsWith("security.authenticate(")) {
+			input = input.substring(22).trim();
+			if (input.length()<2) 
+				throw new IOException("authentication error");
+			input = input.substring(0,input.length()-1);
+			int count = usernames.size();
+			for (int i = 0 ; i < count ; i++) {
+				String data = salt + ":" + usernames.get(i) + ":" + passwords.get(i);
+				MessageDigest md;
+				try {
+					md = MessageDigest.getInstance("MD5");
+				} catch (NoSuchAlgorithmException e) {
+					throw new IOException("md5 error");
+				}
+				md.reset();
+				
+				byte[] b = data.getBytes("UTF-8"); 
+				
+				md.update(b);
+				
+				String dataDigest = Base64.encode(md.digest());
+				
+				if (input.equals(dataDigest)) {
+					authenticated = true;
+					return;
+				}
+			}
+			throw new IOException("authentication error");
+		}
+		sendLine("challenge "+salt);
+	}
+
+	void process(String clientSentence) throws IOException {
+		if (!authenticated) {
+			handleAuthentication(clientSentence);
+			return;
+		}
+		
 		if (!setup())
 			return;
-	
+		
 		Scanner scan = null;
 
 		try {	

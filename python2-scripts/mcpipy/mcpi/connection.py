@@ -1,9 +1,12 @@
+
 import socket
 import select
 import sys
 import atexit
 import os
 import platform
+import base64
+from hashlib import md5
 from util import flatten_parameters_to_string
 
 """ @author: Aron Nieminen, Mojang AB"""
@@ -53,6 +56,13 @@ class Connection:
             self.socket.close()
         except:
             pass
+            
+    def authenticate(self, username, password):
+        challenge = self.sendReceive("world.getBlock",0,0,0)
+        if challenge.startswith("challenge "):
+            salt = challenge[10:].rstrip()
+            auth = base64.b64encode(md5(salt+":"+username+":"+password).digest())
+            self.send("security.authenticate", auth)
 
     def drain(self):
         """Drains the socket of incoming data"""

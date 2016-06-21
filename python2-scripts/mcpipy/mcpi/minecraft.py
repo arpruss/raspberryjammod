@@ -5,6 +5,7 @@ from block import Block
 import math
 from os import environ
 from util import flatten,floorFlatten
+import security
 
 """ Minecraft PI low level api v0.1_1
 
@@ -185,8 +186,12 @@ class Minecraft:
         else:
             self.conn = Connection()
 
+        if security.AUTHENTICATION_USERNAME and security.AUTHENTICATION_PASSWORD:
+            self.conn.authenticate(security.AUTHENTICATION_USERNAME, security.AUTHENTICATION_PASSWORD)
+
         self.camera = CmdCamera(self.conn)
         self.entity = CmdEntity(self.conn)
+        
         if autoId:
             try:
                  playerId = int(environ['MINECRAFT_PLAYER_ID'])
@@ -196,9 +201,16 @@ class Minecraft:
                     playerId = self.getPlayerId(environ['MINECRAFT_PLAYER_NAME'])
                     self.player = CmdPlayer(self.conn,playerId=playerId)
                 except:
-                    self.player = CmdPlayer(self.conn)
+                    if security.AUTHENTICATION_USERNAME:
+                        try:
+                            playerId = self.getPlayerId(security.AUTHENTICATION_USERNAME)
+                        except:
+                            self.player = CmdPlayer(self.conn)
+                    else:
+                        self.player = CmdPlayer(self.conn)
         else:
             self.player = CmdPlayer(self.conn)
+        
         self.events = CmdEvents(self.conn)
         self.enabledNBT = False
 

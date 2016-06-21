@@ -26,6 +26,8 @@ def inputLine(prompt):
                     return 'quit()'
                 elif c.message == ' ':
                     return ''
+                elif "__" in c.message:
+                    sys.exit();
                 else:
                     return c.message
         time.sleep(0.2)

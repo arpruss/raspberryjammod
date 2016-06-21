@@ -68,8 +68,8 @@ public abstract class ScriptExternalCommand implements ICommand {
 			return null;
 		}
 
-                if (args.length != 1)
-                     return null;
+	    if (args.length != 1)
+	         return null;
 
 		int arg = 0;
 
