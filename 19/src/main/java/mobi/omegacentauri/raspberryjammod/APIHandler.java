@@ -24,10 +24,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
-
-import com.sun.org.apache.xml.internal.security.utils.Base64;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -143,10 +139,8 @@ public class APIHandler {
 					passwords.add(data[1]);
 				}
 				r.close();
-			}
-			
-			if (passwords != null) {
-				authenticated = false;
+                
+                authenticated = false;
 				salt = null;
 				try {
 					MessageDigest md = MessageDigest.getInstance("MD5");
@@ -156,17 +150,26 @@ public class APIHandler {
 					
 					md.update(b);
 					
-					salt = Base64.encode(md.digest());
+					salt = tohex(md.digest());
 				} catch (Exception e) {
 				}
+
 			}
-			else {
-				authenticated = true;
-			}
+            else {
+                this.authenticated = true;
+            }
 		}
 		else {
 			this.authenticated = true;
 		}
+	}
+	
+	public static String tohex(byte[] array) {
+		StringBuilder s = new StringBuilder();
+		for (byte b : array) {
+			s.append(String.format("%02x", b));
+		}
+		return s.toString();
 	}
 	
 	protected boolean setup() {
@@ -243,16 +246,17 @@ public class APIHandler {
 				
 				md.update(b);
 				
-				String dataDigest = Base64.encode(md.digest());
+				String dataDigest = tohex(md.digest());
 				
 				if (input.equals(dataDigest)) {
+                    System.out.println("Authenticated "+usernames.get(i));
 					authenticated = true;
 					return;
 				}
 			}
 			throw new IOException("authentication error");
 		}
-		sendLine("challenge "+salt);
+		sendLine("security.challenge "+salt);
 	}
 
 	void process(String clientSentence) throws IOException {

@@ -57,11 +57,15 @@ class Connection:
         except:
             pass
             
+    @staticmethod
+    def tohex(data):
+        return "".join((hex(b) for b in data))
+            
     def authenticate(self, username, password):
         challenge = self.sendReceive("world.getBlock",0,0,0)
-        if challenge.startswith("challenge "):
-            salt = challenge[10:].rstrip()
-            auth = base64.b64encode(md5(salt+":"+username+":"+password).digest())
+        if challenge.startswith("security.challenge "):
+            salt = challenge[19:].rstrip()
+            auth = md5(salt+":"+username+":"+password).hexdigest()
             self.send("security.authenticate", auth)
 
     def drain(self):
