@@ -124,7 +124,7 @@ public class APIHandler {
 	private List<HitDescription> hits = new LinkedList<HitDescription>();
 	protected List<ChatDescription> chats = new LinkedList<ChatDescription>();
 	private boolean restrictToSword = true;
-	private boolean detectLeftClick = false;
+	private boolean detectLeftClick;
 	private static final int MAX_CHATS = 512;
 	private static final int MAX_HITS = 512;
 
@@ -141,6 +141,7 @@ public class APIHandler {
 		this.writer = writer;
 		this.havePlayer = false;
 		this.playerMP = null;
+        this.detectLeftClick = RaspberryJamMod.leftClickToo;
 		eventHandler.registerAPIHandler(this);
 
 		if (needAuthentication) {

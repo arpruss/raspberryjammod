@@ -43,19 +43,13 @@ import net.minecraftforge.fml.relauncher.Side;
 
 abstract public class MCEventHandler {
 	protected List<ServerAction> serverActionQueue = new ArrayList<ServerAction>();		
-	private List<HitDescription> hits = new LinkedList<HitDescription>();
-	protected List<ChatDescription> chats = new LinkedList<ChatDescription>();
-	private static final int MAX_HITS = 512;
-	private volatile boolean stopChanges = false;
-	private volatile boolean restrictToSword = true;
-	private volatile boolean detectLeftClick = false;
+	volatile boolean stopChanges = false;
 	protected volatile boolean pause = false;
 	private ServerChatEvent chatEvents;
-	protected static final int MAX_CHATS = 512;
 	protected boolean doRemote;
+	protected List<APIHandler> apiHandlers = new ArrayList<APIHandler>(); 
 	
 	public MCEventHandler() {
-		detectLeftClick = RaspberryJamMod.leftClickToo;
 	}
 
 	public void setStopChanges(boolean stopChanges) {
@@ -81,92 +75,12 @@ abstract public class MCEventHandler {
 		if (event.entityPlayer == null || event.entityPlayer.getEntityWorld().isRemote != RaspberryJamMod.clientOnlyAPI )
 			return;
 		
-		if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK ||
-			(detectLeftClick && event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)) {
-			if (! restrictToSword || holdingSword(event.entityPlayer)) {
-				synchronized(hits) {
-					if (hits.size() >= MAX_HITS)
-						hits.remove(0);
-					hits.add(new HitDescription(getWorlds(),event));
-				}
-			}
-		}
-		if (stopChanges) {
-			event.setCanceled(true);
-		}
+		for (APIHandler apiHandler : apiHandlers)
+			apiHandler.onClick(event);		
 	}
 	
 	abstract protected World[] getWorlds();
 
-	private boolean holdingSword(EntityPlayer player) {
-		ItemStack item = player.getHeldItem();
-		if (item != null) {
-			return item.getItem() instanceof ItemSword;
-		}
-		return false;
-	}
-	
-	public void setRestrictToSword(boolean value) {
-		restrictToSword = value;
-	}
-
-	public String getHitsAndClear() {
-		String out = "";
-
-		synchronized(hits) {
-			int count = hits.size();
-			for (HitDescription e : hits) {
-				if (out.length() > 0)
-					out += "|";
-				out += e.getDescription();
-			}
-			hits.clear();
-		}
-
-		return out;
-	}
-
-	public String getChatsAndClear() {
-		StringBuilder out = new StringBuilder();
-
-		synchronized(chats) {
-			int count = hits.size();
-			for (ChatDescription c : chats) {
-				if (out.length() > 0)
-					out.append("|");
-				out.append(c.id);
-				out.append(",");
-				out.append(c.message.replace("&","&amp;").replace("|", "&#124;"));
-			}
-			chats.clear();
-		}
-
-		return out.toString();
-	}
-
-	public int eventCount() {
-		synchronized(hits) {
-			return hits.size();
-		}
-	}
-
-	public void clearHits() {
-		synchronized(hits) {
-			hits.clear();
-		}
-	}
-
-	public void clearChats() {
-		synchronized(chats) {
-			chats.clear();
-		}
-	}
-	
-	public void clearAll() {
-		hits.clear();
-		chats.clear();
-	}
-	
 	public void queueServerAction(ServerAction s) {
 		synchronized(serverActionQueue) {
 			serverActionQueue.add(s);
@@ -253,56 +167,15 @@ abstract public class MCEventHandler {
 		return Block.getIdFromBlock(pos.world.getBlockState(pos).getBlock());
 	}
 
-	static class ChatDescription {
-		int id;
-		String message;
-		public ChatDescription(int entityId, String message) {
-			this.id = entityId;
-			this.message = message;
-		}
-	}
-	
-
-	static class HitDescription {
-		private String description;
-		
-		public HitDescription(World[] worlds, PlayerInteractEvent event) {
-			Vec3i pos = Location.encodeVec3i(worlds, 
-					event.entityPlayer.getEntityWorld(),
-					event.pos.getX(), event.pos.getY(), event.pos.getZ());
-			description = ""+pos.getX()+","+pos.getY()+","+pos.getZ()+","+numericFace(event.face)+","+event.entity.getEntityId();
-		}
-
-		private int numericFace(EnumFacing face) {
-			switch(face) {
-			case DOWN:
-				return 0;
-			case UP:
-				return 1;
-			case NORTH:
-				return 2;
-			case SOUTH:
-				return 3;
-			case WEST:
-				return 4;
-			case EAST:
-				return 5;
-			default:
-				return 7;
-			}
-		}
-
-		public String getDescription() {
-			return description;
-		}
-	}
-
-
 	public void setPause(boolean b) {
 		pause = b;
 	}
 
-	public void setDetectLeftClick(boolean b) {
-		detectLeftClick = b;
+	public void unregisterAPIHandler(APIHandler h) {
+		apiHandlers.remove(h);
+	}
+
+	public void registerAPIHandler(APIHandler h) {
+		apiHandlers.add(h);
 	}
 }

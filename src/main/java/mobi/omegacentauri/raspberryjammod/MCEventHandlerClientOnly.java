@@ -2,7 +2,6 @@ package mobi.omegacentauri.raspberryjammod;
 
 import java.io.IOException;
 
-import mobi.omegacentauri.raspberryjammod.MCEventHandler.ChatDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
@@ -27,13 +26,10 @@ public class MCEventHandlerClientOnly extends MCEventHandler {
 	@SideOnly(Side.CLIENT)
 	public void onChatEvent(ClientChatReceivedEvent event) {
 		System.out.println("ClientChatEvent on client side: "+event.message.toString());
-		ChatDescription cd = new ChatDescription(Minecraft.getMinecraft().thePlayer.getEntityId(), 
+		APIHandler.ChatDescription cd = new APIHandler.ChatDescription(Minecraft.getMinecraft().thePlayer.getEntityId(), 
 				event.message.toString());
-		synchronized(chats) {
-			if (chats.size() >= MAX_CHATS)
-				chats.remove(0);
-			chats.add(cd);
-		}
+		for (APIHandler apiHandler : apiHandlers) 
+			apiHandler.addChatDescription(cd);
 	}
 	
 	@SubscribeEvent
