@@ -339,7 +339,7 @@ class Minecraft:
 
     def getPlayerId(self, *args):
         """Get the id of the current player"""
-        a = flatten(args)
+        a = tuple(flatten(args))
         if self.playerId is not None and len(a) == 0:
             return self.playerId
         else:

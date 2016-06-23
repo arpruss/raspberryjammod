@@ -131,6 +131,7 @@ public class APIServer {
 		synchronized(socketList) {
 			socketList.add(connectionSocket);
 		}
+		APIHandler api = null;
 
 		try {
 			String clientSentence;
@@ -138,7 +139,7 @@ public class APIServer {
 			reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 			writer = new PrintWriter(connectionSocket.getOutputStream());
 
-			APIHandler api = controlServer ? new APIHandler(eventHandler, writer) : 
+			api = controlServer ? new APIHandler(eventHandler, writer) : 
 				new APIHandlerClientOnly(eventHandler, writer);
 
 			while(null != (clientSentence = reader.readLine())) {
@@ -148,6 +149,8 @@ public class APIServer {
 			System.out.println(""+e);
 		}
 		finally {
+			if (api != null)
+				api.close();
 			synchronized(socketList) {
 				socketList.remove(connectionSocket);
 			}
