@@ -192,19 +192,21 @@ class Minecraft:
         self.camera = CmdCamera(self.conn)
         self.entity = CmdEntity(self.conn)
         
+        self.playerId = None
+        
         if autoId:
             try:
-                 playerId = int(environ['MINECRAFT_PLAYER_ID'])
-                 self.player = CmdPlayer(self.conn,playerId=playerId)
+                 self.playerId = int(environ['MINECRAFT_PLAYER_ID'])
+                 self.player = CmdPlayer(self.conn,playerId=self.playerId)
             except:
                 try:
-                    playerId = self.getPlayerId(environ['MINECRAFT_PLAYER_NAME'])
-                    self.player = CmdPlayer(self.conn,playerId=playerId)
+                    self.playerId = self.getPlayerId(environ['MINECRAFT_PLAYER_NAME'])
+                    self.player = CmdPlayer(self.conn,playerId=self.playerId)
                 except:
                     if security.AUTHENTICATION_USERNAME:
                         try:
-                            playerId = self.getPlayerId(security.AUTHENTICATION_USERNAME)
-                            self.player = CmdPlayer(self.conn,playerId=playerId)
+                            self.playerId = self.getPlayerId(security.AUTHENTICATION_USERNAME)
+                            self.player = CmdPlayer(self.conn,playerId=self.playerId)
                         except:
                             self.player = CmdPlayer(self.conn)
                     else:
@@ -337,7 +339,11 @@ class Minecraft:
 
     def getPlayerId(self, *args):
         """Get the id of the current player"""
-        return int(self.conn.sendReceive_flat("world.getPlayerId", flatten(args)))
+        a = flatten(args)
+        if self.playerId is not None and len(a) == 0:
+            return self.playerId
+        else:
+            return int(self.conn.sendReceive_flat("world.getPlayerId", flatten(args)))
 
     def getPlayerEntityIds(self):
         """Get the entity ids of the connected players => [id:int]"""
