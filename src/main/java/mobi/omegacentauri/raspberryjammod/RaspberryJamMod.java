@@ -54,7 +54,7 @@ acceptedMinecraftVersions="[1.8,1.9)")
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.68";
+	public static final String VERSION = "0.70";
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer fullAPIServer = null;
 	private PythonExternalCommand pythonExternalCommand = null;

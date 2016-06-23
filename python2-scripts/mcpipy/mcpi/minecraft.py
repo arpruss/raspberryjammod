@@ -204,6 +204,7 @@ class Minecraft:
                     if security.AUTHENTICATION_USERNAME:
                         try:
                             playerId = self.getPlayerId(security.AUTHENTICATION_USERNAME)
+                            self.player = CmdPlayer(self.conn,playerId=playerId)
                         except:
                             self.player = CmdPlayer(self.conn)
                     else:
