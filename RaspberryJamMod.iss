@@ -38,6 +38,7 @@ Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mod
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.9\"
 Source: "19\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.9\"
 Source: "194\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.9.4\"
+Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10\"
 Source: "py27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs; Components: Python27
 
 [Components]
@@ -51,9 +52,11 @@ Type: files; Name: "{userappdata}\.minecraft\mods\1.8\RaspberryJamMod*.jar"; Com
 Type: files; Name: "{userappdata}\.minecraft\mods\1.8.8\RaspberryJamMod*.jar"; Components: Mod
 Type: files; Name: "{userappdata}\.minecraft\mods\1.8.9\RaspberryJamMod*.jar"; Components: Mod
 Type: files; Name: "{userappdata}\.minecraft\mods\1.9\RaspberryJamMod*.jar"; Components: Mod
+Type: files; Name: "{userappdata}\.minecraft\mods\1.9.4\RaspberryJamMod*.jar"; Components: Mod
+Type: files; Name: "{userappdata}\.minecraft\mods\1.10\RaspberryJamMod*.jar"; Components: Mod
 
 [Messages]
-WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT 1.8/1.8.8/1.8.9/1.9 ALREADY INSTALLED. Otherwise, this won't work.
+WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT 1.8/1.8.8/1.8.9/1.9/1.9.4/1.10 ALREADY INSTALLED. Otherwise, this won't work.
 ConfirmUninstall=Are you sure you want to completely remove %1 and all of its components? (Note that the scripts in the mcpipy folder of your Minecraft folder should NOT get deleted, however, in case you made changes.)
 
 [Icons]
