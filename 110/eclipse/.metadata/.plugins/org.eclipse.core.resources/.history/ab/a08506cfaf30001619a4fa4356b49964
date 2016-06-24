@@ -1,5 +1,0 @@
-package mobi.omegacentauri.raspberryjammod;
-
-public class ConnectionHandler implements IConnectionHandler {
-
-}
