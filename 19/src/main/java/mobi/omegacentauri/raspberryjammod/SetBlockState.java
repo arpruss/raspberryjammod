@@ -1,6 +1,9 @@
 package mobi.omegacentauri.raspberryjammod;
 
+import java.util.Collection;
+
 import net.minecraft.block.Block;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;

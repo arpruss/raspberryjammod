@@ -20,12 +20,12 @@ plugins {
     id "net.minecraftforge.gradle.forge" version "2.0.2"
 }
 */
-version = "0.71"
+version = "0.73"
 group= "mobi.omegacentauri.raspberryjammod" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "RaspberryJamMod"
 
 minecraft {
-    version = "1.10-12.18.0.1984-1.10.0"
+    version = "1986"
     runDir = "run"
     
     // the mappings can be changed at any time, and must be in the following format.
