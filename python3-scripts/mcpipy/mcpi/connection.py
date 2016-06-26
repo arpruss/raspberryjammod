@@ -19,6 +19,7 @@ class Connection:
     RequestFailed = "Fail"
 
     def __init__(self, address=None, port=None):
+        self.windows = (platform.system() == "Windows" or platform.system().startswith("CYGWIN_NT"))
         if address==None:
             try:
                  address = os.environ['MINECRAFT_API_HOST']
@@ -35,7 +36,6 @@ class Connection:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((address, port))
         self.readFile = self.socket.makefile("r")
-        self.windows = (platform.system() == "Windows" or platform.system().startswith("CYGWIN_NT"))
         self.lastSent = ""
         if self.windows:
             atexit.register(self.close)
@@ -53,6 +53,9 @@ class Connection:
             if self.windows:
                 # ugly hack to block until all sending is completed
                 self.sendReceive("world.getBlock",0,0,0)
+        except:
+            pass
+        try:
             self.socket.close()
         except:
             pass
