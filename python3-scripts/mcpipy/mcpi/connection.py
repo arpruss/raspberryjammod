@@ -49,10 +49,9 @@ class Connection:
 
     def close(self):
         try:
-            self.readFile.close()
-        except:
-            pass
-        try:
+            if platform.system() == "Windows":
+                # ugly hack to block until all sending is completed
+                self.sendReceive("world.getBlock",0,0,0)
             self.socket.close()
         except:
             pass
