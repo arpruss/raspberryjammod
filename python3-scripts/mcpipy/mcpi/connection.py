@@ -35,12 +35,13 @@ class Connection:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((address, port))
         self.readFile = self.socket.makefile("r")
+        self.windows = (platform.system() == "Windows" or platform.system().startswith("CYGWIN_NT"))
         self.lastSent = ""
-        if platform.system() == "Windows":
+        if self.windows:
             atexit.register(self.close)
 
     def __del__(self):
-        if platform.system() == "Windows":
+        if self.windows:
             self.close()
             try:
                 atexit.unregister(self.close)
@@ -49,7 +50,7 @@ class Connection:
 
     def close(self):
         try:
-            if platform.system() == "Windows":
+            if self.windows:
                 # ugly hack to block until all sending is completed
                 self.sendReceive("world.getBlock",0,0,0)
             self.socket.close()

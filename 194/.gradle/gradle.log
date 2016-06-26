@@ -37,8 +37,7 @@ Note: Recompile with -Xlint:unchecked for details.
 :reobfJar
 :extractRangemapReplacedMain
 C:\Devel\mc\194\build\sources\main\java
-:retromapReplacedMain
-remapping source...
+:retromapReplacedMain UP-TO-DATE
 :sourceJar
 :assemble
 :check UP-TO-DATE
@@ -46,4 +45,4 @@ remapping source...
 
 BUILD SUCCESSFUL
 
-Total time: 58.6 secs
+Total time: 42.83 secs
