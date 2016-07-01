@@ -15,11 +15,13 @@ mkdir build/out/1.8.9
 mkdir build/out/1.9
 mkdir build/out/1.9.4
 mkdir build/out/1.10
+mkdir build/out/1.10.2
 cp build/libs/RaspberryJamMod.jar build/out/1.8/
 cp build/libs/RaspberryJamMod.jar build/out/1.8.8/
 cp build/libs/RaspberryJamMod.jar build/out/1.8.9/
 cp 19/build/libs/RaspberryJamMod.jar build/out/1.9/
 cp 194/build/libs/RaspberryJamMod.jar build/out/1.9.4/
 cp 110/build/libs/RaspberryJamMod.jar build/out/1.10/
+cp 110/build/libs/RaspberryJamMod.jar build/out/1.10.2/
 (cd build/out && zip -9r ../mods *)
 ./makesetup.sh

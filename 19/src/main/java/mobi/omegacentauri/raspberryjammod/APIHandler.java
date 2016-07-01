@@ -113,7 +113,7 @@ public class APIHandler {
 	protected PrintWriter writer = null;
 	protected boolean includeNBTWithData = false;
 	protected boolean havePlayer;
-	protected int playerId;
+	protected int playerId = 0;
 	protected EntityPlayerMP playerMP;
 	protected List<String> usernames = null;
 	protected List<String> passwords = null;
@@ -227,15 +227,20 @@ public class APIHandler {
 						if (playerMP == null || id < firstId) {
 							firstId = id;
 							playerMP = (EntityPlayerMP)p;
+							playerId = id;
 						}
 					}
 				}
 			}
 			if (playerMP == null) {
+				// This check could be removed, but a connection to a server while there is no
+				// player on the server is more likely to be a hacking attempt, and so we'll
+				// wait for a player.
 				fail("Player not found");
 				return false;
 			}
-			havePlayer = true;
+			if (playerMP != null)
+				havePlayer = true;
 		}
 		return true;
 	}
@@ -465,7 +470,10 @@ public class APIHandler {
 			eventHandler.queueServerAction(setState);
 		}
 		else if (cmd.startsWith("player.")) {
-			entityCommand(playerId, cmd.substring(7), scan);
+			if (havePlayer) 
+				entityCommand(playerId, cmd.substring(7), scan);
+			else
+				fail("Do not seem to have a player");
 		}
 		else if (cmd.startsWith("entity.")) {
 			entityCommand(scan.nextInt(), cmd.substring(7), scan);
@@ -505,7 +513,10 @@ public class APIHandler {
 			}
 			else {
 				// unofficial API to get current player ID
-				sendLine(playerId);
+				if (havePlayer)
+					sendLine(playerId);
+				else
+					fail("Have not yet found a player.");
 			}
 		}
 		else if (cmd.equals(WORLDDELETEENTITY)) {
@@ -648,6 +659,8 @@ public class APIHandler {
 	}
 	
 	protected void cameraCommand(String cmd, Scanner scan) {
+		if (! havePlayer)
+			fail("Do not have a player (yet?)");
 		if (cmd.equals(GETENTITYID)) {
 			sendLine(playerMP.getSpectatingEntity().getEntityId());
 		}

@@ -13,7 +13,7 @@
 :compileApiJava UP-TO-DATE
 :processApiResources UP-TO-DATE
 :apiClasses UP-TO-DATE
-:sourceMainJava UP-TO-DATE
+:sourceMainJava
 :compileJavawarning: [options] bootstrap class path not set in conjunction with -source 1.6
 Note: Some input files use or override a deprecated API.
 Note: Recompile with -Xlint:deprecation for details.
@@ -21,7 +21,7 @@ Note: Some input files use unchecked or unsafe operations.
 Note: Recompile with -Xlint:unchecked for details.
 1 warning
 
-:processResources UP-TO-DATE
+:processResources
 :classes
 :jar
 :sourceTestJava UP-TO-DATE
@@ -37,7 +37,8 @@ Note: Recompile with -Xlint:unchecked for details.
 :reobfJar
 :extractRangemapReplacedMain
 C:\Devel\mc\194\build\sources\main\java
-:retromapReplacedMain UP-TO-DATE
+:retromapReplacedMain
+remapping source...
 :sourceJar
 :assemble
 :check UP-TO-DATE
@@ -45,4 +46,4 @@ C:\Devel\mc\194\build\sources\main\java
 
 BUILD SUCCESSFUL
 
-Total time: 23.371 secs
+Total time: 58.632 secs

@@ -11,5 +11,8 @@ rm build/libs/Raspberr*.jar
 rm build/libs/Raspberry*ources.jar
 mv build/libs/Raspberr* build/libs/RaspberryJamMod.jar
 mkdir $APPDATA/.minecraft/mods/1.10
+mkdir $APPDATA/.minecraft/mods/1.10.2
 cp build/libs/RaspberryJamMod.jar $APPDATA/.minecraft/mods/1.10/
+cp build/libs/RaspberryJamMod.jar $APPDATA/.minecraft/mods/1.10.2/
+
 
