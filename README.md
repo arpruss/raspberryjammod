@@ -2,8 +2,8 @@
 Raspberry Jam Mod - a Mod Forge Minecraft 1.8+ mod implementing most of Raspberry Juice/Pi API
 
 To install for single-player and LAN use (as well as for client-side use with a server):
- 1. Set up a Minecraft 1.8 (exactly this version) profile and run it once.
- 2. Install the lastest version of Minecraft Forge for your Minecraft version (http://files.minecraftforge.net/)
+ 1. Set up a Minecraft profile of the correct Minecraft version and run it once.
+ 2. Install the lastest version of Minecraft Forge for your precise Minecraft version (http://files.minecraftforge.net/)
  3. Put RaspberryJamMod.jar in your .minecraft/mods folder
  4. Put the sample scripts in in your .minecraft/mcpipy directory.
  5. Install Python if you need to.
