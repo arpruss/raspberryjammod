@@ -9,6 +9,8 @@ import win32con,win32api
 HEIGHT = 22
 WIDTH = 9
 BORDER = WOOL_BLACK
+BACKGROUND = STAINED_GLASS_BLACK
+
 PIECES = (  (('XXXX',), ('.X','.X','.X','.X')),
 			(('XX','XX'),),
 			(('XXX', '..X'), ('.X', '.X', 'XX'), ('X','XXX'), ('XX', 'X', 'X')),
@@ -21,6 +23,7 @@ def drawBoard():
 	mc.setBlocks(left-1, bottom+HEIGHT, plane, left+WIDTH, bottom+HEIGHT, plane, BORDER)
 	mc.setBlocks(left-1, bottom, plane, left, bottom+HEIGHT-1, plane, BORDER)
 	mc.setBlocks(left+WIDTH, bottom, plane, left+WIDTH, bottom+HEIGHT-1, plane, BORDER)
+	mc.setBlocks(left-1, bottom-1, plane-1, left+WIDTH, bottom+HEIGHT, plane-1, BACKGROUND)
 	mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane, AIR)
 	
 def pieceWidth(piece):
@@ -50,7 +53,7 @@ def drawBuffer(buffer):
 def placePiece():
 	global pieceNum, color, family, orientation, x, y, fall, descendDelay
 	pieceNum = randint(0, len(PIECES)-1)
-	color = Block(WOOL.id, pieceNum % 16)
+	color = Block(WOOL.id, (pieceNum+1) % 16)
 	family = PIECES[pieceNum]
 	orientation = 0
 	x = WIDTH // 2 - pieceWidth(family[orientation])
@@ -73,7 +76,7 @@ def descend():
 	return False
 	
 def moveDown():
-	return (win32api.GetAsyncKeyState(win32con.VK_DOWN)&1) or (win32api.GetAsyncKeyState(ord(' '))&1)
+	return (win32api.GetAsyncKeyState(win32con.VK_DOWN)&1)
 	
 def moveLeft():
 	return (win32api.GetAsyncKeyState(win32con.VK_LEFT)&1)
@@ -117,6 +120,7 @@ mc = Minecraft()
 
 playerPos = mc.player.getTilePos()
 mc.player.setRotation(180)
+mc.player.setPitch(-30)
 mc.player.setTilePos(playerPos.x, playerPos.y, playerPos.z + 10)
 left = playerPos.x - WIDTH // 2
 plane = playerPos.z
