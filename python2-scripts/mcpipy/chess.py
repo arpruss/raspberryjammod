@@ -21,19 +21,24 @@ LABEL_BLOCK = REDSTONE_BLOCK
 try:
     import _sunfish as sunfish
 except:
+    import urllib2
+    import os.path
+    import os
+    content = urllib2.urlopen("https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py").read()
+    filename = os.path.join(os.path.dirname(sys.argv[0]),"_sunfish.py")
     try:
-        import urllib2
-        import os.path
-        content = urllib2.urlopen("https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py").read()
-        f=open(os.path.join(os.path.dirname(sys.argv[0]),"_sunfish.py"),"w")
-        f.write("# From: https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py\n")
-        f.write("# Covered by the GPL 2 license\n")
-        f.write(content)
+        f=open(filename,"wb")
+        f.write(b"# -*- coding: utf-8 -*-")
+        f.write(b"# From: https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py\n")
+        f.write(b"# Covered by the GPL 2 license\n")
+        f.write(bytearray(content))
         f.close()
         import _sunfish as sunfish
     except:
-        print "Failed download: You need sunfish.py for this script."
-
+        os.remove(filename)
+        print("Error creating _sunfish.py")
+        sys.exit(0)
+            
 def getCoords(row,col):
     return (corner.x+8*row+4,corner.y,corner.z+8*col+4)
 
@@ -390,7 +395,7 @@ while True:
             sunfish.tp = OrderedDict()
             move,score = sunfish.search(pos)
         else:
-            moves = tuple(pos.genMoves())
+            moves = tuple(pos.gen_moves())
             move = None
             while move not in moves:
                 if move is not None:

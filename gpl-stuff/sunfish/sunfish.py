@@ -1,20 +1,13 @@
+# -*- coding: utf-8 -*-# From: https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py
+# Covered by the GPL 2 license
 #!/usr/bin/env pypy
 # -*- coding: utf-8 -*-
 
-#
-# copyright (c) Thomas Ahle
-# Licensed under the Gnu General Public License 2: see COPYING
-
 from __future__ import print_function
+import re
 import sys
 from itertools import count
-from collections import Counter, OrderedDict, namedtuple
-from mc import *
-from vehicle import *
-from text import *
-from fonts import *
-import drawing
-import time
+from collections import OrderedDict, namedtuple
 
 # The table size is the maximum number of elements in the transposition table.
 TABLE_SIZE = 1e6
@@ -72,8 +65,7 @@ pst = {
         0, 198, 198, 198, 198, 198, 198, 198, 198, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-    'B': (
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    'B': (0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 797, 824, 817, 808, 808, 817, 824, 797, 0,
         0, 814, 841, 834, 825, 825, 834, 841, 814, 0,
@@ -150,7 +142,7 @@ class Position(namedtuple('Position', 'board score wc bc ep kp')):
     kp - the king passant square
     """
 
-    def genMoves(self):
+    def gen_moves(self):
         # For each of our pieces, iterate through each possible 'ray' of moves,
         # as defined in the 'directions' map. The rays are broken e.g. by
         # captures or immediately in case of pieces such as knights.
@@ -277,7 +269,7 @@ def bound(pos, gamma, depth):
     # This can be shown equal to maximizing the negative score, with a slightly
     # adjusted gamma value.
     best, bmove = -3*MATE_VALUE, None
-    for move in sorted(pos.genMoves(), key=pos.value, reverse=True):
+    for move in sorted(pos.gen_moves(), key=pos.value, reverse=True):
         # We check captures with the value function, as it also contains ep and kp
         if depth <= 0 and pos.value(move) < 150:
             break
@@ -293,7 +285,7 @@ def bound(pos, gamma, depth):
         return nullscore
     # Check for stalemate. If best move loses king, but not doing anything
     # would save us. Not at all a perfect check.
-    if depth > 0 and best <= -MATE_VALUE is None and nullscore > -MATE_VALUE:
+    if depth > 0 and best <= -MATE_VALUE and nullscore > -MATE_VALUE:
         best = 0
 
     # We save the found move together with the score, so we can retrieve it in
@@ -326,8 +318,6 @@ def search(pos, maxn=NODES_SEARCHED):
                 lower = score
             if score < gamma:
                 upper = score
-        
-        # print("Searched %d nodes. Depth %d. Score %d(%d/%d)" % (nodes, depth, score, lower, upper))
 
         # We stop deepening if the global N counter shows we have spent too
         # long, or if we have already won the game.
@@ -361,43 +351,49 @@ def render(i):
     return chr(fil + ord('a')) + str(-rank + 1)
 
 
+def print_pos(pos):
+    print()
+    uni_pieces = {'R':'♜', 'N':'♞', 'B':'♝', 'Q':'♛', 'K':'♚', 'P':'♟',
+                  'r':'♖', 'n':'♘', 'b':'♗', 'q':'♕', 'k':'♔', 'p':'♙', '.':'·'}
+    for i, row in enumerate(pos.board.strip().split('\n ')):
+        print(' ', 8-i, ' '.join(uni_pieces.get(p, p) for p in row))
+    print('    a b c d e f g h \n\n')
+
+
 def main():
     pos = Position(initial, 0, (True,True), (True,True), 0, 0)
     while True:
-        # We add some spaces to the board before we print it.
-        # That makes it more readable and pleasing.
-        print(' '.join(pos.board))
+        print_pos(pos)
 
         # We query the user until she enters a legal move.
         move = None
-        while move not in pos.genMoves():
-            crdn = input("Your move: ")
-            try:
-              move = parse(crdn[0:2]), parse(crdn[2:4])
-            except ValueError:
-              # Inform the user when invalid input (e.g. "help") is entered
-              print("Invalid input. Please enter a move in the proper format (e.g. g8f6)")
+        while move not in pos.gen_moves():
+            match = re.match('([a-h][1-8])'*2, input('Your move: '))
+            if match:
+                move = parse(match.group(1)), parse(match.group(2))
+            else:
+                # Inform the user when invalid input (e.g. "help") is entered
+                print("Please enter a move like g8f6")
         pos = pos.move(move)
 
         # After our move we rotate the board and print it again.
         # This allows us to see the effect of our move.
-        print(' '.join(pos.rotate().board))
+        print_pos(pos.rotate())
 
         # Fire up the engine to look for a move.
         move, score = search(pos)
         if score <= -MATE_VALUE:
             print("You won")
             break
+        if score >= MATE_VALUE:
+            print("You lost")
+            break
+
         # The black player moves from a rotated position, so we have to
         # 'back rotate' the move before printing it.
         print("My move:", render(119-move[0]) + render(119-move[1]))
         pos = pos.move(move)
 
-        if score >= MATE_VALUE:
-            print(' '.join(pos.board))            
-            print("You lost")
-            break
 
 if __name__ == '__main__':
     main()
-
