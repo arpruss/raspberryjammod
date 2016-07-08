@@ -9,12 +9,12 @@ from text import drawText
 from fonts import FONTS
 import win32con,win32api
 
-HEIGHT = 22
-WIDTH = 9
+HEIGHT = 20
+WIDTH = 10
 BORDER = WOOL_BLACK
 BACKGROUND = STAINED_GLASS_BLACK
 
-DELAYS = ( 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1)
+DELAYS = ( 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.05)
 
 PIECES = (  (('XXXX',), ('.X','.X','.X','.X')),
             (('XX','XX'),),
@@ -70,7 +70,7 @@ def drawBuffer(buffer):
         mc.setBlock(x,y,plane,buffer[(x,y)])
 
 def placePiece():
-    global pieceNum, color, family, orientation, x, y, fall, descendDelay
+    global pieceNum, color, family, orientation, x, y, fall, descendDelay, droppedFrom, didShowNext
     pieceNum = randint(0, len(PIECES)-1)
     family = PIECES[pieceNum]
     color = Block(WOOL.id, (pieceNum+1) % 16)
@@ -80,6 +80,8 @@ def placePiece():
     y = HEIGHT + len(piece) - 2
     descendDelay = currentDescendDelay
     fall = False
+    droppedFrom = None
+    didShowNext = showNext
     
 def fit(x, y, piece):
     for (xx,yy) in enumeratePiece(x, y, piece):
@@ -141,12 +143,15 @@ def addPiece(x, y, piece, color):
         if not foundRow:
             break
             
+    if didShowNext:
+        score += 3 + (3*level)//2 + droppedFrom
+    else:
+        score += 5 + 2*level + droppedFrom
     if dropCount:
-        score += 2**(dropCount-1)
         totalDropped += dropCount
-        level = 1 + totalDropped // 8
-        if level > 9:
-            level = 9
+        level = 1 + totalDropped // 10
+        if level > 10:
+            level = 10
         updateScoreAndLevel()
 
 def updateText(buffer,x,y,text):
@@ -174,7 +179,7 @@ mc = Minecraft()
 playerPos = mc.player.getTilePos()
 mc.player.setRotation(180)
 mc.player.setPitch(-26)
-mc.player.setTilePos(playerPos.x, playerPos.y, playerPos.z + 13)
+mc.player.setTilePos(playerPos.x+WIDTH//2, playerPos.y, playerPos.z + 13)
 left = playerPos.x - WIDTH // 2
 plane = playerPos.z
 bottom = playerPos.y + 1
@@ -186,6 +191,7 @@ level = 1
 totalDropped = 0
 scoreBuffer = {}
 levelBuffer = {}
+showNext = False
 updateScoreAndLevel()
 
 newPiece = True
@@ -225,10 +231,13 @@ while True:
             
         if moveDown():
             fall = True
+            droppedFrom = y+1-len(family[orientation]) 
             descendDelay = 0.05
         
     if descend():
         if not fit(x, y-1, family[orientation]):
+            if droppedFrom is None:
+                droppedFrom = y+1-len(family[orientation])
             addPiece(x, y, family[orientation], color)
             newPiece = True
         else:
@@ -238,5 +247,5 @@ while True:
     if draw:
         movePiece(oldX, oldY, oldPiece, x, y, family[orientation], color)
         
-    sleep(0.05)
+    sleep(0.025)
     
