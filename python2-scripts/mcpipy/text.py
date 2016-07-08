@@ -7,7 +7,7 @@ import time
 import mcpi.minecraft as minecraft
 
 # vectors must be minecraft.Vec3
-def drawGlyph(mc, pos, forwardVec, upVec, glyph, foreground, background=None):
+def drawGlyph(mc, pos, forwardVec, upVec, glyph, foreground, background=None, buffer=None):
     bitmap = glyph[3]
     height = len(bitmap)
     width = glyph[0]
@@ -17,15 +17,21 @@ def drawGlyph(mc, pos, forwardVec, upVec, glyph, foreground, background=None):
     for i in range(height):
         pixelPos = pos + upVec*(height-1-i) + forwardVec*offset
         for j in range(width):
-            if not foreground is None and 0 != bitmap[i] & (1 << (width-1-j)):
-                mc.setBlock(pixelPos, foreground)
-            elif not background is None and 0 == bitmap[i] & (1 << (width-1-j)):
-                mc.setBlock(pixelPos, background)
+            if foreground is not None and 0 != bitmap[i] & (1 << (width-1-j)):
+                if buffer is not None:
+                    buffer[(pixelPos.x,pixelPos.y,pixelPos.z)] = foreground
+                else:
+                    mc.setBlock(pixelPos, foreground)
+            elif background is not None and 0 == bitmap[i] & (1 << (width-1-j)):
+                if buffer is not None:
+                    buffer[(pixelPos.x,pixelPos.y,pixelPos.z)] = background
+                else:
+                    mc.setBlock(pixelPos, background)
             pixelPos += forwardVec
     return pos + forwardVec*delta
 
 
-def drawText(mc, font, pos, forwardVec, upVec, text, foreground, background=None):
+def drawText(mc, font, pos, forwardVec, upVec, text, foreground, background=None, buffer=None):
     try:
         text = bytearray(text.encode("cp1252"))
     except:
@@ -44,7 +50,7 @@ def drawText(mc, font, pos, forwardVec, upVec, text, foreground, background=None
                glyph = font[value]
             except:
                glyph = font[32]
-            pixelPos = drawGlyph(mc, pixelPos, forwardVec, upVec, glyph, foreground, background)
+            pixelPos = drawGlyph(mc, pixelPos, forwardVec, upVec, glyph, foreground, background, buffer)
     return pixelPos
 
 def angleToTextDirectionCardinal(angle):
@@ -85,4 +91,4 @@ if __name__ == '__main__':
         del sys.argv[0]
         text = " ".join(sys.argv)
 
-    drawText(mc, fonts.FONTS['tallfont'], pos, forward, minecraft.Vec3(0,1,0), text, foreground, background)
+    drawText(mc, FONTS['metrix7pt'], left, bottom+HEIGHT+1, forward, minecraft.Vec3(0,1,0), text, foreground, background)
