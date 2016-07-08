@@ -23,5 +23,5 @@ while t < 2*pi:
   z = z0+int( scale * sin(5*t) )
   if (x,y,z) not in done:
       mc.setBlock(x,y,z,GOLD_BLOCK)
-      done[x,y,z] = GOLD_BLOCK
+      done.add((x,y,z))
   t += 2*pi / 10000

@@ -11,7 +11,10 @@ class Block:
             self.nbt = nbt
 
     def __eq__(self, rhs):
-        return self.id == rhs.id and self.data == rhs.data and self.nbt == rhs.nbt
+        try:
+            return self.id == rhs.id and self.data == rhs.data and self.nbt == rhs.nbt
+        except:
+            return self.data == 0 and self.nbt is None and self.id == rhs
 
     def __ne__(self, rhs):
         return not self.__eq__(rhs)

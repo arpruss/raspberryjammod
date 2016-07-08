@@ -501,7 +501,7 @@ class Drawing:
                     x0 = p[0]+point[0]
                     y0 = p[1]+point[1]
                     z0 = p[2]+point[2]
-                    if (x0,y0,z0) not in self.done:
+                    if (x0,y0,z0) not in done:
                         self.mc.setBlock(x0,y0,z0,block)
                         done.add((x0,y0,z0))
 

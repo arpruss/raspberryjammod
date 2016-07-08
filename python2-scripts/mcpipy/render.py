@@ -25,7 +25,6 @@ SOFTWARE.
 """
 
 from zipfile import ZipFile
-from StringIO import StringIO
 import sys
 import urllib2
 import struct
