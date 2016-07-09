@@ -6,6 +6,10 @@ import sys
 import time
 import mcpi.minecraft as minecraft
 
+ALIGN_LEFT = 0
+ALIGN_RIGHT = 1
+ALIGN_CENTER = 2
+
 # vectors must be minecraft.Vec3
 def drawGlyph(mc, pos, forwardVec, upVec, glyph, foreground, background=None, buffer=None):
     bitmap = glyph[3]
@@ -30,27 +34,41 @@ def drawGlyph(mc, pos, forwardVec, upVec, glyph, foreground, background=None, bu
             pixelPos += forwardVec
     return pos + forwardVec*delta
 
+def textLength(font, text):
+    l = 0
+    for value in text:
+        try:
+           glyph = font[value]
+        except:
+           glyph = font[32]
+        l += glyph[2]
+    return l
 
-def drawText(mc, font, pos, forwardVec, upVec, text, foreground, background=None, buffer=None):
+def drawText(mc, font, pos, forwardVec, upVec, text, foreground=None, background=None, align=ALIGN_LEFT, buffer=None):
     try:
         text = bytearray(text.encode("cp1252"))
     except:
         text = bytearray(text.encode("iso8859_1"))
     pixelPos = pos.clone()
     height = len(font[32][3])
-    numLines = text.count(b'\n')+1
-    pixelPos += upVec * ((numLines-1) * height)
+    lines = text.split(b'\n')
+    pixelPos += upVec * ((len(lines)-1)* height)
     lineStart = pixelPos.clone()
-    for value in text:
-        if value == 10:
-            lineStart += upVec * (-height)
-            pixelPos = lineStart.clone()
-        else:
+    for line in lines:
+        pixelPos = lineStart.clone()
+        if align == ALIGN_RIGHT:
+            pixelPos -= forwardVec * textLength(font, line)
+        elif align == ALIGN_CENTER:
+            pixelPos -= forwardVec * (0.5 * textLength(font, line))
+                
+        for value in line:
             try:
                glyph = font[value]
             except:
                glyph = font[32]
             pixelPos = drawGlyph(mc, pixelPos, forwardVec, upVec, glyph, foreground, background, buffer)
+
+        lineStart += upVec * (-height)
     return pixelPos
 
 def angleToTextDirectionCardinal(angle):
@@ -91,4 +109,4 @@ if __name__ == '__main__':
         del sys.argv[0]
         text = " ".join(sys.argv)
 
-    drawText(mc, FONTS['metrix7pt'], left, bottom+HEIGHT+1, forward, minecraft.Vec3(0,1,0), text, foreground, background)
+    drawText(mc, fonts.FONTS['metrix7pt'], pos, forward, minecraft.Vec3(0,1,0), text, foreground, background, align=ALIGN_RIGHT)

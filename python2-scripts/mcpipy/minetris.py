@@ -5,10 +5,11 @@
 from mc import *
 from time import sleep,time
 from random import randint
-from text import drawText
+import text
 from fonts import FONTS
 import win32con,win32api
 
+FONT = 'thin9pt' #metrix7pt
 HEIGHT = 20
 WIDTH = 10
 BORDER = WOOL_BLACK
@@ -54,27 +55,31 @@ def movePiece(oldX, oldY, oldPiece, x, y, piece, color):
     for (x,y) in new:
         mc.setBlock(x+left, y+bottom, plane, color)
 
-def erasePiece(buffer, x, y, piece):
-    for (xx,yy) in enumeratePiece(x,y, piece):
-        buffer[(left+xx,bottom+yy)] = AIR
-
-def drawPiece(buffer, x, y, piece, color):
-    for (xx,yy) in enumeratePiece(x,y, piece):
-        if (left+xx,bottom+yy) in buffer and buffer[(left+xx,bottom+yy)] == AIR:
-            del buffer[(left+xx,bottom+yy)]
-        else:
-            buffer[(left+xx,bottom+yy)] = color
-                
+def eraseNext():
+    mc.setBlocks(left+WIDTH+2,bottom+3,plane,left+WIDTH+2+3,bottom+6,plane,AIR)
+        
+def drawNext():
+    eraseNext()
+    for (x,y) in enumeratePiece(WIDTH+2, 6, nextFamily[nextOrientation]):
+        mc.setBlock(x+left, y+bottom, plane, nextColor)
+        
 def drawBuffer(buffer):
     for x,y in buffer:
         mc.setBlock(x,y,plane,buffer[(x,y)])
 
+def makeNext():
+    global nextFamily, nextColor, nextOrientation
+    n = randint(0, len(PIECES)-1)
+    nextFamily = PIECES[n]
+    nextColor = Block(WOOL.id, (n+1) % 16)
+    nextOrientation = randint(0, len(nextFamily)-1)        
+        
 def placePiece():
-    global pieceNum, color, family, orientation, x, y, fall, descendDelay, droppedFrom, didShowNext
-    pieceNum = randint(0, len(PIECES)-1)
-    family = PIECES[pieceNum]
-    color = Block(WOOL.id, (pieceNum+1) % 16)
-    orientation = randint(0, len(family)-1)
+    global color, family, orientation, x, y, fall, descendDelay, droppedFrom, didShowNext
+    family = nextFamily
+    orientation = nextOrientation
+    color = nextColor
+    makeNext()
     piece = family[orientation]
     x = WIDTH // 2 - pieceWidth(piece)
     y = HEIGHT + len(piece) - 2
@@ -82,13 +87,14 @@ def placePiece():
     fall = False
     droppedFrom = None
     didShowNext = showNext
+    if showNext:
+        drawNext()
     
 def fit(x, y, piece):
     for (xx,yy) in enumeratePiece(x, y, piece):
         if yy < 0 or xx >= WIDTH or xx < 0 or board[xx][yy] is not None:
             return False
-    return True
-                    
+    return True                    
                     
 def descend():
     global descendTimer
@@ -112,6 +118,9 @@ def rotateLeft():
 def rotateRight():
     return ((win32api.GetAsyncKeyState(win32con.VK_NEXT)&1) or 
                 (win32api.GetAsyncKeyState(win32con.VK_UP)&1))
+                
+def next():
+    return (win32api.GetAsyncKeyState(ord('N'))&1)         
     
 def addPiece(x, y, piece, color):
     global score,level,totalDropped
@@ -144,22 +153,22 @@ def addPiece(x, y, piece, color):
             break
             
     if didShowNext:
-        score += 3 + (3*level)//2 + droppedFrom
+        score += 3 + (3*(level-1))//2 + droppedFrom
     else:
-        score += 5 + 2*level + droppedFrom
+        score += 5 + 2*(level-1) + droppedFrom
     if dropCount:
         totalDropped += dropCount
         level = 1 + totalDropped // 10
         if level > 10:
             level = 10
-        updateScoreAndLevel()
+    updateScoreAndLevel()
 
-def updateText(buffer,x,y,text):
+def updateText(buffer,x,y,s,align):
     newBuffer = {}
-    drawText(mc, FONTS['metrix7pt'], 
+    text.drawText(mc, FONTS['thin9pt'], 
                     Vec3(x,y,plane), 
                     Vec3(1,0,0), Vec3(0,1,0), 
-                    text, SEA_LANTERN, background=None, buffer=newBuffer)
+                    s, SEA_LANTERN, background=None, align=align, buffer=newBuffer)
     for pos in buffer:
         if pos not in newBuffer:
             mc.setBlock(pos, AIR)
@@ -170,8 +179,8 @@ def updateText(buffer,x,y,text):
         
 def updateScoreAndLevel():
     global scoreBuffer, levelBuffer, currentDescendDelay
-    scoreBuffer = updateText(scoreBuffer,left+WIDTH+2,bottom+HEIGHT-10,str(score))
-    levelBuffer = updateText(levelBuffer,left-7,bottom+HEIGHT-10,str(level))
+    scoreBuffer = updateText(scoreBuffer,left+WIDTH+2,bottom+HEIGHT-10,str(score),text.ALIGN_LEFT)
+    levelBuffer = updateText(levelBuffer,left,bottom+HEIGHT-10,str(level),text.ALIGN_RIGHT)
     currentDescendDelay = DELAYS[level-1]
 
 mc = Minecraft()
@@ -193,6 +202,7 @@ scoreBuffer = {}
 levelBuffer = {}
 showNext = False
 updateScoreAndLevel()
+makeNext()
 
 newPiece = True
 
@@ -233,6 +243,14 @@ while True:
             fall = True
             droppedFrom = y+1-len(family[orientation]) 
             descendDelay = 0.05
+            
+        if next():
+            showNext = not showNext
+            if showNext:
+                didShowNext = True
+                drawNext()
+            else:
+                eraseNext()
         
     if descend():
         if not fit(x, y-1, family[orientation]):
