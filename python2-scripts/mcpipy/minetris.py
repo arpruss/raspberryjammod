@@ -7,7 +7,7 @@ from time import sleep,time
 from random import randint
 import text
 from fonts import FONTS
-import win32con,win32api
+import win32con,win32api ## Windows-specific
 
 FONT = 'thin9pt' #metrix7pt
 HEIGHT = 20
@@ -102,7 +102,9 @@ def descend():
         descendTimer += descendDelay
         return True
     return False
-    
+
+############################################################
+## The following key-check functions are Windows specific ##    
 def moveDown():
     return (win32api.GetAsyncKeyState(win32con.VK_DOWN)&1)
     
@@ -127,6 +129,8 @@ def levelUp():
     
 def pause():
     return (win32api.GetAsyncKeyState(ord('P'))&1)         
+## End of Windows specific code                           ##
+############################################################
     
 def hide():
     mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane, GLASS)
