@@ -122,6 +122,26 @@ def rotateRight():
 def next():
     return (win32api.GetAsyncKeyState(ord('N'))&1)         
     
+def levelUp():
+    return (win32api.GetAsyncKeyState(ord('L'))&1)         
+    
+def pause():
+    return (win32api.GetAsyncKeyState(ord('P'))&1)         
+    
+def hide():
+    mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane, GLASS)
+    text.drawText(mc, FONTS['nicefontbold'], 
+                    Vec3(left+WIDTH//2,bottom+5,plane), 
+                    Vec3(1,0,0), Vec3(0,1,0), 
+                    "P", SEA_LANTERN, align=text.ALIGN_CENTER)
+
+    
+def restore():
+    for xx in range(WIDTH):
+        for yy in range(HEIGHT):
+            mc.setBlock(xx+left,yy+bottom,plane,board[xx][yy] or AIR)
+    movePiece(None, None, None, x, y, family[orientation], color)
+    
 def addPiece(x, y, piece, color):
     global score,level,totalDropped
     
@@ -158,9 +178,7 @@ def addPiece(x, y, piece, color):
         score += 5 + 2*(level-1) + droppedFrom
     if dropCount:
         totalDropped += dropCount
-        level = 1 + totalDropped // 10
-        if level > 10:
-            level = 10
+        level = 1 + totalDropped // 10 + extraLevels
     updateScoreAndLevel()
 
 def updateText(buffer,x,y,s,align):
@@ -178,17 +196,26 @@ def updateText(buffer,x,y,s,align):
     return newBuffer        
         
 def updateScoreAndLevel():
-    global scoreBuffer, levelBuffer, currentDescendDelay
+    global scoreBuffer, levelBuffer, currentDescendDelay, level
+    if level > 10:
+        level = 10
     scoreBuffer = updateText(scoreBuffer,left+WIDTH+2,bottom+HEIGHT-10,str(score),text.ALIGN_LEFT)
-    levelBuffer = updateText(levelBuffer,left,bottom+HEIGHT-10,str(level),text.ALIGN_RIGHT)
+    levelBuffer = updateText(levelBuffer,left-1,bottom+HEIGHT-10,str(level),text.ALIGN_RIGHT)
     currentDescendDelay = DELAYS[level-1]
 
 mc = Minecraft()
 
+mc.postToChat("Left/Right arrow: move")
+mc.postToChat("Up: rotate right")
+mc.postToChat("PageUp/PageDown: rotate left/right")
+mc.postToChat("N: toggle view next")
+mc.postToChat("P: pause")
+mc.postToChat("L: next level")
+
 playerPos = mc.player.getTilePos()
 mc.player.setRotation(180)
 mc.player.setPitch(-26)
-mc.player.setTilePos(playerPos.x+WIDTH//2, playerPos.y, playerPos.z + 13)
+mc.player.setTilePos(playerPos.x, playerPos.y, playerPos.z + 14)
 left = playerPos.x - WIDTH // 2
 plane = playerPos.z
 bottom = playerPos.y + 1
@@ -197,6 +224,7 @@ board = [[None for i in range(HEIGHT)] for j in range(WIDTH)]
 drawBoard()
 score = 0
 level = 1
+extraLevels = 0
 totalDropped = 0
 scoreBuffer = {}
 levelBuffer = {}
@@ -221,8 +249,22 @@ while True:
         draw = False
     oldX = x
     oldY = y
+    
+    if pause():
+        t0 = time()
+        hide()
+        while not pause():
+            sleep(0.025)
+        restore()
+        descendTimer += time() - t0
 
     if not fall:
+        if levelUp():
+            extraLevels += 1
+            level += 1
+            updateScoreAndLevel()
+            descendDelay = currentDescendDelay
+    
         if moveLeft() and fit(x-1, y, family[orientation]):
             x -= 1
             draw = True
