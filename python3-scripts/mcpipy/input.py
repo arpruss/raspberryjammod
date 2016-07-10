@@ -133,7 +133,9 @@ if system() == 'Windows':
     def clearPressBuffer(key):
         while wasPressedSinceLast(key):
             pass
-
+else:
+    raise Exception('Platform '+system()+' not supported.')
+            
 if __name__ == '__main__':
     from time import sleep
     print("Press ESC to exit. Testing spacebar.")
