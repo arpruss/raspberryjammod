@@ -1,7 +1,7 @@
 from mc import *
 from time import sleep
 from sys import argv
-import win32con,win32api
+import input
 
 mc = Minecraft()
 
@@ -25,23 +25,23 @@ while True:
     pos = mc.entity.getPos(entity)
     yaw = mc.entity.getRotation(entity)
     move = False
-    if win32api.GetAsyncKeyState(win32con.VK_NEXT):
+    if input.wasPressedSinceLast(input.NEXT):
         pos.y -= 1
         move = True
-    if win32api.GetAsyncKeyState(win32con.VK_PRIOR):
+    if input.wasPressedSinceLast(input.PRIOR):
         pos.y += 1
         move = True
-    if win32api.GetAsyncKeyState(win32con.VK_LEFT):
+    if input.wasPressedSinceLast(input.LEFT):
         yaw -= 15
         mc.entity.setRotation(entity,yaw)
-    if win32api.GetAsyncKeyState(win32con.VK_RIGHT):
+    if input.wasPressedSinceLast(input.RIGHT):
         yaw += 15
         mc.entity.setRotation(entity,yaw)
-    if win32api.GetAsyncKeyState(win32con.VK_UP):
+    if input.wasPressedSinceLast(input.UP):
         pos.x += .5 * -sin(radians(yaw))
         pos.z += .5 * cos(radians(yaw))
         move = True
-    if win32api.GetAsyncKeyState(win32con.VK_DOWN):
+    if input.wasPressedSinceLast(input.DOWN):
         pos.x -= .5 * -sin(radians(yaw))
         pos.z -= .5 * cos(radians(yaw))
         move = True
@@ -55,7 +55,7 @@ while True:
             else:
                 drew = None
             mc.entity.setPos(entity,pos)
-            if lastPlatform != under:
+            if lastPlatform is not None and lastPlatform != under:
                 mc.setBlock(lastPlatform,AIR)
                 lastPlatform = None
             if drew:

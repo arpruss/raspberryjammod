@@ -1,13 +1,19 @@
 #
-# requires Windows and pywin32
+# requires Windows (for input.py to work)
 # Copyright (c) 2016 Alexander Pruss. MIT License.
 #
+
+#
+# Make sure to have input.py and text.py in the same directory.
+#
+
+
 from mc import *
 from time import sleep,time
 from random import randint
+import input
 import text
 from fonts import FONTS
-import win32con,win32api ## Windows-specific
 
 FONT = 'thin9pt' #metrix7pt
 HEIGHT = 20
@@ -24,54 +30,45 @@ PIECES = (  (('XXXX',), ('.X','.X','.X','.X')),
             (('XX', '.XX'), ('.X','XX', 'X.')),
             (('.XX', 'XX'), ('X.', 'XX', '.X')) )
 
-############################################################
-## The following key-check functions are Windows specific ##    
 def inputMoveDown():
-    return (win32api.GetAsyncKeyState(win32con.VK_DOWN)&1)
+    return input.wasPressedSinceLast(input.DOWN)
     
 def inputMoveLeft():
-    return (win32api.GetAsyncKeyState(win32con.VK_LEFT)&1)
+    return input.wasPressedSinceLast(input.LEFT)
     
 def inputMoveRight():
-    return (win32api.GetAsyncKeyState(win32con.VK_RIGHT)&1)
+    return input.wasPressedSinceLast(input.RIGHT)
 
 def inputRotateLeft():
-    return (win32api.GetAsyncKeyState(win32con.VK_PRIOR)&1)
+    return input.wasPressedSinceLast(input.PRIOR)
     
 def inputRotateRight():
-    return ((win32api.GetAsyncKeyState(win32con.VK_NEXT)&1) or 
-                (win32api.GetAsyncKeyState(win32con.VK_UP)&1))
+    return input.wasPressedSinceLast(input.NEXT)
                 
 def inputNext():
-    return (win32api.GetAsyncKeyState(ord('N'))&1)         
+    return input.wasPressedSinceLast(ord('N'))
     
 def inputLevelUp():
-    return (win32api.GetAsyncKeyState(ord('L'))&1)         
+    return input.wasPressedSinceLast(ord('L'))
     
 def inputPause():
-    return (win32api.GetAsyncKeyState(ord('P'))&1)         
+    return input.wasPressedSinceLast(ord('P'))
     
 def answerYes():
-    clearState(ord('Y'))
-    clearState(ord('N'))
+    input.clearPressBuffer(ord('Y'))
+    input.clearPressBuffer(ord('N'))
     while True:
-        if win32api.GetAsyncKeyState(ord('Y')) & 1:
+        if input.wasPressedSinceLast(ord('Y')):
             return True
-        if win32api.GetAsyncKeyState(ord('N')) & 1:
+        if input.wasPressedSinceLast(ord('N')):
             return False
         sleep(0.1)
 
-def clearState(k):
-    while win32api.GetAsyncKeyState(k) & 1:
-        pass
-    
 def clearInput():
-    for k in (win32con.VK_DOWN, win32con.VK_LEFT, win32con.VK_RIGHT,
-                win32con.VK_PRIOR, win32con.VK_NEXT, win32con.VK_UP,
+    for k in (input.DOWN, input.LEFT, input.RIGHT,
+                input.PRIOR, input.NEXT, input.UP,
                 ord('N'), ord('L'), ord('P'), ord('Y')):
-        clearState(k)
-## End of Windows specific code                           ##
-############################################################
+        input.clearPressBuffer(k)
     
 def drawBoard():
     mc.setBlocks(left-1, bottom-1, plane, left+WIDTH, bottom-1, plane, BORDER)
