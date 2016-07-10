@@ -23,12 +23,65 @@ BACKGROUND = STAINED_GLASS_BLACK
 
 DELAYS = ( 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.05)
 
-PIECES = (  (('XXXX',), ('.X','.X','.X','.X')),
-            (('XX','XX'),),
-            (('XXX', '..X'), ('.X', '.X', 'XX'), ('X','XXX'), ('XX', 'X', 'X')),
-            (('XXX', 'X'), ('XX', '.X', '.X'), ('..X', 'XXX'), ('X.', 'X.', 'XX')),
-            (('XX', '.XX'), ('.X','XX', 'X.')),
-            (('.XX', 'XX'), ('X.', 'XX', '.X')) )
+# arrange so width >= height
+PIECES = (  ('XXXX',), 
+            ('XX','XX'),
+            ('XXX', '..X'), 
+            ('XXX', 'X'), 
+            ('XX', '.XX'), 
+            ('.XX', 'XX'))
+            
+class PieceState(object):
+    def __init__(self, piece, rotation, color):
+        self.piece = piece
+        self.rotation = rotation % 4
+        self.color = color
+        self.width = max((len(a) for a in self.piece))
+        self.height = len(piece)
+        
+    def getWidth(self):
+        if self.rotation % 2 == 0:
+            return self.width
+        else:
+            return self.height
+
+    def getHeight(self):
+        if self.rotation % 2 == 0:
+            return self.height
+        else:
+            return self.width
+
+    def getCoordinates(self, x, y):
+        if self.rotation % 2:
+            dcol = (self.width-self.height)//2
+
+        for row in range(self.height):
+            for col in range(len(self.piece[row])):
+                if self.piece[row][col] == 'X':
+                    if self.rotation == 0:
+                        xx = col
+                        yy = row
+                    elif self.rotation == 2:
+                        xx = self.width-1-col
+                        yy = self.height-1-row
+                    elif self.rotation == 3:
+                        xx = dcol+row
+                        yy = self.width-1-col
+                    elif self.rotation == 1:
+                        xx = dcol+self.height-1-row
+                        yy = col
+
+                    if y-yy < HEIGHT:
+                        yield (x+xx,y-yy)
+                        
+    def fit(self, x, y, board):
+        for (xx,yy) in self.getCoordinates(x, y):
+            if yy < 0 or xx >= WIDTH or xx < 0 or board[xx][yy] is not None:
+                return False
+        return True                    
+
+    def cloneRotated(self, delta):
+        return PieceState(self.piece, self.rotation+delta, self.color)
 
 def inputMoveDown():
     return input.wasPressedSinceLast(input.DOWN)
@@ -43,7 +96,7 @@ def inputRotateLeft():
     return input.wasPressedSinceLast(input.PRIOR)
     
 def inputRotateRight():
-    return input.wasPressedSinceLast(input.NEXT)
+    return input.wasPressedSinceLast(input.NEXT) or input.wasPressedSinceLast(input.UP)
                 
 def inputNext():
     return input.wasPressedSinceLast(ord('N'))
@@ -78,20 +131,10 @@ def drawBoard():
     mc.setBlocks(left-1, bottom-1, plane-1, left+WIDTH, bottom+HEIGHT, plane-1, BACKGROUND)
     mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane, AIR)
     
-def pieceWidth(piece):
-    return max((len(a) for a in piece))
-    
-def enumeratePiece(x, y, piece):
-    for row in range(len(piece)):
-        if y-row < HEIGHT:
-            for col in range(len(piece[row])):
-                if piece[row][col] == 'X':
-                    yield (x+col,y-row)
-
-def movePiece(oldX, oldY, oldPiece, x, y, piece, color):
-    new = set(enumeratePiece(x, y, piece))
-    if oldPiece:
-        old = set(enumeratePiece(oldX, oldY, oldPiece))
+def movePiece(oldX, oldY, oldPieceState, x, y, pieceState):
+    new = set(pieceState.getCoordinates(x, y))
+    if oldPieceState:
+        old = set(oldPieceState.getCoordinates(oldX, oldY))
         
         for (x,y) in old-new:
             mc.setBlock(x+left, y+bottom, plane, AIR)
@@ -99,49 +142,31 @@ def movePiece(oldX, oldY, oldPiece, x, y, piece, color):
         new = new - old
 
     for (x,y) in new:
-        mc.setBlock(x+left, y+bottom, plane, color)
+        mc.setBlock(x+left, y+bottom, plane, pieceState.color)
 
 def eraseNext():
     mc.setBlocks(left+WIDTH+2,bottom+3,plane,left+WIDTH+2+3,bottom+6,plane,AIR)
         
-def drawNext():
+def drawNext(nextPieceState):
     eraseNext()
-    for (x,y) in enumeratePiece(WIDTH+2, 6, nextFamily[nextOrientation]):
-        mc.setBlock(x+left, y+bottom, plane, nextColor)
+    for (x,y) in nextPieceState.getCoordinates(WIDTH+2, 6):
+        mc.setBlock(x+left, y+bottom, plane, nextPieceState.color)
         
-def drawBuffer(buffer):
-    for x,y in buffer:
-        mc.setBlock(x,y,plane,buffer[(x,y)])
-
-def makeNext():
-    global nextFamily, nextColor, nextOrientation
-    n = randint(0, len(PIECES)-1)
-    nextFamily = PIECES[n]
-    nextColor = Block(WOOL.id, (n+1) % 16)
-    nextOrientation = randint(0, len(nextFamily)-1)        
+def makePieceState():
+    n = 0 # randint(0, len(PIECES)-1)
+    return PieceState(PIECES[n], randint(0,3), Block(WOOL.id, (n+1) % 16))
         
-def placePiece():
-    global color, family, orientation, descendDelay, droppedFrom, didShowNext
-    family = nextFamily
-    orientation = nextOrientation
-    color = nextColor
-    makeNext()
-    piece = family[orientation]
-    x = WIDTH // 2 - pieceWidth(piece)
-    y = HEIGHT + len(piece) - 2
+def placePiece(state):
+    global descendDelay, droppedFrom, didShowNext
+    x = WIDTH // 2 - state.getWidth()
+    y = HEIGHT + state.getHeight() - 2
     descendDelay = currentDescendDelay
     droppedFrom = None
     didShowNext = showNext
     if showNext:
-        drawNext()
+        drawNext(nextPieceState)
     return (x,y)
     
-def fit(x, y, piece):
-    for (xx,yy) in enumeratePiece(x, y, piece):
-        if yy < 0 or xx >= WIDTH or xx < 0 or board[xx][yy] is not None:
-            return False
-    return True                    
-                    
 def descend():
     global descendTimer
     if descendTimer + descendDelay <= time():
@@ -155,19 +180,18 @@ def hide():
                     Vec3(left+WIDTH//2,bottom+5,plane), 
                     Vec3(1,0,0), Vec3(0,1,0), 
                     "P", SEA_LANTERN, align=text.ALIGN_CENTER)
-
     
-def restore(x, y):
+def restore(x, y, curPieceState):
     for xx in range(WIDTH):
         for yy in range(HEIGHT):
             mc.setBlock(xx+left,yy+bottom,plane,board[xx][yy] or AIR)
-    movePiece(None, None, None, x, y, family[orientation], color)
+    movePiece(None, None, None, x, y, curPieceState)
     
-def addPiece(x, y, piece, color):
+def addPiece(x, y, curPieceState):
     global score,level,totalDropped
     
-    for (xx,yy) in enumeratePiece(x, y, piece):
-        board[xx][yy] = color
+    for (xx,yy) in curPieceState.getCoordinates(x, y):
+        board[xx][yy] = curPieceState.color
         
     dropCount = 0
     while True:
@@ -232,7 +256,7 @@ def clearScoreAndLevel():
 
 def game():
     global score, level, extraLevels, totalDropped, scoreBuffer, levelBuffer, showNext, didShowNext
-    global orientation, board, descendTimer, droppedFrom, descendDelay
+    global board, descendTimer, droppedFrom, descendDelay
     
     board = [[None for i in range(HEIGHT)] for j in range(WIDTH)]
 
@@ -245,15 +269,17 @@ def game():
     levelBuffer = {}
     showNext = False
     updateScoreAndLevel()
-    makeNext()
+    nextPieceState = makePieceState()
 
     newPiece = True
 
     while True:
         if newPiece:
-            x,y = placePiece()
-            oldPiece = None
-            if not fit(x, y, family[orientation]):
+            curPieceState = nextPieceState
+            x,y = placePiece(curPieceState)
+            nextPieceState = makePieceState()
+            oldPieceState = None
+            if not curPieceState.fit(x, y, board):
                 break
             draw = True
             newPiece = False
@@ -261,7 +287,7 @@ def game():
             clearInput()
             descendTimer = time()
         else:
-            oldPiece = family[orientation]
+            oldPieceState = curPieceState.cloneRotated(0)
             draw = False
         oldX = x
         oldY = y
@@ -282,75 +308,81 @@ def game():
                 updateScoreAndLevel()
                 descendDelay = currentDescendDelay
         
-            if inputMoveLeft() and fit(x-1, y, family[orientation]):
+            if inputMoveLeft() and curPieceState.fit(x-1, y, board):
                 x -= 1
                 draw = True
                     
-            if inputMoveRight() and fit(x+1, y, family[orientation]):
+            if inputMoveRight() and curPieceState.fit(x+1, y, board):
                 x += 1
                 draw = True
                     
-            if inputRotateLeft() and fit(x, y, family[(orientation-1)%len(family)]):
-                orientation = (orientation-1)%len(family)
-                draw = True
+            if inputRotateLeft():
+                p = curPieceState.cloneRotated(-1)
+                if p.fit(x, y, board):
+                    curPieceState = p
+                    draw = True
                     
-            if inputRotateRight() and fit(x, y, family[(orientation+1)%len(family)]):
-                orientation = (orientation+1)%len(family)
-                draw = True
+            if inputRotateRight():
+                p = curPieceState.cloneRotated(1)
+                if p.fit(x, y, board):
+                    curPieceState = p
+                    draw = True
                 
             if inputMoveDown():
                 fall = True
-                droppedFrom = y+1-len(family[orientation]) 
+                droppedFrom = y+1-curPieceState.getHeight() 
                 descendDelay = 0.05
                 
             if inputNext():
                 showNext = not showNext
                 if showNext:
                     didShowNext = True
-                    drawNext()
+                    drawNext(nextPieceState)
                 else:
                     eraseNext()
             
         if descend():
-            if not fit(x, y-1, family[orientation]):
+            if not curPieceState.fit(x, y-1, board):
                 if droppedFrom is None:
-                    droppedFrom = y+1-len(family[orientation])
-                addPiece(x, y, family[orientation], color)
+                    droppedFrom = y+1-curPieceState.getHeight()
+                addPiece(x, y, curPieceState)
                 newPiece = True
             else:
                 draw = True
                 y -= 1
 
         if draw:
-            movePiece(oldX, oldY, oldPiece, x, y, family[orientation], color)
+            movePiece(oldX, oldY, oldPieceState, x, y, curPieceState)
             
         sleep(0.025)
 
     return score
     
-mc = Minecraft()
+if __name__=="__main__":
+    mc = Minecraft()
 
-mc.postToChat("Left/Right arrow: move")
-mc.postToChat("Up: rotate right")
-mc.postToChat("PageUp/PageDown: rotate left/right")
-mc.postToChat("N: toggle view next")
-mc.postToChat("P: pause")
-mc.postToChat("L: next level")
+    mc.postToChat("Left/Right arrow: move")
+    mc.postToChat("Up: rotate right")
+    mc.postToChat("PageUp/PageDown: rotate left/right")
+    mc.postToChat("N: toggle view next")
+    mc.postToChat("P: pause")
+    mc.postToChat("L: next level")
 
-playerPos = mc.player.getTilePos()
-mc.player.setRotation(180)
-mc.player.setPitch(-26)
-mc.player.setTilePos(playerPos.x, playerPos.y, playerPos.z + 14)
+    playerPos = mc.player.getTilePos()
+    mc.player.setRotation(180)
+    mc.player.setPitch(-26)
+    mc.player.setTilePos(playerPos.x, playerPos.y, playerPos.z + 14)
 
-left = playerPos.x - WIDTH // 2
-plane = playerPos.z
-bottom = playerPos.y + 1
+    left = playerPos.x - WIDTH // 2
+    plane = playerPos.z
+    bottom = playerPos.y + 1
 
-while True:
-    s = game()
-    mc.postToChat("Game Over: You got %d points" % s)
-    mc.postToChat("Play again? (Y/N)")
-    if not answerYes():
-        mc.postToChat("Goodbye!")
-        break
-    clearScoreAndLevel()
+    while True:
+        s = game()
+        mc.postToChat("Game Over: You got %d points" % s)
+        mc.postToChat("Play again? (Y/N)")
+        if not answerYes():
+            mc.postToChat("Goodbye!")
+            break
+        clearScoreAndLevel()
+        
