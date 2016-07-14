@@ -153,7 +153,7 @@ def drawNext(nextPieceState):
         mc.setBlock(x+left, y+bottom, plane, nextPieceState.color)
         
 def makePieceState():
-    n = 0 # randint(0, len(PIECES)-1)
+    n = randint(0, len(PIECES)-1)
     return PieceState(PIECES[n], randint(0,3), Block(WOOL.id, (n+1) % 16))
         
 def placePiece(state):
@@ -298,7 +298,7 @@ def game():
             while not inputPause():
                 sleep(0.025)
             clearInput()
-            restore(x, y)
+            restore(x, y, curPieceState)
             descendTimer += time() - t0
 
         if not fall:
