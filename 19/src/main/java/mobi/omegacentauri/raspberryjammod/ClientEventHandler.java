@@ -125,10 +125,11 @@ public class ClientEventHandler {
 			registerCommand(new PythonExternalCommand(true));
 			registerCommand(new AddPythonExternalCommand(true));
 		}
-		else {
+//		else 
+//       {
 			registerCommand(new LocalPythonExternalCommand(true));
 			registerCommand(new AddLocalPythonExternalCommand(true));
-		}
+//		}
 		
 		if (!RaspberryJamMod.clientOnlyAPI)
 			return;

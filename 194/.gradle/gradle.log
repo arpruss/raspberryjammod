@@ -1,5 +1,5 @@
 #################################################
-         ForgeGradle 2.2-SNAPSHOT-59f33ec        
+         ForgeGradle 2.2-SNAPSHOT-0447b4e        
   https://github.com/MinecraftForge/ForgeGradle  
 #################################################
                Powered by MCP unknown               
@@ -8,31 +8,42 @@
          R4wk, ZeuX, IngisKahn, bspkrs           
 #################################################
 :deobfCompileDummyTask
-:getVersionJson
-:extractUserdev
-:downloadClient SKIPPED
-:downloadServer SKIPPED
-:splitServerJar SKIPPED
-:mergeJars SKIPPED
-:applyBinaryPatches SKIPPED
 :deobfProvidedDummyTask
-:extractDependencyATs SKIPPED
+:sourceApiJava UP-TO-DATE
+:compileApiJava UP-TO-DATE
+:processApiResources UP-TO-DATE
+:apiClasses UP-TO-DATE
+:sourceMainJava
+:compileJavawarning: [options] bootstrap class path not set in conjunction with -source 1.6
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+1 warning
+
+:processResources
+:classes
+:jar
+:sourceTestJava UP-TO-DATE
+:compileTestJava UP-TO-DATE
+:processTestResources UP-TO-DATE
+:testClasses UP-TO-DATE
+:test UP-TO-DATE
 :extractMcpData SKIPPED
-:extractMcpMappings SKIPPED
-:genSrgs SKIPPED
-:deobfMcMCP
-Applying SpecialSource...
-:deobfMcMCP FAILED
+:extractMcpMappings
+:getVersionJson
+:extractUserdev UP-TO-DATE
+:genSrgs
+:reobfJar
+:extractRangemapReplacedMain
+C:\Devel\mc\194\build\sources\main\java
+:retromapReplacedMain
+remapping source...
+:sourceJar
+:assemble
+:check UP-TO-DATE
+:build
 
-FAILURE: Build failed with an exception.
+BUILD SUCCESSFUL
 
-* What went wrong:
-Execution failed for task ':deobfMcMCP'.
-> joptsimple/OptionException : Unsupported major.minor version 51.0
-
-* Try:
-Run with --stacktrace option to get the stack trace. Run with --info or --debug option to get more log output.
-
-BUILD FAILED
-
-Total time: 42.844 secs
+Total time: 46.643 secs

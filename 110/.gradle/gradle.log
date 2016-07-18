@@ -1,7 +1,7 @@
 This mapping 'snapshot_20160618' was designed for MC 1.9.4! Use at your own peril.This mapping 'snapshot_20160618' was designed for MC 1.9.4! Use at your own peril.
 
 #################################################
-         ForgeGradle 2.2-SNAPSHOT-59f33ec        
+         ForgeGradle 2.2-SNAPSHOT-0447b4e        
   https://github.com/MinecraftForge/ForgeGradle  
 #################################################
                Powered by MCP unknown               
@@ -10,33 +10,42 @@ This mapping 'snapshot_20160618' was designed for MC 1.9.4! Use at your own peri
          R4wk, ZeuX, IngisKahn, bspkrs           
 #################################################
 :deobfCompileDummyTask
-:getVersionJsonNo route to host: connect
+:deobfProvidedDummyTask
+:sourceApiJava UP-TO-DATE
+:compileApiJava UP-TO-DATE
+:processApiResources UP-TO-DATE
+:apiClasses UP-TO-DATE
+:sourceMainJava
+:compileJavawarning: [options] bootstrap class path not set in conjunction with -source 1.6
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+1 warning
 
-:extractUserdev
-FAILURE: Build failed with an exception.
+:processResources
+:classes
+:jar
+:sourceTestJava UP-TO-DATE
+:compileTestJava UP-TO-DATE
+:processTestResources UP-TO-DATE
+:testClasses UP-TO-DATE
+:test UP-TO-DATE
+:extractMcpData SKIPPED
+:extractMcpMappings
+:getVersionJson
+:extractUserdev UP-TO-DATE
+:genSrgs
+:reobfJar
+:extractRangemapReplacedMain
+C:\Devel\mc\110\build\sources\main\java
+:retromapReplacedMain
+remapping source...
+:sourceJar
+:assemble
+:check UP-TO-DATE
+:build
 
-* What went wrong:
-Could not resolve all dependencies for configuration ':forgeGradleUserDevPackage'.
-> Could not resolve net.minecraftforge:forge:1.10-12.18.0.1986-1.10.0.
-  Required by:
-      mobi.omegacentauri.raspberryjammod:110:0.74
-   > Could not resolve net.minecraftforge:forge:1.10-12.18.0.1986-1.10.0.
-      > Could not get resource 'http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.10-12.18.0.1986-1.10.0/forge-1.10-12.18.0.1986-1.10.0.pom'.
-         > Could not GET 'http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.10-12.18.0.1986-1.10.0/forge-1.10-12.18.0.1986-1.10.0.pom'.
-            > Network is unreachable: connect
-   > Could not resolve net.minecraftforge:forge:1.10-12.18.0.1986-1.10.0.
-      > Could not get resource 'https://repo1.maven.org/maven2/net/minecraftforge/forge/1.10-12.18.0.1986-1.10.0/forge-1.10-12.18.0.1986-1.10.0.pom'.
-         > Could not GET 'https://repo1.maven.org/maven2/net/minecraftforge/forge/1.10-12.18.0.1986-1.10.0/forge-1.10-12.18.0.1986-1.10.0.pom'.
-            > repo1.maven.org
-   > Could not resolve net.minecraftforge:forge:1.10-12.18.0.1986-1.10.0.
-      > Could not get resource 'https://libraries.minecraft.net/net/minecraftforge/forge/1.10-12.18.0.1986-1.10.0/forge-1.10-12.18.0.1986-1.10.0.pom'.
-         > Could not GET 'https://libraries.minecraft.net/net/minecraftforge/forge/1.10-12.18.0.1986-1.10.0/forge-1.10-12.18.0.1986-1.10.0.pom'.
-            > libraries.minecraft.net
+BUILD SUCCESSFUL
 
-* Try:
-Run with --stacktrace option to get the stack trace. Run with --info or --debug option to get more log output.
-
-
-BUILD FAILED
-
-Total time: 17.828 secs
+Total time: 46.22 secs
