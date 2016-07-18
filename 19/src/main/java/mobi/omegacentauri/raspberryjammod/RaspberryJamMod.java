@@ -99,11 +99,11 @@ public class RaspberryJamMod
 		synchronizeConfig();
 	}
 
-	@Mod.EventHandler
-	@SideOnly(Side.CLIENT)
-	public void onConfigChanged(net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent event) {
-		System.out.println("config changed");
-	}
+//	@Mod.EventHandler // doesn't work in 1.9 for some reason, but we don't need it anyway yet
+//	@SideOnly(Side.CLIENT)
+//	public void onConfigChanged(net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent event) {
+//		System.out.println("config changed");
+//	}
 
 	@Mod.EventHandler
 	@SideOnly(Side.CLIENT)
@@ -141,7 +141,7 @@ public class RaspberryJamMod
 		return count;
 	}
 	
-	@EventHandler
+	@Mod.EventHandler
 	public void onServerStopping(FMLServerStoppingEvent event) {
 		if (clientOnlyAPI) {
 			minecraftServer = null;
@@ -169,7 +169,7 @@ public class RaspberryJamMod
 		minecraftServer = null;
 	}
 	
-	@EventHandler
+	@Mod.EventHandler
 	public void onServerStarting(FMLServerStartingEvent event) {
 		synchronizeConfig();
 		
