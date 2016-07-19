@@ -156,7 +156,7 @@ def makePieceState():
     n = randint(0, len(PIECES)-1)
     return PieceState(PIECES[n], randint(0,3), Block(WOOL.id, (n+1) % 16))
         
-def placePiece(state):
+def placePiece(state, nextPieceState):
     global descendDelay, droppedFrom, didShowNext
     x = WIDTH // 2 - state.getWidth()
     y = HEIGHT + state.getHeight() - 2
@@ -276,8 +276,8 @@ def game():
     while True:
         if newPiece:
             curPieceState = nextPieceState
-            x,y = placePiece(curPieceState)
             nextPieceState = makePieceState()
+            x,y = placePiece(curPieceState, nextPieceState)
             oldPieceState = None
             if not curPieceState.fit(x, y, board):
                 break

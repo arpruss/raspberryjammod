@@ -15,7 +15,7 @@ This mapping 'snapshot_20160618' was designed for MC 1.9.4! Use at your own peri
 :compileApiJava UP-TO-DATE
 :processApiResources UP-TO-DATE
 :apiClasses UP-TO-DATE
-:sourceMainJava
+:sourceMainJava UP-TO-DATE
 :compileJavawarning: [options] bootstrap class path not set in conjunction with -source 1.6
 Note: Some input files use or override a deprecated API.
 Note: Recompile with -Xlint:deprecation for details.
@@ -23,7 +23,7 @@ Note: Some input files use unchecked or unsafe operations.
 Note: Recompile with -Xlint:unchecked for details.
 1 warning
 
-:processResources
+:processResources UP-TO-DATE
 :classes
 :jar
 :sourceTestJava UP-TO-DATE
@@ -48,4 +48,4 @@ remapping source...
 
 BUILD SUCCESSFUL
 
-Total time: 46.22 secs
+Total time: 1 mins 23.104 secs
