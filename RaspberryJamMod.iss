@@ -57,7 +57,7 @@ Type: files; Name: "{userappdata}\.minecraft\mods\1.9.4\RaspberryJamMod*.jar"; C
 Type: files; Name: "{userappdata}\.minecraft\mods\1.10\RaspberryJamMod*.jar"; Components: Mod
 
 [Messages]
-WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT 1.8/1.8.8/1.8.9/1.9/1.9.4/1.10 ALREADY INSTALLED. Otherwise, this won't work.
+WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT 1.8/1.8.8/1.8.9/1.9/1.9.4/1.10/1.10.2 ALREADY INSTALLED. Otherwise, this won't work.
 ConfirmUninstall=Are you sure you want to completely remove %1 and all of its components? (Note that the scripts in the mcpipy folder of your Minecraft folder should NOT get deleted, however, in case you made changes.)
 
 [Icons]
