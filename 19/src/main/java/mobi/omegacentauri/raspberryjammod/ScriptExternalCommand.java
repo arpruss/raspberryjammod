@@ -263,6 +263,8 @@ public abstract class ScriptExternalCommand implements ICommand {
 			environment.put("MINECRAFT_API_PORT", "4711"); // presumed server port
 		}
 		else {
+			if (RaspberryJamMod.currentPortNumber < 0)
+				throw new CommandException("RaspberryJamMod API not started. Check for port conflicts.");
 			environment.put("MINECRAFT_API_HOST","localhost");
 			environment.put("MINECRAFT_API_PORT", ""+RaspberryJamMod.currentPortNumber);
 		}
