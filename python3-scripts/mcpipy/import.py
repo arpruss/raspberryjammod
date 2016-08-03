@@ -6,7 +6,7 @@
 #
 
 from mc import *
-from sys import argv
+from sys import argv,version
 import mcpi.nbt as nbt
 import json
 
@@ -111,9 +111,13 @@ if __name__=='__main__':
     if len(argv) >= 2:
         path = argv[1]
     else:
-        import Tkinter
-        from tkFileDialog import askopenfilename
-        master = Tkinter.Tk()
+        if int(version[0]) < 3:
+            from tkFileDialog import askopenfilename
+            from Tkinter import *
+        else:
+            from tkinter.filedialog import askopenfilename
+            from tkinter import *
+        master = Tk()
         master.attributes("-topmost", True)
         path = askopenfilename(filetypes=['schematic {*.schematic}'],title="Open")
         master.destroy()
