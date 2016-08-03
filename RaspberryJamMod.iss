@@ -32,7 +32,8 @@ PrivilegesRequired=lowest
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "python2-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall
+Source: "python2-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall; Components: Scripts\Scripts27
+Source: "python3-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall; Components: Scripts\Scripts3
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8\"
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.8\"
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.9\"
@@ -40,12 +41,19 @@ Source: "19\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\
 Source: "194\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.9.4\"
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10\"
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10.2\"
-Source: "py27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs; Components: Python27
+Source: "config27\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs; Components: Python\Python27
+Source: "config3\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs; Components: Python\Python3
+Source: "py27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs; Components: Python\Python27
+Source: "py3\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsubdirs recursesubdirs; Components: Python\Python3
 
 [Components]
 Name: "Mod"; Description: "Raspberry Jam Mod"; Types: full compact custom
-Name: "Python27"; Description: "Python 2.7 interpreter"; Types: custom compact full
-Name: "Scripts27"; Description: "Sample scripts and Minecraft Python library"; Types: compact custom full
+Name: "Python"; Description: "Python interpreter"; Types: custom compact full
+Name: "Python\Python27"; Description: "Python 2.7 interpreter"; Types: custom compact full; Flags: exclusive
+Name: "Python\Python3"; Description: "Python 3 interpreter"; Flags: exclusive
+Name: "Scripts"; Description: "Sample scripts and Minecraft Python library"; Types: compact custom full
+Name: "Scripts\Scripts27"; Description: "Scripts for Python 2.7"; Types: compact custom full; Flags: exclusive
+Name: "Scripts\Scripts3"; Description: "Scripts for Python 3"; Flags: exclusive
 
 [InstallDelete]
 Type: files; Name: "{userappdata}\.minecraft\mods\RaspberryJamMod*.jar"; Components: Mod
@@ -61,10 +69,12 @@ WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT 1.8/1.8.8/1.8.9/1.9/1.9.4/1
 ConfirmUninstall=Are you sure you want to completely remove %1 and all of its components? (Note that the scripts in the mcpipy folder of your Minecraft folder should NOT get deleted, however, in case you made changes.)
 
 [Icons]
-Name: "{userdesktop}\IDLE for Minecraft Python"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python27\Lib\idlelib\idle.py"; Components: Python27; Tasks: Desktop
-Name: "{group}\IDLE for Minecraft Python"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python27\Lib\idlelib\idle.py"; Components: Python27; Tasks: Start
+Name: "{userdesktop}\IDLE for Minecraft Python 2.7"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python27\Lib\idlelib\idle.py"; Components: Python\Python27; Tasks: Desktop
+Name: "{userdesktop}\IDLE for Minecraft Python 3"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python3\Lib\idlelib\idle.py"; Components: Python\Python3; Tasks: Desktop
+Name: "{group}\IDLE for Minecraft Python 2.7"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python27\Lib\idlelib\idle.py"; Components: Python\Python27; Tasks: Start
+Name: "{group}\IDLE for Minecraft Python 3"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python3\Lib\idlelib\idle.py"; Components: Python\Python3; Tasks: Start
 Name: "{group}\Uninstall RaspberryJamMod files"; Filename: "{uninstallexe}"; Tasks: Start
 
 [Tasks]
-Name: "Desktop"; Description: "Desktop shortcut"; Components: Python27
-Name: "Start"; Description: "Start Menu shortcut"; Components: Python27
+Name: "Desktop"; Description: "Desktop shortcut"; Components: Python\Python27 Python\Python3
+Name: "Start"; Description: "Start Menu shortcut"; Components: Python\Python27 Python\Python3

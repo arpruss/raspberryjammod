@@ -25,24 +25,32 @@
 from mcpi.minecraft import *
 from mcpi.block import *
 from math import *
-from sys import maxsize
+import sys
 from copy import copy
 from ast import literal_eval
 import re
 
 def getSavePath(directory, extension):
-    import Tkinter
-    from tkFileDialog import asksaveasfilename
-    master = Tkinter.Tk()
+    if int(sys.version[0]) < 3:
+        from tkFileDialog import asksaveasfilename
+        from Tkinter import *
+    else:
+        from tkinter.filedialog import asksaveasfilename
+        from tkinter import *
+    master = Tk()
     master.attributes("-topmost", True)
     path = asksaveasfilename(initialdir=directory,filetypes=['vehicle {*.'+extension+'}'],defaultextension="."+extension,title="Save")
     master.destroy()
     return path
 
 def getLoadPath(directory, extension):
-    import Tkinter
-    from tkFileDialog import askopenfilename
-    master = Tkinter.Tk()
+    if int(sys.version[0]) < 3:
+        from tkFileDialog import askopenfilename
+        from Tkinter import *
+    else:
+        from tkinter.filedialog import askopenfilename
+        from tkinter import *
+    master = Tk()
     master.attributes("-topmost", True)
     path = askopenfilename(initialdir=directory,filetypes=['vehicle {*.'+extension+'}'],title="Open")
     master.destroy()
@@ -76,7 +84,7 @@ class Vehicle():
     def __init__(self,mc,nondestructive=False):
         self.mc = mc
         self.nondestructive = nondestructive
-        self.highWater = -maxsize-1
+        self.highWater = -sys.maxsize-1
         self.baseVehicle = {}
         if hasattr(Minecraft, 'getBlockWithNBT'):
             self.getBlockWithData = self.mc.getBlockWithNBT

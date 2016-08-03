@@ -839,8 +839,12 @@ if __name__ == "__main__":
         if settings.isPE:
             go("models/RaspberryPi.txt")
         else:
-            from tkFileDialog import askopenfilename
-            from Tkinter import *
+            if int(sys.version[0]) < 3:
+                from tkFileDialog import askopenfilename
+                from Tkinter import *
+            else:
+                from tkinter.filedialog import askopenfilename
+                from tkinter import *
             master = Tk()
             master.wm_title("render")
             master.attributes("-topmost", True)

@@ -1,5 +1,4 @@
-﻿
-#www.stuffaboutcode.com
+﻿#www.stuffaboutcode.com
 #Raspberry Pi, Minecraft - Create 3D Model from Obj file
 # Version 2 - draws complete faces rather than wireframes and uses materials
 """
@@ -839,8 +838,12 @@ if __name__ == "__main__":
         if settings.isPE:
             go("models/RaspberryPi.txt")
         else:
-            from tkFileDialog import askopenfilename
-            from Tkinter import *
+            if int(sys.version[0]) < 3:
+                from tkFileDialog import askopenfilename
+                from Tkinter import *
+            else:
+                from tkinter.filedialog import askopenfilename
+                from tkinter import *
             master = Tk()
             master.wm_title("render")
             master.attributes("-topmost", True)
