@@ -31,6 +31,9 @@ PrivilegesRequired=lowest
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
+[Types]
+Name: "custom"; Description: "Custom installation"; Flags: iscustom
+
 [Files]
 Source: "python2-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: confirmoverwrite recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python27\Scripts
 Source: "python3-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: confirmoverwrite recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python3\Scripts
@@ -47,16 +50,16 @@ Source: "py27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createall
 Source: "py3\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python3\Interpreter
 
 [Components]
-Name: "Mod"; Description: "Raspberry Jam Mod"; Types: full compact custom
-Name: "Python"; Description: "Python interpreter and scripts";  Types: custom compact full
+Name: "Mod"; Description: "Raspberry Jam Mod"; Types: custom
+Name: "Python"; Description: "Python interpreter and scripts";  Types: custom 
+Name: "Python\Python3"; Description: "Python 3.x"; Flags: exclusive;  Types: custom 
+Name: "Python\Python3\Scripts"; Description: "Scripts";  Types: custom 
+Name: "Python\Python3\Interpreter"; Description: "Interpreter";  Types: custom 
+Name: "Python\Python3\Interpreter\Config"; Description: "Configure mod for interpreter";  Types: custom 
 Name: "Python\Python27"; Description: "Python 2.7"; Flags: exclusive
+Name: "Python\Python27\Scripts"; Description: "Scripts"
 Name: "Python\Python27\Interpreter"; Description: "Interpreter"
 Name: "Python\Python27\Interpreter\Config"; Description: "Configure mod for interpreter"
-Name: "Python\Python27\Scripts"; Description: "Scripts"
-Name: "Python\Python3"; Description: "Python 3.x"; Flags: exclusive;  Types: custom compact full
-Name: "Python\Python3\Interpreter"; Description: "Interpreter";  Types: custom compact full
-Name: "Python\Python3\Interpreter\Config"; Description: "Configure mod for interpreter";  Types: custom compact full
-Name: "Python\Python3\Scripts"; Description: "Scripts";  Types: custom compact full
 
 [InstallDelete]
 Type: files; Name: "{userappdata}\.minecraft\mods\RaspberryJamMod*.jar"; Components: Mod
