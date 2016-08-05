@@ -32,8 +32,8 @@ PrivilegesRequired=lowest
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "python2-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python27\Scripts
-Source: "python3-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python3\Scripts
+Source: "python2-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: confirmoverwrite recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python27\Scripts
+Source: "python3-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: confirmoverwrite recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python3\Scripts
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8\"
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.8\"
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.9\"
@@ -41,10 +41,10 @@ Source: "19\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\
 Source: "194\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.9.4\"
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10\"
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10.2\"
-Source: "config27\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs; Components: Python\Python27\Config
-Source: "config3\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs; Components: Python\Python27\Config
-Source: "py27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs; Components: Python\Python27\Interpreter
-Source: "py3\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsubdirs recursesubdirs; Components: Python\Python3\Interpreter
+Source: "config27\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs confirmoverwrite; Components: Python\Python27\Config
+Source: "config3\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs confirmoverwrite; Components: Python\Python27\Config
+Source: "py27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python27\Interpreter
+Source: "py3\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python3\Interpreter
 
 [Components]
 Name: "Mod"; Description: "Raspberry Jam Mod"; Types: full compact custom
@@ -55,8 +55,8 @@ Name: "Python\Python27\Interpreter"; Description: "Interpreter"
 Name: "Python\Python3\Interpreter"; Description: "Interpreter";  Types: custom compact full
 Name: "Python\Python27\Scripts"; Description: "Scripts"
 Name: "Python\Python3\Scripts"; Description: "Scripts";  Types: custom compact full
-Name: "Python\Python27\Config"; Description: "Overwrite mod configuration"
-Name: "Python\Python3\Config"; Description: "Overwrite mod configuration";  Types: custom compact full
+Name: "Python\Python27\Interpreter\Config"; Description: "Configure mod for interpreter"
+Name: "Python\Python3\Interpreter\Config"; Description: "Configure mod for interpreter";  Types: custom compact full
 
 [InstallDelete]
 Type: files; Name: "{userappdata}\.minecraft\mods\RaspberryJamMod*.jar"; Components: Mod
