@@ -5,7 +5,11 @@ from block import Block
 import math
 from os import environ
 from util import flatten,floorFlatten
-import security
+try:
+    import security
+except:
+    AUTHENTICATION_USERNAME=None
+    AUTHENTICATION_PASSWORD=None
 
 """ Minecraft PI low level api v0.1_1
 
