@@ -50,13 +50,13 @@ Source: "py3\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsu
 Name: "Mod"; Description: "Raspberry Jam Mod"; Types: full compact custom
 Name: "Python"; Description: "Python interpreter and scripts";  Types: custom compact full
 Name: "Python\Python27"; Description: "Python 2.7"; Flags: exclusive
-Name: "Python\Python3"; Description: "Python 3.x"; Flags: exclusive;  Types: custom compact full
 Name: "Python\Python27\Interpreter"; Description: "Interpreter"
-Name: "Python\Python3\Interpreter"; Description: "Interpreter";  Types: custom compact full
-Name: "Python\Python27\Scripts"; Description: "Scripts"
-Name: "Python\Python3\Scripts"; Description: "Scripts";  Types: custom compact full
 Name: "Python\Python27\Interpreter\Config"; Description: "Configure mod for interpreter"
+Name: "Python\Python27\Scripts"; Description: "Scripts"
+Name: "Python\Python3"; Description: "Python 3.x"; Flags: exclusive;  Types: custom compact full
+Name: "Python\Python3\Interpreter"; Description: "Interpreter";  Types: custom compact full
 Name: "Python\Python3\Interpreter\Config"; Description: "Configure mod for interpreter";  Types: custom compact full
+Name: "Python\Python3\Scripts"; Description: "Scripts";  Types: custom compact full
 
 [InstallDelete]
 Type: files; Name: "{userappdata}\.minecraft\mods\RaspberryJamMod*.jar"; Components: Mod
@@ -77,6 +77,7 @@ Name: "{userdesktop}\IDLE for Minecraft Python 3"; Filename: "{userappdata}\.min
 Name: "{group}\IDLE for Minecraft Python 2.7"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python27\Lib\idlelib\idle.py"; Components: Python\Python27\Interpreter; Tasks: Start
 Name: "{group}\IDLE for Minecraft Python 3"; Filename: "{userappdata}\.minecraft\python3\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python3\Lib\idlelib\idle.py"; Components: Python\Python3\Interpreter; Tasks: Start
 Name: "{group}\Uninstall RaspberryJamMod files"; Filename: "{uninstallexe}"; Tasks: Start
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; Tasks: Start
 
 [Tasks]
 Name: "Desktop"; Description: "Desktop shortcut"; Components: Python\Python27\Interpreter Python\Python3\Interpreter
