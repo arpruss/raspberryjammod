@@ -53,11 +53,11 @@ Source: "config3\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createal
 Name: "Mod"; Description: "Raspberry Jam Mod"; Types: custom
 Name: "Python"; Description: "Python interpreter and scripts";  Types: custom 
 Name: "Python\Python3"; Description: "Python 3.x"; Flags: exclusive;  Types: custom 
-Name: "Python\Python3\Scripts"; Description: "Scripts";  Types: custom 
+Name: "Python\Python3\Scripts"; Description: "Scripts [overwriting local changes]";  Types: custom 
 Name: "Python\Python3\Interpreter"; Description: "Interpreter";  Types: custom 
 Name: "Python\Python3\Interpreter\Config"; Description: "Configure mod for interpreter";  Types: custom 
 Name: "Python\Python27"; Description: "Python 2.7"; Flags: exclusive
-Name: "Python\Python27\Scripts"; Description: "Scripts"
+Name: "Python\Python27\Scripts"; Description: "Scripts [overwriting local changes]"
 Name: "Python\Python27\Interpreter"; Description: "Interpreter"
 Name: "Python\Python27\Interpreter\Config"; Description: "Configure mod for interpreter"
 
