@@ -23,8 +23,8 @@ DisableDirPage=yes
 DefaultGroupName={#MyAppName}
 OutputDir=build\
 OutputBaseFilename=RaspberryJamMod-Installer
-Compression=lzma2
 SolidCompression=yes
+Compression=lzma2/ultra64
 LicenseFile=py27\LICENSE.txt
 PrivilegesRequired=lowest
 
@@ -35,7 +35,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "custom"; Description: "Custom installation"; Flags: iscustom
 
 [Files]
-Source: "python2-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: createallsubdirs uninsneveruninstall; Components: Python\Python27\Scripts
+Source: "python2-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python27\Scripts
 Source: "python3-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python3\Scripts
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8\"
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.8\"
@@ -44,10 +44,10 @@ Source: "19\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\
 Source: "194\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.9.4\"
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10\"
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10.2\"
-Source: "config27\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs confirmoverwrite; Components: Python\Python27\Config
-Source: "config3\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs confirmoverwrite; Components: Python\Python27\Config
 Source: "py27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python27\Interpreter
 Source: "py3\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python3\Interpreter
+Source: "config27\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs confirmoverwrite; Components: Python\Python27\Interpreter\Config
+Source: "config3\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs confirmoverwrite; Components: Python\Python27\Interpreter\Config
 
 [Components]
 Name: "Mod"; Description: "Raspberry Jam Mod"; Types: custom
@@ -71,7 +71,7 @@ Type: files; Name: "{userappdata}\.minecraft\mods\1.9.4\RaspberryJamMod*.jar"; C
 Type: files; Name: "{userappdata}\.minecraft\mods\1.10\RaspberryJamMod*.jar"; Components: Mod
 
 [Messages]
-WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT 1.8/1.8.8/1.8.9/1.9/1.9.4/1.10/1.10.2 ALREADY INSTALLED. Otherwise, this won't work.
+WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT (versions 1.8-1.10.2 supported) ALREADY INSTALLED. Otherwise, this won't work.
 ConfirmUninstall=Are you sure you want to completely remove %1 and all of its components? (Note that the scripts in the mcpipy folder of your Minecraft folder should NOT get deleted, however, in case you made changes.)
 
 [Icons]
