@@ -113,10 +113,10 @@ if __name__=='__main__':
     else:
         if int(version[0]) < 3:
             from tkFileDialog import askopenfilename
-            from Tkinter import *
+            from Tkinter import Tk
         else:
             from tkinter.filedialog import askopenfilename
-            from tkinter import *
+            from tkinter import Tk
         master = Tk()
         master.attributes("-topmost", True)
         path = askopenfilename(filetypes=['schematic {*.schematic}'],title="Open")

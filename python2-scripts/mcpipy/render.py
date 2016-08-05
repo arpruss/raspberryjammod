@@ -841,34 +841,34 @@ if __name__ == "__main__":
         else:
             if int(sys.version[0]) < 3:
                 from tkFileDialog import askopenfilename
-                from Tkinter import *
+                import Tkinter as tkinter
             else:
                 from tkinter.filedialog import askopenfilename
-                from tkinter import *
-            master = Tk()
+                import tkinter as tkinter
+            master = tkinter.Tk()
             master.wm_title("render")
             master.attributes("-topmost", True)
-            Label(master, text='Size').grid(row=0)
-            size = Entry(master)
+            tkinter.Label(master, text='Size').grid(row=0)
+            size = tkinter.Entry(master)
             size.grid(row=0,column=1)
-            size.delete(0,END)
-            Label(master, text='Yaw').grid(row=1)
-            yaw = Entry(master)
+            size.delete(0,tkinter.END)
+            tkinter.Label(master, text='Yaw').grid(row=1)
+            yaw = tkinter.Entry(master)
             yaw.grid(row=1,column=1)
-            yaw.delete(0,END)
+            yaw.delete(0,tkinter.END)
             yaw.insert(0,"0")
-            Label(master, text='Pitch:').grid(row=2)
-            pitch = Entry(master)
+            tkinter.Label(master, text='Pitch:').grid(row=2)
+            pitch = tkinter.Entry(master)
             pitch.grid(row=2,column=1)
-            pitch.delete(0,END)
+            pitch.delete(0,tkinter.END)
             pitch.insert(0,"0")
-            Label(master, text='Roll:').grid(row=3)
-            roll = Entry(master)
+            tkinter.Label(master, text='Roll:').grid(row=3)
+            roll = tkinter.Entry(master)
             roll.grid(row=3,column=1)
-            roll.delete(0,END)
+            roll.delete(0,tkinter.END)
             roll.insert(0,"0")
-            clearing = IntVar()
-            c = Checkbutton(master, text="Clear area", variable = clearing)
+            clearing = tkinter.IntVar()
+            c = tkinter.Checkbutton(master, text="Clear area", variable = clearing)
             c.grid(row=4,column=0,columnspan=2)
             c.select()
 
@@ -884,9 +884,9 @@ if __name__ == "__main__":
                 else:
                      master.destroy()
 
-            b = Button(master, text="Select file and go",command = selectFileAndGo)
+            b = tkinter.Button(master, text="Select file and go",command = selectFileAndGo)
             b.grid(row=5,column=0,columnspan=2,rowspan=2)
 
-            mainloop()
+            tkinter.mainloop()
     else:
         go(os.path.dirname(os.path.realpath(sys.argv[0])) + "/" + "models/" + sys.argv[1] + ".txt", sys.argv[2:])

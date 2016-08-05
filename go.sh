@@ -25,3 +25,4 @@ cp 110/build/libs/RaspberryJamMod.jar build/out/1.10/
 cp 110/build/libs/RaspberryJamMod.jar build/out/1.10.2/
 (cd build/out && zip -9r ../mods *)
 ./makesetup.sh
+cp python[23]-scripts.zip build/

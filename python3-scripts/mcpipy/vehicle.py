@@ -33,10 +33,10 @@ import re
 def getSavePath(directory, extension):
     if int(sys.version[0]) < 3:
         from tkFileDialog import asksaveasfilename
-        from Tkinter import *
+        from Tkinter import Tk
     else:
         from tkinter.filedialog import asksaveasfilename
-        from tkinter import *
+        from tkinter import Tk
     master = Tk()
     master.attributes("-topmost", True)
     path = asksaveasfilename(initialdir=directory,filetypes=['vehicle {*.'+extension+'}'],defaultextension="."+extension,title="Save")
@@ -46,10 +46,10 @@ def getSavePath(directory, extension):
 def getLoadPath(directory, extension):
     if int(sys.version[0]) < 3:
         from tkFileDialog import askopenfilename
-        from Tkinter import *
+        from Tkinter import Tk
     else:
         from tkinter.filedialog import askopenfilename
-        from tkinter import *
+        from tkinter import Tk
     master = Tk()
     master.attributes("-topmost", True)
     path = askopenfilename(initialdir=directory,filetypes=['vehicle {*.'+extension+'}'],title="Open")

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RaspberryJamMod"
-#define MyAppVersion "0.75"
+#define MyAppVersion "0.76"
 #define MyAppPublisher "Omega Centauri Software"
 #define MyAppURL "http://github.com/arpruss/raspberryjammod"
 
@@ -46,8 +46,8 @@ Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10.2\"
 Source: "py27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python27\Interpreter
 Source: "py3\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python3\Interpreter
-Source: "config27\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs confirmoverwrite; Components: Python\Python27\Interpreter\Config
-Source: "config3\*"; DestDir: "{userappdata}\.minecraft\config"; Flags: createallsubdirs recursesubdirs confirmoverwrite; Components: Python\Python27\Interpreter\Config
+Source: "config27\raspberryjammod.cfg"; DestDir: "{userappdata}\.minecraft\config"; Flags: confirmoverwrite; Components: Python\Python27\Interpreter\Config
+Source: "config3\raspberryjammod.cfg"; DestDir: "{userappdata}\.minecraft\config"; Flags: confirmoverwrite; Components: Python\Python3\Interpreter\Config
 
 [Components]
 Name: "Mod"; Description: "Raspberry Jam Mod"; Types: custom
@@ -79,8 +79,7 @@ Name: "{userdesktop}\IDLE for Minecraft Python 2.7"; Filename: "{userappdata}\.m
 Name: "{userdesktop}\IDLE for Minecraft Python 3"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python3\Lib\idlelib\idle.py"; Components: Python\Python3\Interpreter; Tasks: Desktop
 Name: "{group}\IDLE for Minecraft Python 2.7"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python27\Lib\idlelib\idle.py"; Components: Python\Python27\Interpreter; Tasks: Start
 Name: "{group}\IDLE for Minecraft Python 3"; Filename: "{userappdata}\.minecraft\python3\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python3\Lib\idlelib\idle.py"; Components: Python\Python3\Interpreter; Tasks: Start
-Name: "{group}\Uninstall RaspberryJamMod files"; Filename: "{uninstallexe}"; Tasks: Start
-Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; Tasks: Start
+Name: "{group}\Uninstall RaspberryJamMod"; Filename: "{uninstallexe}"; Tasks: Start
 
 [Tasks]
 Name: "Desktop"; Description: "Desktop shortcut"; Components: Python\Python27\Interpreter Python\Python3\Interpreter

@@ -169,4 +169,5 @@ if __name__ == "__main__":
         for h in hits:
             v = tuple(x for x in h.pos)
             copy(v,airOnly=True)
-            copy(addVec(v,faces[h.face]))
+            if h.face < 7:
+                copy(addVec(v,faces[h.face]))

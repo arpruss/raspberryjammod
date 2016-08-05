@@ -1142,6 +1142,8 @@ public class APIHandler {
 		}
 
 		private int numericFace(EnumFacing face) {
+            if (face == null)
+                return 7;
 			switch(face) {
 			case DOWN:
 				return 0;
