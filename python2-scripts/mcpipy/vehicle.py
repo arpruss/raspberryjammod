@@ -13,6 +13,7 @@
    d: liquids don't count as terrain
    l: load vehicle from vehicles/name.py
    s: save vehicle to vehicles/name.py and quit
+   r: scan a rectangular region, specified by right tapping with the sword on extrema
 
  The vehicle detection algorithm works as follows:
    first, search for nearest non-terrain block within distance SCAN_DISTANCE of the player
@@ -472,6 +473,10 @@ if __name__ == '__main__':
     noInitialRotate = False
 
     if len(sys.argv)>1:
+        m = re.match(".*m([0-9]+).*",sys.argv[1])
+        if m:
+            Vehicle.MAX_DISTANCE = int(m.group(1))            
+            print Vehicle.MAX_DISTANCE
         for x in sys.argv[1]:
             if x == 'b':
                 bubble = True

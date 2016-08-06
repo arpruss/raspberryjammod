@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{ad0b690c-a698-4ce0-9b50-3069e7e8660d}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>scan.py</StartupFile>
+    <StartupFile>klein2.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -14,6 +14,7 @@
     <InterpreterId />
     <InterpreterVersion />
     <IsWindowsApplication>False</IsWindowsApplication>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -22,82 +23,62 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="borromean.py" />
-    <Compile Include="donut.py" />
-    <Compile Include="dragoncurve.py" />
-    <Compile Include="drawing.py" />
-    <Compile Include="glasscube.py" />
-    <Compile Include="hilbert.py" />
-    <Compile Include="klein.py" />
-    <Compile Include="klein2.py" />
-    <Compile Include="knot.py" />
-    <Compile Include="knot2.py" />
-    <Compile Include="lforest.py" />
-    <Compile Include="lsystem.py" />
-    <Compile Include="ltree.py" />
-    <Compile Include="mandelbrot.py" />
-    <Compile Include="mc.py" />
-    <Compile Include="mcdragoncurve.py" />
-    <Compile Include="mcpi\block.py" />
-    <Compile Include="mcpi\connection.py" />
-    <Compile Include="mcpi\entity.py" />
-    <Compile Include="mcpi\event.py" />
-    <Compile Include="mcpi\minecraft.py" />
-    <Compile Include="mcpi\util.py" />
-    <Compile Include="mcpi\vec3.py" />
-    <Compile Include="mcpi\__init__.py" />
-    <Compile Include="mcturtle.py" />
-    <Compile Include="mengersponge.py" />
-    <Compile Include="sphere.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="NeuroPy\NeuroPy.py" />
-    <Compile Include="NeuroPy\__init__.py" />
-    <Compile Include="polyhedron.py" />
-    <Compile Include="render\ds9.py" />
-    <Compile Include="render\minecraft-renderObj.py" />
-    <Compile Include="render\minecraft-renderObjv2.py" />
-    <Compile Include="render\minecraft\block.py" />
-    <Compile Include="render\minecraft\connection.py" />
-    <Compile Include="render\minecraft\event.py" />
-    <Compile Include="render\minecraft\minecraft.py" />
-    <Compile Include="render\minecraft\util.py" />
-    <Compile Include="render\minecraft\vec3.py" />
-    <Compile Include="render\minecraft\__init__.py" />
-    <Compile Include="render\render.py" />
-    <Compile Include="scan.py" />
-    <Compile Include="server.py" />
-    <Compile Include="sierpinski3d.py" />
-    <Compile Include="simpletree.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="snowflake.py" />
-    <Compile Include="spacefill.py" />
-    <Compile Include="squarecurve.py" />
-    <Compile Include="star.py" />
-    <Compile Include="symmetry.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="turtle.py" />
-    <Compile Include="turtledonut.py" />
-    <Compile Include="vehicle.py" />
+    <None Include="borromean.py" />
+    <None Include="donut.py" />
+    <None Include="dragoncurve.py" />
+    <None Include="drawing.py" />
+    <None Include="glasscube.py" />
+    <None Include="hilbert.py" />
+    <None Include="klein.py" />
+    <None Include="klein2.py" />
+    <None Include="knot.py" />
+    <None Include="knot2.py" />
+    <None Include="lforest.py" />
+    <None Include="lsystem.py" />
+    <None Include="ltree.py" />
+    <None Include="mandelbrot.py" />
+    <None Include="mc.py" />
+    <None Include="mcdragoncurve.py" />
+    <None Include="mcpi\block.py" />
+    <None Include="mcpi\connection.py" />
+    <None Include="mcpi\entity.py" />
+    <None Include="mcpi\event.py" />
+    <None Include="mcpi\minecraft.py" />
+    <None Include="mcpi\util.py" />
+    <None Include="mcpi\vec3.py" />
+    <None Include="mcpi\__init__.py" />
+    <None Include="mcturtle.py" />
+    <None Include="mengersponge.py" />
+    <None Include="sphere.py" />
+    <None Include="NeuroPy\NeuroPy.py" />
+    <None Include="NeuroPy\__init__.py" />
+    <None Include="polyhedron.py" />
+    <None Include="render\ds9.py" />
+    <None Include="render\minecraft-renderObj.py" />
+    <None Include="render\minecraft-renderObjv2.py" />
+    <None Include="render\minecraft\block.py" />
+    <None Include="render\minecraft\connection.py" />
+    <None Include="render\minecraft\event.py" />
+    <None Include="render\minecraft\minecraft.py" />
+    <None Include="render\minecraft\util.py" />
+    <None Include="render\minecraft\vec3.py" />
+    <None Include="render\minecraft\__init__.py" />
+    <None Include="render\render.py" />
+    <None Include="scan.py" />
+    <None Include="server.py" />
+    <None Include="sierpinski3d.py" />
+    <None Include="simpletree.py" />
+    <None Include="snowflake.py" />
+    <None Include="spacefill.py" />
+    <None Include="squarecurve.py" />
+    <None Include="star.py" />
+    <None Include="symmetry.py" />
+    <None Include="turtle.py" />
+    <None Include="turtledonut.py" />
+    <None Include="vehicle.py" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="mcpi\mcpi_protocol_spec.txt" />
-    <Content Include="NeuroPy\README.txt" />
-    <Content Include="render\blockstructure_tex_0.jpg" />
-    <Content Include="render\cessna.png" />
-    <Content Include="render\NY_LIL.png" />
-    <Content Include="render\RaspberryPi.png" />
-    <Content Include="render\shuttle.png" />
-    <Content Include="render\skyscraper.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="backup" />
-    <Folder Include="mcpi" />
-    <Folder Include="NeuroPy" />
-    <Folder Include="render" />
-    <Folder Include="render\minecraft" />
+    <Folder Include="mcpi\" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
