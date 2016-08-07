@@ -100,7 +100,7 @@ Name: "{userdesktop}\IDLE for Minecraft Python 2.7"; Filename: "{userappdata}\.m
 Name: "{userdesktop}\IDLE for Minecraft Python 3"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python3\Lib\idlelib\idle.py"; Components: Python\Python3\Interpreter; Tasks: Desktop
 Name: "{group}\IDLE for Minecraft Python 2.7"; Filename: "{userappdata}\.minecraft\python27\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python27\Lib\idlelib\idle.py"; Components: Python\Python27\Interpreter; Tasks: Start
 Name: "{group}\IDLE for Minecraft Python 3"; Filename: "{userappdata}\.minecraft\python3\pythonw.exe"; WorkingDir: "{userappdata}\.minecraft\mcpipy"; IconFilename: "idlemcpipy"; Parameters: "..\Python3\Lib\idlelib\idle.py"; Components: Python\Python3\Interpreter; Tasks: Start
-Name: "{group}\Uninstall RaspberryJamMod"; Filename: "{uninstallexe}"; Tasks: Start
+Name: "{group}\Uninstall RaspberryJamMod"; Filename: "{uninstallexe}"; Flags: excludefromshowinnewinstall; Tasks: Start
 
 [Tasks]
 Name: "Desktop"; Description: "Desktop shortcut"; Components: Python\Python27\Interpreter Python\Python3\Interpreter
