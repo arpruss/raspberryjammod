@@ -34,6 +34,27 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Types]
 Name: "custom"; Description: "Custom installation"; Flags: iscustom
 
+[Registry]
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython"; Flags: uninsdeletekey; Components: Python\Python27\Interpreter Python\Python3\Interpreter
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\2.7"; Flags: uninsdeletekey; Components: Python\Python27\Interpreter 
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\3"; Flags: uninsdeletekey; Components: Python\Python3\Interpreter 
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\2.7"; ValueType: string; ValueName: "DisplayName"; ValueData: "RaspberryJamMod bundled Python 2.7"; Flags: uninsdeletekey; Components: Python\Python27\Interpreter
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\3"; ValueType: string; ValueName: "DisplayName"; ValueData: "RaspberryJamMod bundled Python 3.x"; Flags: uninsdeletekey; Components: Python\Python3\Interpreter
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\2.7"; ValueType: string; ValueName: "Version"; ValueData: "2.7"; Flags: uninsdeletekey; Components: Python\Python27\Interpreter
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\3"; ValueType: string; ValueName: "Version"; ValueData: "3.x"; Flags: uninsdeletekey; Components: Python\Python3\Interpreter
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\2.7"; ValueType: string; ValueName: "SysVersion"; ValueData: "2.7.10"; Flags: uninsdeletekey; Components: Python\Python27\Interpreter
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\3"; ValueType: string; ValueName: "SysVersion"; ValueData: "3.5.2"; Flags: uninsdeletekey; Components: Python\Python3\Interpreter
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\2.7"; ValueType: string; ValueName: "SupportUrl"; ValueData: "https://github.com/arpruss/raspberryjammod"; Flags: uninsdeletekey; Components: Python\Python27\Interpreter 
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\3"; ValueType: string; ValueName: "SupportUrl"; ValueData: "https://github.com/arpruss/raspberryjammod"; Flags: uninsdeletekey; Components: Python\Python3\Interpreter
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\2.7"; ValueType: string; ValueName: "SysArchitecture"; ValueData: "32bit"; Flags: uninsdeletekey; Components: Python\Python27\Interpreter 
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\3"; ValueType: string; ValueName: "SysArchitecture"; ValueData: "32bit"; Flags: uninsdeletekey; Components: Python\Python3\Interpreter
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\2.7\InstallPath"; Flags: uninsdeletekey; ValueType: string; ValueData: "{userappdata}\.minecraft\python27"; Components: Python\Python27\Interpreter 
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\3\InstallPath"; Flags: uninsdeletekey; ValueType: string; ValueData: "{userappdata}\.minecraft\python3"; Components: Python\Python3\Interpreter 
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\2.7\InstallPath"; Flags: uninsdeletekey; ValueType: string; ValueName: "ExecutablePath"; ValueData: "{userappdata}\.minecraft\python27\python.exe"; Components: Python\Python27\Interpreter 
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\3\InstallPath"; Flags: uninsdeletekey; ValueType: string; ValueName: "ExecutablePath"; ValueData: "{userappdata}\.minecraft\python3\python.exe"; Components: Python\Python3\Interpreter 
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\2.7\InstallPath"; Flags: uninsdeletekey; ValueType: string; ValueName: "WindowedExecutablePath"; ValueData: "{userappdata}\.minecraft\python27\pythonw.exe"; Components: Python\Python27\Interpreter 
+Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\3\InstallPath"; Flags: uninsdeletekey; ValueType: string; ValueName: "WindowedExecutablePath"; ValueData: "{userappdata}\.minecraft\python3\pythonw.exe"; Components: Python\Python3\Interpreter 
+
 [Files]
 Source: "python2-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python27\Scripts
 Source: "python3-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python3\Scripts
