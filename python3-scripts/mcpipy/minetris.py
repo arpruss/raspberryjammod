@@ -20,6 +20,7 @@ HEIGHT = 20
 WIDTH = 10
 BORDER = WOOL_BLACK
 BACKGROUND = STAINED_GLASS_BLACK
+DISTANCE = 14
 
 DELAYS = ( 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.05)
 
@@ -129,7 +130,8 @@ def drawBoard():
     mc.setBlocks(left-1, bottom, plane, left, bottom+HEIGHT-1, plane, BORDER)
     mc.setBlocks(left+WIDTH, bottom, plane, left+WIDTH, bottom+HEIGHT-1, plane, BORDER)
     mc.setBlocks(left-1, bottom-1, plane-1, left+WIDTH, bottom+HEIGHT, plane-1, BACKGROUND)
-    mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane, AIR)
+#    mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane, AIR)
+    mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane+DISTANCE, AIR)
     
 def movePiece(oldX, oldY, oldPieceState, x, y, pieceState):
     new = set(pieceState.getCoordinates(x, y))
@@ -371,10 +373,10 @@ if __name__=="__main__":
     playerPos = mc.player.getTilePos()
     mc.player.setRotation(180)
     mc.player.setPitch(-26)
-    mc.player.setTilePos(playerPos.x, playerPos.y, playerPos.z + 14)
+    mc.player.setTilePos(playerPos.x, playerPos.y, playerPos.z)
 
     left = playerPos.x - WIDTH // 2
-    plane = playerPos.z
+    plane = playerPos.z - DISTANCE
     bottom = playerPos.y + 1
 
     while True:

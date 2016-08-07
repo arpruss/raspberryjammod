@@ -6,7 +6,7 @@ import math
 from os import environ
 from util import flatten,floorFlatten
 try:
-    import security
+    from security import AUTHENTICATION_PASSWORD,AUTHENTICATION_USERNAME
 except:
     AUTHENTICATION_USERNAME=None
     AUTHENTICATION_PASSWORD=None
@@ -190,8 +190,8 @@ class Minecraft:
         else:
             self.conn = Connection()
 
-        if security.AUTHENTICATION_USERNAME and security.AUTHENTICATION_PASSWORD:
-            self.conn.authenticate(security.AUTHENTICATION_USERNAME, security.AUTHENTICATION_PASSWORD)
+        if AUTHENTICATION_USERNAME and AUTHENTICATION_PASSWORD:
+            self.conn.authenticate(AUTHENTICATION_USERNAME, AUTHENTICATION_PASSWORD)
 
         self.camera = CmdCamera(self.conn)
         self.entity = CmdEntity(self.conn)
@@ -207,9 +207,9 @@ class Minecraft:
                     self.playerId = self.getPlayerId(environ['MINECRAFT_PLAYER_NAME'])
                     self.player = CmdPlayer(self.conn,playerId=self.playerId)
                 except:
-                    if security.AUTHENTICATION_USERNAME:
+                    if AUTHENTICATION_USERNAME:
                         try:
-                            self.playerId = self.getPlayerId(security.AUTHENTICATION_USERNAME)
+                            self.playerId = self.getPlayerId(AUTHENTICATION_USERNAME)
                             self.player = CmdPlayer(self.conn,playerId=self.playerId)
                         except:
                             self.player = CmdPlayer(self.conn)
