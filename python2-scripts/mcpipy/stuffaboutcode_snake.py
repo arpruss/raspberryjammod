@@ -1,3 +1,4 @@
+from __future__ import print_function
 #www.stuffaboutcode.com
 #Raspberry Pi, Minecraft Snake
 
@@ -220,5 +221,5 @@ if __name__ == "__main__":
             #move the snake
             playing = snake.move()
     except KeyboardInterrupt:
-        print "stopped"
+        print("stopped")
     

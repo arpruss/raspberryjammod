@@ -7,6 +7,7 @@
 # http://www.stuffaboutcode.com/2013/02/raspberry-pi-minecraft-analogue-clock.html
 
 #import the minecraft.py module from the minecraft directory
+from __future__ import print_function
 import mcpi.minecraft as minecraft
 #import minecraft block module
 import mcpi.block as block
@@ -163,7 +164,7 @@ if __name__ == "__main__":
             lastTime = nowTime
             time.sleep(0.5)
     except KeyboardInterrupt:
-        print "stopped"
+        print("stopped")
 
 
 #Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:

@@ -6,6 +6,7 @@
 # mcpipy.com retrieved from URL below, written by davef21370
 # https://github.com/brooksc/mcpipy/blob/master/davef21370_maze.py
 
+from __future__ import print_function
 import mcpi.minecraft as minecraft
 import mcpi.block as block
 import sys, random
@@ -17,7 +18,7 @@ import server
 try:
     mc = minecraft.Minecraft.create(server.address)
 except:
-    print "Cannot connect to Minecraft."
+    print("Cannot connect to Minecraft.")
     sys.exit(0)
 
 # Create a function for picking a random direction.

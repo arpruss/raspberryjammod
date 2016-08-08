@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 # WARNING: If you're running RJM on a server, do NOT include this script server-side for security reasons.
 #
@@ -27,7 +28,7 @@ def inputLine(prompt):
         chats = mc.events.pollChatPosts()
         for c in chats:
             if c.entityId == playerId:
-                print c.message
+                print(c.message)
                 if c.message == 'quit':
                     return 'quit()'
                 elif c.message == ' ':

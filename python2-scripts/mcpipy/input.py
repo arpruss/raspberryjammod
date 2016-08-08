@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 # Windows-only (right now)
 # Copyright (c) 2016 Alexander Pruss. MIT License
@@ -145,6 +146,6 @@ if __name__ == '__main__':
             break
         now,last = getPressState(ord(' '))
         if now or last:
-            print now, last
+            print(now, last)
         sleep(0.01)
         

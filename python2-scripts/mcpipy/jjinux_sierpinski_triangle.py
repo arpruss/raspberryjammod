@@ -8,6 +8,7 @@
 See: http://jjinux.blogspot.com/2013/05/drawing-sierpinskis-triangle-in.html
 
 """
+from __future__ import print_function
 
 import random
 

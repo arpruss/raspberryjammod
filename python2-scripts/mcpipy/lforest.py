@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 # Code under the MIT license by Alexander Pruss
 #
@@ -98,7 +99,7 @@ while tryCount < MAX_TRIES:
     positions.append((x,z))
     tryCount = 0
     t.goto(x,cy,z)
-    print x,cy,z
+    print(x,cy,z)
     t.push()
     t.roll(random.uniform(0,30))
     tree()

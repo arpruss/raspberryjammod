@@ -1,4 +1,5 @@
-﻿#
+﻿from __future__ import print_function
+#
 # Import .schematic file
 # Copyright (c) 2015 Alexander Pruss
 #
@@ -103,7 +104,7 @@ def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,c
 #                        if b==33: print x0+x,y0+y,z0+z,x,y,z,b,d
                         mc.setBlock(x0+x,y0+y,z0+z,b,d)
 
-    print "done"
+    print("done")
     # TODO: entities
     return corner1,corner2
 

@@ -22,6 +22,7 @@
    in bubble mode, add the largest set of air blocks, excluding diagonal connections, or a small bubble about the
      player if the the vehicle is not airtight
 """
+from __future__ import print_function
 
 from mcpi.minecraft import *
 from mcpi.block import *
@@ -476,7 +477,7 @@ if __name__ == '__main__':
         m = re.match(".*m([0-9]+).*",sys.argv[1])
         if m:
             Vehicle.MAX_DISTANCE = int(m.group(1))            
-            print Vehicle.MAX_DISTANCE
+            print(Vehicle.MAX_DISTANCE)
         for x in sys.argv[1]:
             if x == 'b':
                 bubble = True

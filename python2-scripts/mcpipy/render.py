@@ -23,6 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from __future__ import print_function
 
 from zipfile import ZipFile
 import sys
@@ -464,7 +465,7 @@ class Mesh(object):
                  self.output[v] = b
              self.setBlock = setBlock
              def message(m):
-                 print m
+                 print(m)
              self.message = message
 
          self.rewrite = rewrite

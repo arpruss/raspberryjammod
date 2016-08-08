@@ -14,6 +14,7 @@
 
 
 #import the minecraft.py module from the minecraft directory
+from __future__ import print_function
 import mcpi.minecraft as minecraft
 #import minecraft block module
 import mcpi.block as block
@@ -32,7 +33,7 @@ def new_direction(old_direction):
     direction = old_direction
     while direction == old_direction and direction != direction_opposite[direction]:
         direction = random.randint(0, max_direction)
-    print "changing direction from %s to %s" % (directions[old_direction], directions[direction])
+    print("changing direction from %s to %s" % (directions[old_direction], directions[direction]))
     return direction
 
 if __name__ == "__main__":
@@ -58,7 +59,7 @@ if __name__ == "__main__":
 
         direction = new_direction(direction)
         duration = random.randint(min_distance, max_distance)
-        print "New Roll: %s direction (%d) for %s more cycles!" % (directions[direction], direction,  duration)
+        print("New Roll: %s direction (%d) for %s more cycles!" % (directions[direction], direction,  duration))
 #        time.sleep(3)
         while duration > 0:
             mc.setBlock(x, y, z, block.TNT)
@@ -120,8 +121,8 @@ if __name__ == "__main__":
                     direction = new_direction(direction)
                     y += 2
             else:
-                print "Error! %s" % (direction)
+                print("Error! %s" % (direction))
 
             duration -= 1
-            print "Going %s for %s more cycles" % (directions[direction],duration)
+            print("Going %s for %s more cycles" % (directions[direction],duration))
 

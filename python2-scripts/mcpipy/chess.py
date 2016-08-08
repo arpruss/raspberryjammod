@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 # Chess interface for Thomas Ahle's sunfish engine
 # Code by Alexander Pruss under the MIT license

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #www.stuffaboutcode.com
 #Raspberry Pi, Minecraft Bombs - Turn any block into a bomb!
 
