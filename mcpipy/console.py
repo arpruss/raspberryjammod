@@ -4,7 +4,7 @@ from __future__ import print_function
 #
 
 #
-# Code under the MIT license by Alexander Pruss
+# Code by Alexander Pruss and under the MIT license
 #
 # This script only works on Raspberry Jam
 #

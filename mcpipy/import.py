@@ -1,9 +1,8 @@
 ﻿from __future__ import print_function
 #
 # Import .schematic file
-# Copyright (c) 2015 Alexander Pruss
 #
-# Under MIT License
+# Code by Alexander Pruss and under the MIT license
 #
 
 from mc import *

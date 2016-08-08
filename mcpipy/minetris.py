@@ -1,6 +1,7 @@
 #
 # requires Windows (for input.py to work)
-# Copyright (c) 2016 Alexander Pruss. MIT License.
+#
+# Code by Alexander Pruss and under the MIT license
 #
 
 #
