@@ -56,8 +56,7 @@ Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\2.7\InstallPath"; F
 Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\3\InstallPath"; Flags: uninsdeletekey; ValueType: string; ValueName: "WindowedExecutablePath"; ValueData: "{userappdata}\.minecraft\python3\pythonw.exe"; Components: Python\Python3\Interpreter 
 
 [Files]
-Source: "python2-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python27\Scripts
-Source: "python3-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: recursesubdirs createallsubdirs uninsneveruninstall; Components: Python\Python3\Scripts
+Source: "python-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: recursesubdirs createallsubdirs uninsneveruninstall; Components: Scripts
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8\"
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.8\"
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.9\"
@@ -72,13 +71,12 @@ Source: "config3\raspberryjammod.cfg"; DestDir: "{userappdata}\.minecraft\config
 
 [Components]
 Name: "Mod"; Description: "Raspberry Jam Mod"; Types: custom
-Name: "Python"; Description: "Python interpreter and scripts";  Types: custom 
+Name: "Scripts"; Description: "Sample Python scripts and mcpi framework"
+Name: "Python"; Description: "Python interpreter";  Types: custom 
 Name: "Python\Python3"; Description: "Python 3.x"; Flags: exclusive;  Types: custom 
-Name: "Python\Python3\Scripts"; Description: "Scripts [overwriting local changes]";  Types: custom 
 Name: "Python\Python3\Interpreter"; Description: "Interpreter";  Types: custom 
 Name: "Python\Python3\Interpreter\Config"; Description: "Configure mod for interpreter";  Types: custom 
 Name: "Python\Python27"; Description: "Python 2.7"; Flags: exclusive
-Name: "Python\Python27\Scripts"; Description: "Scripts [overwriting local changes]"
 Name: "Python\Python27\Interpreter"; Description: "Interpreter"
 Name: "Python\Python27\Interpreter\Config"; Description: "Configure mod for interpreter"
 
