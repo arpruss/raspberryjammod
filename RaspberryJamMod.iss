@@ -56,7 +56,7 @@ Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\2.7\InstallPath"; F
 Root: HKCU; Subkey: "Software\Python\OmegaCentauri\rjmpython\3\InstallPath"; Flags: uninsdeletekey; ValueType: string; ValueName: "WindowedExecutablePath"; ValueData: "{userappdata}\.minecraft\python3\pythonw.exe"; Components: Python\Python3\Interpreter 
 
 [Files]
-Source: "python-scripts\mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: recursesubdirs createallsubdirs uninsneveruninstall; Components: Scripts
+Source: "mcpipy\*"; DestDir: "{userappdata}\.minecraft\mcpipy\"; Flags: recursesubdirs createallsubdirs uninsneveruninstall; Components: Scripts
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8\"
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.8\"
 Source: "build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.8.9\"
