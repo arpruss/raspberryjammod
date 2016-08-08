@@ -31,7 +31,7 @@ class Connection:
                  port = int(os.environ['MINECRAFT_API_PORT'])
             except KeyError:
                  port = 4711
-        if int(sys.version[0]) >= 3:
+        if sys.version_info[0] >= 3:
             self.send = self.send_python3
             self.send_flat = self.send_flat_python3
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -69,7 +69,10 @@ class Connection:
         challenge = self.sendReceive("world.getBlock",0,0,0)
         if challenge.startswith("security.challenge "):
             salt = challenge[19:].rstrip()
-            auth = md5(salt+":"+username+":"+password).hexdigest()
+            if sys.version_info[0] >= 3:
+                auth = md5((salt+":"+username+":"+password).encode("utf-8")).hexdigest()
+            else:
+                auth = md5(salt+":"+username+":"+password).hexdigest()
             self.send("security.authenticate", auth)
 
     def drain(self):
