@@ -1,12 +1,13 @@
-from connection import Connection,RequestError
-from vec3 import Vec3
-from event import BlockEvent,ChatEvent
-from block import Block
+from __future__ import absolute_import
+from .connection import Connection,RequestError
+from .vec3 import Vec3
+from .event import BlockEvent,ChatEvent
+from .block import Block
 import math
 from os import environ
-from util import flatten,floorFlatten
+from .util import flatten,floorFlatten
 try:
-    from security import AUTHENTICATION_PASSWORD,AUTHENTICATION_USERNAME
+    from .security import AUTHENTICATION_PASSWORD,AUTHENTICATION_USERNAME
 except:
     AUTHENTICATION_USERNAME=None
     AUTHENTICATION_PASSWORD=None

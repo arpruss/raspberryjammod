@@ -1,4 +1,5 @@
-import settings
+from __future__ import absolute_import
+from . import settings
 
 class Block:
     """Minecraft PI block description. Can be sent to Minecraft.setBlock/s"""

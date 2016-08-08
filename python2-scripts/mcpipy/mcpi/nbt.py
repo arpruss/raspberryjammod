@@ -21,6 +21,7 @@ Copyright (c) 2010-2013 Thomas Woolford and contributors
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 """
+from __future__ import print_function
 
 from struct import Struct, error as StructError
 from gzip import GzipFile
@@ -621,4 +622,4 @@ class NBTFile(TAG_Compound):
                     TAG_Compound.__name__, self.name, id(self))
 
 if __name__=="__main__":
-    print "NBT library"
+    print("NBT library")

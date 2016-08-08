@@ -1,4 +1,5 @@
-from vec3 import Vec3
+from __future__ import absolute_import
+from .vec3 import Vec3
 
 class BlockEvent:
     """An Event related to blocks (e.g. placed, removed, hit)"""
