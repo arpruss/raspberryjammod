@@ -1,8 +1,13 @@
+import collections
+
 class Vec3:
     def __init__(self, x=0, y=0, z=0):
-        self.x = x
-        self.y = y
-        self.z = z
+        if isinstance(x, collections.Iterable):
+            self.x, self.y, self.z = tuple(x)
+        else:
+            self.x = x
+            self.y = y
+            self.z = z
 
     def __add__(self, rhs):
         c = self.clone()

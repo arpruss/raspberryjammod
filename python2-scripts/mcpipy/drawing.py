@@ -176,7 +176,7 @@ def get2DTriangle(a,b,c):
                 maxX[p[1]] = p[0]
                 yield(p)
             elif p[0] < minX0:
-                for x in xrange(p[0],minX0):
+                for x in range(p[0],minX0):
                     yield(x,p[1])
                 minX[p[1]] = p[0]
             else:

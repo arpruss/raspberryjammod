@@ -1,5 +1,11 @@
 import collections
 import math
+from sys import version_info
+
+try:
+    basestring
+except NameError:
+    basestring = str  # compatibility for Python 3
 
 def flatten(l):
     for e in l:

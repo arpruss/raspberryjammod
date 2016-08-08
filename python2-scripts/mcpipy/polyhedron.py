@@ -704,7 +704,7 @@ def genFacesVertex(points,x0,y0,z0,size):
 
     while len(followedges) > 0:
         # Pick an arbitrary key in followedges.
-        start = this = followedges.keys()[0]
+        start = this = list(followedges.keys())[0]
         vertices = []
         while 1:
             p = points[this[0]]

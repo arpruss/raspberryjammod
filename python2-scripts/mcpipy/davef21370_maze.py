@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 # Quick rough & ready maze generator for Minecraft Pi edition.
@@ -89,7 +90,7 @@ for x in range(0,mazeXSize-1):
 initMaze(mazeXSize,mazeYSize)
 
 # Loop until we have no more starting points (2's in the empty maze)
-while filter(lambda x: 2 in x, maze):
+while [x for x in maze if 2 in x]:
     # Get the X and Y values of the first point in our randomized list.
     rx = spl[0][0]
     ry = spl[0][1]

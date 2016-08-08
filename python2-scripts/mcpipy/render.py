@@ -27,7 +27,10 @@ from __future__ import print_function
 
 from zipfile import ZipFile
 import sys
-import urllib2
+try:
+    import urllib.request as urllib_request
+except:
+    import urllib2 as urllib_request
 import struct
 from collections import OrderedDict
 import mcpi.minecraft as minecraft
@@ -84,7 +87,7 @@ def invertMatrix44(m):
    return inv
 
 def mulMatrix44(a,b):
-    return tuple(tuple(a[i][0] * b[0][j] + a[i][1] * b[1][j] + a[i][2] * b[2][j] + a[i][3] * b[3][j] for j in xrange(4)) for i in xrange(4))
+    return tuple(tuple(a[i][0] * b[0][j] + a[i][1] * b[1][j] + a[i][2] * b[2][j] + a[i][3] * b[3][j] for j in range(4)) for i in range(4))
 
 def applyMatrix44(a,v):
     if a is None:
@@ -407,7 +410,7 @@ class Mesh3DS(MeshFile):
     def handle_TRI_VERTEXL(self,lengthRemaining):
         count = struct.unpack("<H", self.file.read(2))[0]
         lengthRemaining -= 2
-        for i in xrange(count):
+        for i in range(count):
             self.object_vertices.append(V3(struct.unpack("<fff", self.file.read(3 * 4))))
             lengthRemaining -= 3 * 4
         self.skip(lengthRemaining)
@@ -415,7 +418,7 @@ class Mesh3DS(MeshFile):
     def handle_TRI_FACEL1(self,lengthRemaining):
         count = struct.unpack("<H", self.file.read(2))[0]
         lengthRemaining -= 2
-        for i in xrange(count):
+        for i in range(count):
             self.object_faces.append(struct.unpack("<HHH", self.file.read(2 * 3)))
             lengthRemaining -= 2 * 3
             self.skip(2)
@@ -432,8 +435,8 @@ class Mesh3DS(MeshFile):
 
     def handle_TRI_LOCAL(self,lengthRemaining):
         m = [[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
-        for i in xrange(4):
-            for j in xrange(3):
+        for i in range(4):
+            for j in range(3):
                 m[j][i] = struct.unpack("<f", self.file.read(4))[0]
                 lengthRemaining -= 4
         self.object_matrix = m
@@ -445,7 +448,7 @@ class Mesh3DS(MeshFile):
         count = struct.unpack("<H", self.file.read(2))[0]
         lengthRemaining -= 2
         faces = set()
-        for i in xrange(count):
+        for i in range(count):
             faces.add(struct.unpack("<H", self.file.read(2))[0])
             lengthRemaining -= 2
         self.object_material_data.append((name, faces))
@@ -628,7 +631,7 @@ class Mesh(object):
                     outName = self.archive
                 else:
                     outName = self.meshName
-            content = urllib2.urlopen(url).read()
+            content = urllib_request.urlopen(url).read()
             with open(outName + ".tempDownload","wb") as f:
                 f.write(content)
             os.rename(outName + ".tempDownload", outName)
@@ -692,12 +695,12 @@ class Mesh(object):
                     #    self.normals.append(fix(line[1:]))
                     elif line[0] == 'f' : #face
                         face = line[1:]
-                        for i in xrange(0, len(face)) :
+                        for i in range(0, len(face)) :
                             # OBJ indexies are 1 based not 0 based hence the -1
                             # convert indexes to integer
                             face[i] = int(face[i].split('/')[0]) - 1
                             # skip texture and normal
-    #                        for j in xrange(0, len(face[i])) :
+    #                        for j in range(0, len(face[i])) :
     #                            if face[i][j] != "":
     #                                face[i][j] = int(face[i][j]) - 1
                         #prepend the material currently in use to the face

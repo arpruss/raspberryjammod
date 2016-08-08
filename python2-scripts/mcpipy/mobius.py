@@ -7,9 +7,9 @@ import sys
 
 def draw_surface(xf,yf,zf,a0,a1,asteps,b0,b1,bsteps,ox,oy,oz,scalex,scaley,scalez,mcblock,mcmeta):
 
-  for i in xrange(asteps):
+  for i in range(asteps):
      a = (a0 * (asteps-1-i) + a1 * i) / asteps
-     for j in xrange(bsteps):
+     for j in range(bsteps):
         b = (b0 * (bsteps-1-j) + b1 * j) / bsteps
         x = xf(a,b)
         y = yf(a,b)

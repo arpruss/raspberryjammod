@@ -67,12 +67,12 @@ class CmdPositioner:
     def getDirection(self, id):
         """Get entity direction (entityId:int) => Vec3"""
         s = self.conn.sendReceive(self.pkg + ".getDirection", id)
-        return Vec3(*map(float, s.split(",")))
+        return Vec3((float(x) for x in s.split(",")))
 
     def getPos(self, id):
         """Get entity position (entityId:int) => Vec3"""
         s = self.conn.sendReceive(self.pkg + ".getPos", id)
-        return Vec3(*map(float, s.split(",")))
+        return Vec3((float(x) for x in s.split(",")))
 
     def setPos(self, id, *args):
         """Set entity position (entityId:int, x,y,z)"""
@@ -93,7 +93,7 @@ class CmdPositioner:
     def getTilePos(self, id, *args):
         """Get entity tile position (entityId:int) => Vec3"""
         s = self.conn.sendReceive(self.pkg + ".getTile", id)
-        return Vec3(*map(int, s.split(",")))
+        return Vec3((int(x) for x in s.split(",")))
 
     def setTilePos(self, id, *args):
         """Set entity tile position (entityId:int) => Vec3"""
@@ -174,7 +174,7 @@ class CmdEvents:
         """Only triggered by sword => [BlockEvent]"""
         s = self.conn.sendReceive("events.block.hits")
         events = [e for e in s.split("|") if e]
-        return [BlockEvent.Hit(*map(int, e.split(","))) for e in events]
+        return [BlockEvent.Hit(*(int(x) for x in e.split(","))) for e in events]
 
     def pollChatPosts(self):
         """Triggered by posts to chat => [ChatEvent]"""
@@ -238,7 +238,7 @@ class Minecraft:
     def getBlockWithData(self, *args):
         """Get block with data (x,y,z) => Block"""
         ans = self.conn.sendReceive_flat("world.getBlockWithData", floorFlatten(args))
-        return Block(*map(int, ans.split(",")[:2]))
+        return Block( *[int(x) for x in ans.split(",")[:2]] )
 
     def getBlockWithNBT(self, *args):
         """
@@ -261,7 +261,7 @@ class Minecraft:
     """
 
     def fallbackGetCuboid(self, getBlock, *args):
-        (x0,y0,z0,x1,y1,z1) = map(lambda x:int(math.floor(float(x))), flatten(args))
+        (x0,y0,z0,x1,y1,z1) = (int(math.floor(float(x))) for x in flatten(args))
         out = []
         for y in range(min(y0,y1),max(y0,y1)+1):
             for x in range(min(x0,x1),max(x0,x1)+1):
@@ -285,7 +285,7 @@ class Minecraft:
         """
         try:
             ans = self.conn.sendReceive_flat("world.getBlocks", floorFlatten(args))
-            return map(int, ans.split(","))
+            return [int(x) for x in ans.split(",")]
         except:
             self.getBlocks = self.fallbackGetBlocks
             return self.fallbackGetBlocks(*args)
@@ -294,7 +294,7 @@ class Minecraft:
         """Get a cuboid of blocks (x0,y0,z0,x1,y1,z1) => [Block(id:int, meta:int)]"""
         try:
             ans = self.conn.sendReceive_flat("world.getBlocksWithData", floorFlatten(args))
-            return [Block(*map(int, x.split(",")[:2])) for x in ans.split("|")]
+            return [Block(*(int(y) for y in x.split(",")[:2])) for x in ans.split("|")]
         except:
             self.getBlocksWithData = self.fallbackGetBlocksWithData
             return self.fallbackGetBlocksWithData(*args)
@@ -353,7 +353,7 @@ class Minecraft:
     def getPlayerEntityIds(self):
         """Get the entity ids of the connected players => [id:int]"""
         ids = self.conn.sendReceive("world.getPlayerIds")
-        return map(int, ids.split("|"))
+        return [int(x) for x in ids.split("|")]
 
     def saveCheckpoint(self):
         """Save a checkpoint that can be used for restoring the world"""

@@ -22,10 +22,13 @@ LABEL_BLOCK = REDSTONE_BLOCK
 try:
     import _sunfish as sunfish
 except:
-    import urllib2
+    try:
+        import urllib.request as urllib_request
+    except:
+        import urllib2 as urllib_request
     import os.path
     import os
-    content = urllib2.urlopen("https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py").read()
+    content = urllib_request.urlopen("https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py").read()
     filename = os.path.join(os.path.dirname(sys.argv[0]),"_sunfish.py")
     try:
         f=open(filename,"wb")
@@ -44,7 +47,7 @@ def getCoords(row,col):
     return (corner.x+8*row+4,corner.y,corner.z+8*col+4)
 
 def toRowCol(n, black):
-    row = 7 - ((n - 20) / 10)
+    row = 7 - ((n - 20) // 10)
     col = n % 10 - 1
     if black:
         col = 7 - col
@@ -210,11 +213,11 @@ def toVehicle(bitmaps,block,piece):
     height = len(bitmaps[0])
     width = len(bitmaps[0][0])
     for plane in range(depth):
-        x = plane-depth/2
+        x = plane-depth//2
         for row in range(height):
             y = row
             for col in range(width):
-                z = col-width/2
+                z = col-width//2
                 if bitmaps[plane][height-1-row][col] == 'x':
                     dict[(x,y,z)] = block
     v = Vehicle(mc,True)
@@ -278,7 +281,7 @@ def inputMove():
             c = hits[0].pos
             if ( corner.x <= c.x and corner.y -1 <= c.y and corner.z <= c.z and
                  c.x < corner.x + 64 and c.y < corner.y + MAXHEIGHT and c.z < corner.z + 64 ):
-                m = (c.x - corner.x) / 8, (c.z - corner.z) /8
+                m = (c.x - corner.x) // 8, (c.z - corner.z) //8
                 if len(moves) == 0 or m[0] != moves[0][0] or m[1] != moves[0][1]:
                     highlightSquare(m[0],m[1])
                     moves.append(m)
