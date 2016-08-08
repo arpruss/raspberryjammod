@@ -1,0 +1,51 @@
+
+
+-------------
+  Separator  
+-------------
+
+2016-07-10 16:53:17: ERROR[main]: MSVC_LocaleLookup: unsupported locale: "en_US.UTF-8" switching to system default!
+2016-07-10 16:53:26: ACTION[main]: Saving world-specific settings.
+2016-07-10 16:53:27: ACTION[main]: Moon projection mode: equaldistance
+2016-07-10 16:53:33: ACTION[main]:         .__               __                   __   
+2016-07-10 16:53:33: ACTION[main]:   _____ |__| ____   _____/  |_  ____   _______/  |_ 
+2016-07-10 16:53:33: ACTION[main]:  /     \|  |/    \_/ __ \   __\/ __ \ /  ___/\   __\
+2016-07-10 16:53:33: ACTION[main]: |  Y Y  \  |   |  \  ___/|  | \  ___/ \___ \  |  |  
+2016-07-10 16:53:33: ACTION[main]: |__|_|  /__|___|  /\___  >__|  \___  >____  > |__|  
+2016-07-10 16:53:33: ACTION[main]:       \/        \/     \/          \/     \/        
+2016-07-10 16:53:33: ACTION[main]: World at [C:\Documents and Settings\Alexander_Pruss\minetest-0.4.13\bin\..\worlds\roofedmoon]
+2016-07-10 16:53:33: ACTION[main]: Server for gameid="minetest" listening on 0.0.0.0:63915.
+2016-07-10 16:53:48: ACTION[ServerThread]: singleplayer [127.0.0.1] joins game. 
+2016-07-10 16:53:48: ACTION[ServerThread]: singleplayer joins game. List of players: singleplayer
+2016-07-10 16:53:48: ACTION[ServerThread]: Hello, player singleplayer
+2016-07-10 16:53:49: ACTION[main]: Irrlicht: Could not open file of texture: character.png
+2016-07-10 16:53:49: ACTION[main]: Irrlicht: Could not open file of texture: character.png
+2016-07-10 16:54:19: ACTION[ServerThread]: RJM socket client connected
+2016-07-10 16:54:20: ACTION[ServerThread]: RJM socket client disconnected
+2016-07-10 16:54:40: ACTION[ServerThread]: RJM socket client connected
+2016-07-10 16:54:40: ACTION[ServerThread]: RJM socket client disconnected
+2016-07-10 16:54:53: ACTION[ServerThread]: RJM socket client connected
+2016-07-10 16:55:22: ACTION[main]: RJM socket clients disconnected
+
+
+-------------
+  Separator  
+-------------
+
+2016-08-07 17:07:59: ERROR[main]: MSVC_LocaleLookup: unsupported locale: "en_US.UTF-8" switching to system default!
+2016-08-07 17:08:32: ACTION[main]:         .__               __                   __   
+2016-08-07 17:08:32: ACTION[main]:   _____ |__| ____   _____/  |_  ____   _______/  |_ 
+2016-08-07 17:08:32: ACTION[main]:  /     \|  |/    \_/ __ \   __\/ __ \ /  ___/\   __\
+2016-08-07 17:08:32: ACTION[main]: |  Y Y  \  |   |  \  ___/|  | \  ___/ \___ \  |  |  
+2016-08-07 17:08:32: ACTION[main]: |__|_|  /__|___|  /\___  >__|  \___  >____  > |__|  
+2016-08-07 17:08:32: ACTION[main]:       \/        \/     \/          \/     \/        
+2016-08-07 17:08:32: ACTION[main]: World at [C:\Documents and Settings\Alexander_Pruss\minetest-0.4.13\bin\..\worlds\fffff]
+2016-08-07 17:08:32: ACTION[main]: Server for gameid="minetest" listening on 0.0.0.0:58453.
+2016-08-07 17:08:42: ACTION[ServerThread]: singleplayer [127.0.0.1] joins game. 
+2016-08-07 17:08:42: ACTION[ServerThread]: singleplayer joins game. List of players: singleplayer
+2016-08-07 17:08:42: ACTION[ServerThread]: Hello, player singleplayer
+2016-08-07 17:08:42: ACTION[main]: Irrlicht: Could not open file of texture: character.png
+2016-08-07 17:08:42: ACTION[main]: Irrlicht: Could not open file of texture: character.png
+2016-08-07 17:08:46: ACTION[ServerThread]: RJM socket client connected
+2016-08-07 17:08:54: ACTION[ServerThread]: RJM socket client disconnected
+2016-08-07 17:12:28: ACTION[main]: RJM socket clients disconnected
