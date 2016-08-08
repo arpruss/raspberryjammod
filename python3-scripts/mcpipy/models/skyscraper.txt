@@ -1,6 +1,0 @@
-file skyscraper.obj
-url https://raw.githubusercontent.com/martinohanlon/minecraft-renderObj/master/skyscraper.obj
-credits Downloaded from Martin O'Hanlon's repository
-swapyz 0
-size 100
-default IRON_BLOCK

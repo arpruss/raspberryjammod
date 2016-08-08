@@ -1,6 +1,0 @@
-file head.obj
-url https://raw.githubusercontent.com/martinohanlon/minecraft-renderObj/master/head.obj
-credits Downloaded from Martin O'Hanlon's repository
-swapyz 0
-size 50
-default GOLD_BLOCK

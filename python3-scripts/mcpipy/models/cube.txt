@@ -1,4 +1,0 @@
-file cube.obj
-size 50
-url https://raw.githubusercontent.com/martinohanlon/minecraft-renderObj/master/cube.obj
-credits Downloaded from Martin O'Hanlon's repository

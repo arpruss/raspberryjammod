@@ -5,7 +5,7 @@ echo AUTHENTICATION_PASSWORD=None >> python2-scripts/mcpipy/mcpi/security.py
 chmod -R u+rw python[23]-scripts
 rm -r python3-scripts
 cp -r python2-scripts python3-scripts
-2to3 -w -f all -x imports python3-scripts
+2to3 -w -f all -x imports -x xrange -x range -x future python3-scripts
 cd python3-scripts/mcpipy
 rm -rf *.{bak,pyc} */*.{bak,pyc} __pycache__ */__pycache__ */*/__pycache__
 cd ..
