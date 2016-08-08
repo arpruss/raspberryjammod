@@ -86,7 +86,7 @@ class Vehicle():
     def __init__(self,mc,nondestructive=False):
         self.mc = mc
         self.nondestructive = nondestructive
-        self.highWater = -sys.maxsize-1
+        self.highWater = None
         self.baseVehicle = {}
         if hasattr(Minecraft, 'getBlockWithNBT'):
             self.getBlockWithData = self.mc.getBlockWithNBT
@@ -147,6 +147,8 @@ class Vehicle():
             literal_eval(result.group(1).replace("Block",""))
 
             self.baseAngle,self.highWater,self.baseVehicle = eval(result.group(1))
+            if self.highWater < -1000000:
+                self.highWater = None
 
         self.curLocation = None
 
@@ -192,7 +194,7 @@ class Vehicle():
                             block = self.getBlockWithData(pos)
                             if block.id in Vehicle.TERRAIN:
                                 if ((block.id == WATER_STATIONARY.id or block.id == WATER_FLOWING.id) and 
-                                    self.highWater < pos[1]):
+                                    (self.highWater is None or self.highWater < pos[1])):
                                     self.highWater = pos[1]
                             else:
                                 self.curVehicle[pos] = block
