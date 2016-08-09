@@ -1,8 +1,22 @@
+#
+# Code by Alexander Pruss and under the MIT license
+#
+
+#
+# pysanka.py [filename [height [oval|sphere|N]]]
+#  oval: wrap an oval image onto an egg
+#  sphere: wrap a rectangular image onto a sphere
+#  N: wrap a rectangular image onto an egg N times (N is an integer)
+#
+# Yeah, these arguments are a mess!
+
+
 from mc import *
 import sys
 import os
 from ast import literal_eval
 from PIL import Image
+from random import uniform
 
 def parseBlock(s):
     try:
@@ -10,10 +24,12 @@ def parseBlock(s):
     except:
         return globals()[s.upper()]
 
-def egg(block=GOLD_BLOCK, h=40, a=2.5, b=1, c=0.1):
+def egg(block=GOLD_BLOCK, h=40, a=2.5, b=1, c=0.1, sphere=False):
     def radius(y):
         if y < 0 or y >= h:
             return 0
+        if sphere:
+            return sqrt((h/2.)**2 - (y-h/2.)**2)
         l = y / float(h-1)
         # Formula from: http://www.jolyon.co.uk/myresearch/image-analysis/egg-shape-modelling/
         return h*a*exp((-0.5*l*l+c*l-.5*c*c)/(b*b))*sqrt(1-l)*sqrt(l)/(pi*b)
@@ -81,8 +97,12 @@ def getBestColor(rgb):
             bestColor = c
     return bestColor
 
-def getPixel(image, x, y):
+def getPixel(image, x, y, dither=False):
     rgb = image.getpixel(( image.size[0]-1-floor( x * image.size[0] ), image.size[1]-1-floor( y * image.size[1] ) ))
+    if dither:
+        rgb[0] += uniform(-20,20)
+        rgb[1] += uniform(-20,20)
+        rgb[2] += uniform(-20,20)
     return getBestColor(rgb)[0:2]
 
 mc = Minecraft()
@@ -100,10 +120,13 @@ else:
     height = 100
     
 oval = False
+sphereWrap = False
     
 if len(sys.argv) > 3:
     if sys.argv[3] == "oval":
         oval = True
+    elif sys.argv[3] == "sphere":
+        sphereWrap = True
     else:
         repeat = int(sys.argv[3])
 else:
@@ -150,9 +173,14 @@ if oval:
         if imageX > stop[imageY]:
             imageX = stop[imageY]
         mc.setBlock(x+pos.x,y+pos.y,z+pos.z, getBestColor(image.getpixel((imageX,imageY))[0:3])[0:2])
+elif sphereWrap:
+    image = Image.open(filename).convert('RGB')
+
+    for (x,y,z,block,theta) in egg(h=height,block=None,sphere=True):
+        mc.setBlock(x+pos.x,y+pos.y,z+pos.z,getPixel(image, (theta / (2*pi)) % 1, y / float(height)))
 else:
     image = Image.open(filename).convert('RGB')
 
     for (x,y,z,block,theta) in egg(h=height,block=None):
-        mc.setBlock(x+pos.x,y+pos.y,z+pos.z,getPixel(image, (theta * repeat / (2*pi)) % 1, y / float(height)))
+        mc.setBlock(x+pos.x,y+pos.y,z+pos.z,getPixel(image, (theta * repeat / (2*pi)) % 1, y / float(height), dither=True))
    
