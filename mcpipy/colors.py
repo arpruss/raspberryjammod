@@ -86,7 +86,6 @@ opaque_palette=(
 )
 
 translucent_palette=(
-  (block.GLASS, (60, 67, 68)),
   (block.STAINED_GLASS_BLACK, (25, 25, 25)),
   (block.STAINED_GLASS_BLUE, (51, 76, 178)),
   (block.STAINED_GLASS_BROWN, (102, 76, 51)),
