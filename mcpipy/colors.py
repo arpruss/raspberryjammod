@@ -1,6 +1,6 @@
 import mcpi.block as block
 
-opaque_palette=(
+opaquePalette=(
   (block.BONE_BLOCK, (225, 221, 201)),
   (block.CLAY, (159, 164, 177)),
   (block.COAL_BLOCK, (19, 19, 19)),
@@ -85,7 +85,7 @@ opaque_palette=(
   (block.WOOL_YELLOW, (177, 166, 39)),
 )
 
-translucent_palette=(
+translucentPalette=(
   (block.STAINED_GLASS_BLACK, (25, 25, 25)),
   (block.STAINED_GLASS_BLUE, (51, 76, 178)),
   (block.STAINED_GLASS_BROWN, (102, 76, 51)),
@@ -107,7 +107,7 @@ translucent_palette=(
 def colorDist(a,b):
     return (a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1])+(a[2]-b[2])*(a[2]-b[2])
 
-def getBestColor(palette,rgb):
+def colorToBlock(rgb, palette=opaquePalette):
     bestColor = palette[0]
     bestDist = 255*255*3
     for c in palette:
