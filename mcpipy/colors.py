@@ -1,4 +1,6 @@
 import mcpi.block as block
+from random import uniform
+import math
 
 opaquePalette=(
   (block.BONE_BLOCK, (225, 221, 201)),
@@ -107,7 +109,11 @@ translucentPalette=(
 def colorDist(a,b):
     return (a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1])+(a[2]-b[2])*(a[2]-b[2])
 
-def colorToBlock(rgb, palette=opaquePalette):
+def colorToBlock(rgb, palette=opaquePalette, randomDither=None):
+    if randomDither is not None:
+        rgb = (rgb[0]+uniform(-randomDither,randomDither),
+                rgb[1]+uniform(-randomDither,randomDither),
+                rgb[2]+uniform(-randomDither,randomDither))
     bestColor = palette[0]
     bestDist = 255*255*3
     for c in palette:
@@ -116,3 +122,44 @@ def colorToBlock(rgb, palette=opaquePalette):
             bestDist = d
             bestColor = c
     return bestColor
+    
+def hsvToRGB(h,s,v):
+    h %= 360.
+    c = v * s 
+    x = c * (1-abs( ((h/60.) % 2.)  - 1 ))
+    m = v - c 
+    if 0 <= h < 60:
+        r,g,b = (c,x,0)
+    elif 60 <= h < 120:
+        r,g,b = (x,c,0)
+    elif 120 <= h < 180:
+        r,g,b = (0,c,x)
+    elif 180 <= h < 240:
+        r,g,b = (0,x,c)
+    elif 240 <= h < 300:
+        r,g,b = (x,0,c)
+    else:
+        r,g,b = (c,0,x)
+    return (int((r+m)*255), int((g+m)*255), int((b+m)*255))
+
+if __name__ == '__main__':
+    from mc import Minecraft
+    
+    mc = Minecraft()
+    pos = mc.player.getTilePos()
+    
+    r = 50
+    cx = pos.x
+    cy = pos.y + r
+    cz = pos.z
+    
+    for x in range(-r,r+1):
+        for y in range(-r,r+1):
+            d = math.sqrt(x*x+y*y)/r
+            if d<=1:
+                if x == 0 and y == 0:
+                    theta = 0
+                else:
+                    theta = math.atan2(y,x) * 180. / math.pi
+                rgb = hsvToRGB(theta, d, 1)
+                mc.setBlock(cx+x,cy+y,cz,colorToBlock(rgb, randomDither=30))

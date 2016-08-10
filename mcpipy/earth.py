@@ -33,4 +33,4 @@ if filename is None:
 image = Image.open(filename).convert('RGB')
 
 for (x,y,z,block,theta) in egg(h=height,block=None,sphere=True):
-    mc.setBlock(x+pos.x,y+pos.y,z+pos.z,getPixel(image, (theta / (2*pi)) % 1, y / float(height), dither=None))
+    mc.setBlock(x+pos.x,y+pos.y,z+pos.z,getPixel(image, (theta / (2*pi)) % 1, y / float(height), dither=10))
