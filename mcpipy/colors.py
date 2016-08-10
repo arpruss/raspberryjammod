@@ -2,7 +2,7 @@ import mcpi.block as block
 from random import uniform
 import math
 
-opaquePalette=(
+opaquePalette=[
   (block.BONE_BLOCK, (225, 221, 201)),
   (block.CLAY, (159, 164, 177)),
   (block.COAL_BLOCK, (19, 19, 19)),
@@ -85,9 +85,9 @@ opaquePalette=(
   (block.WOOL_LIGHT_GRAY, (155, 161, 161)),
   (block.WOOL_WHITE, (222, 222, 222)),
   (block.WOOL_YELLOW, (177, 166, 39)),
-)
+]
 
-translucentPalette=(
+translucentPalette=[
   (block.STAINED_GLASS_BLACK, (25, 25, 25)),
   (block.STAINED_GLASS_BLUE, (51, 76, 178)),
   (block.STAINED_GLASS_BROWN, (102, 76, 51)),
@@ -104,7 +104,7 @@ translucentPalette=(
   (block.STAINED_GLASS_LIGHT_GRAY, (153, 153, 153)),
   (block.STAINED_GLASS_WHITE, (255, 255, 255)),
   (block.STAINED_GLASS_YELLOW, (229, 229, 51)),
-)
+]
 
 def rgbDistSq(a,b):
     return (a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1])+(a[2]-b[2])*(a[2]-b[2])
@@ -141,6 +141,43 @@ def hsvToRGB(h,s,v):
     else:
         r,g,b = (c,0,x)
     return (int((r+m)*255), int((g+m)*255), int((b+m)*255))
+    
+class DitheringMethod(object):
+    def __init__(self, rng=None, fs=False):
+        self.rng = rng
+        self.fs = False
+        
+    def isEmpty():
+        return self.rng is None and not self.fs
+    
+def imageToBlocks(getPixel, width, height, dither=None):
+    if dither is None or dither.isEmpty():
+        for x in range(width):
+            for y in range(height):
+                yield x,y,rgbToBlock(getPixel((x,y)))
+    elif dither.rng is not None:
+        for x in range(width):
+            for y in range(height):
+                rgb = rgbToBlock(getPixel((x,y)))
+                yield x,y,rgbToBlock((rgb[0]+dither.rng(),rgb[1]+dither.rng(),rgb[2]+dither.rng()))
+    elif dither.fs:
+        pixels = tuple(tuple(list(getPixel((x,y))) for y in range(height)) for x in range(width))
+        for x in range(width):
+            for y in range(height):
+                block,actualRGB = colors.rgbToBlock(pixels[x][y])
+                yield x,y,block
+                for i in range(3):
+                    err = pixels[x][y][i] - actualRGB[i]
+                    if x + 1 < width:
+                        pixels[x+1][y][i] += err * 7 // 16
+                    if y + 1 < height:
+                        if 0 < x:
+                            pixels[x-1][y+1][i] += err * 3 // 16
+                        pixels[x][y+1][i] += err * 5 // 16
+                        if x + 1 < width:
+                            pixels[x+1][y+1][i] += err // 16
+    else:
+        raise ValueErrror('Unknown dithering algorithm')
 
 if __name__ == '__main__':
     from mc import Minecraft
