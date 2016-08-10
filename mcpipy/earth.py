@@ -22,7 +22,7 @@ filename = None
 if len(sys.argv) > 1:
     height = int(sys.argv[1])
     if len(sys.argv) > 2:
-        filename = sys.argv[1]
+        filename = sys.argv[2]
         if not os.path.isfile(filename):
             filename = os.path.dirname(os.path.realpath(sys.argv[0])) + "/" + filename    
 
