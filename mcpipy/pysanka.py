@@ -127,5 +127,5 @@ if __name__ == '__main__':
         image = Image.open(filename).convert('RGB')
 
         for (x,y,z,block,theta) in egg(h=height,block=None):
-            mc.setBlock(x+pos.x,y+pos.y,z+pos.z,getPixel(image, (theta * repeat / (2*pi)) % 1, y / float(height)))
+            mc.setBlock(x+pos.x,y+pos.y,z+pos.z,getPixel(image, (theta * repeat / (2*pi)) % 1, y / float(height), dither=20))
    
