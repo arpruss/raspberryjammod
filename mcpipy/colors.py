@@ -106,20 +106,20 @@ translucentPalette=(
   (block.STAINED_GLASS_YELLOW, (229, 229, 51)),
 )
 
-def colorDist(a,b):
+def rgbDistSq(a,b):
     return (a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1])+(a[2]-b[2])*(a[2]-b[2])
 
-def colorToBlock(rgb, palette=opaquePalette, randomDither=None):
+def rgbToBlock(rgb, palette=opaquePalette, randomDither=None):
     if randomDither is not None:
         rgb = (rgb[0]+uniform(-randomDither,randomDither),
                 rgb[1]+uniform(-randomDither,randomDither),
                 rgb[2]+uniform(-randomDither,randomDither))
     bestColor = palette[0]
-    bestDist = 255*255*3
+    bestDistSq = 255*255*3
     for c in palette:
-        d = colorDist(c[1],rgb)
-        if d < bestDist:
-            bestDist = d
+        d = rgbDistSq(c[1],rgb)
+        if d < bestDistSq:
+            bestDistSq = d
             bestColor = c
     return bestColor
     
@@ -162,4 +162,4 @@ if __name__ == '__main__':
                 else:
                     theta = math.atan2(y,x) * 180. / math.pi
                 rgb = hsvToRGB(theta, d, 1)
-                mc.setBlock(cx+x,cy+y,cz,colorToBlock(rgb, randomDither=30))
+                mc.setBlock(cx+x,cy+y,cz,rgbToBlock(rgb, randomDither=30))

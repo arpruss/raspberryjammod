@@ -51,8 +51,8 @@ def getPixel(image, x, y, dither=None):
     rgb = image.getpixel(( image.size[0]-1-floor( x * image.size[0] ), image.size[1]-1-floor( y * image.size[1] ) ))
     if dither is not None:
         tweaked = ( rgb[0] + uniform(-dither,dither), rgb[1] + uniform(-dither,dither), rgb[2] + uniform(-dither,dither) )
-        return colors.colorToBlock(tweaked)[0]
-    return colors.colorToBlock(rgb)[0]
+        return colors.rgbToBlock(tweaked)[0]
+    return colors.rgbToBlock(rgb)[0]
 
 if __name__ == '__main__':    
     mc = Minecraft()

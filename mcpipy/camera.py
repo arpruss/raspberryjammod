@@ -23,7 +23,7 @@ if camlist:
        if not dither:
            for x in range(width):
                for y in range(height):
-                   block,_ = colors.colorToBlock(image.get_at((x,y)))
+                   block,_ = colors.rgbToBlock(image.get_at((x,y)))
                    if current[x][y] != block:
                        mc.setBlock(pos.x+x,pos.y+height-1-y,pos.z,block)
                        current[x][y] = block
@@ -31,7 +31,7 @@ if camlist:
            pixels = [[list(image.get_at((x,y))[0:3]) for y in range(height)] for x in range(width)]
            for x in range(width):
                for y in range(height):
-                   block,actualRGB = colors.colorToBlock(pixels[x][y])
+                   block,actualRGB = colors.rgbToBlock(pixels[x][y])
                    if current[x][y] != block:
                        mc.setBlock(pos.x+x,pos.y+height-1-y,pos.z,block)
                        current[x][y] = block
