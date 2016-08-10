@@ -145,26 +145,26 @@ def hsvToRGB(h,s,v):
 class DitheringMethod(object):
     def __init__(self, rng=None, fs=False):
         self.rng = rng
-        self.fs = False
+        self.fs = fs
         
-    def isEmpty():
+    def isEmpty(self):
         return self.rng is None and not self.fs
     
-def imageToBlocks(getPixel, width, height, dither=None):
+def imageToBlocks(getPixel, width, height, palette=opaquePalette, dither=None):
     if dither is None or dither.isEmpty():
         for x in range(width):
             for y in range(height):
-                yield x,y,rgbToBlock(getPixel((x,y)))
+                yield x,y,rgbToBlock(getPixel((x,y)), palette=palette)
     elif dither.rng is not None:
         for x in range(width):
             for y in range(height):
-                rgb = rgbToBlock(getPixel((x,y)))
-                yield x,y,rgbToBlock((rgb[0]+dither.rng(),rgb[1]+dither.rng(),rgb[2]+dither.rng()))
+                rgb = getPixel((x,y))
+                yield x,y,rgbToBlock((rgb[0]+dither.rng(),rgb[1]+dither.rng(),rgb[2]+dither.rng()), palette=palette)
     elif dither.fs:
         pixels = tuple(tuple(list(getPixel((x,y))) for y in range(height)) for x in range(width))
         for x in range(width):
             for y in range(height):
-                block,actualRGB = colors.rgbToBlock(pixels[x][y])
+                block,actualRGB = rgbToBlock(pixels[x][y], palette=palette)
                 yield x,y,block
                 for i in range(3):
                     err = pixels[x][y][i] - actualRGB[i]
@@ -177,7 +177,7 @@ def imageToBlocks(getPixel, width, height, dither=None):
                         if x + 1 < width:
                             pixels[x+1][y+1][i] += err // 16
     else:
-        raise ValueErrror('Unknown dithering algorithm')
+        raise ValueError('Unknown dithering algorithm')
 
 if __name__ == '__main__':
     from mc import Minecraft
