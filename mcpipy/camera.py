@@ -32,8 +32,6 @@ if camlist:
             if current[x][y] != block:
                 mc.setBlock(pos.x+x,pos.y+height-1-y,pos.z,block)
                 current[x][y] = block 
-                c+=1
-                
         sleep(2)
 
 else:

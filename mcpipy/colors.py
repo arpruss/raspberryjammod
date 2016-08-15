@@ -106,8 +106,8 @@ translucentPalette=[
   (block.STAINED_GLASS_YELLOW, (229, 229, 51)),
 ]
 
-def rgbDistSq(a,b):
-    return (a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1])+(a[2]-b[2])*(a[2]-b[2])
+def rgbDist(a,b):
+    return abs(a[0]-b[0])+abs(a[1]-b[1])+abs(a[2]-b[2])
 
 def rgbToBlock(rgb, palette=opaquePalette, randomDither=None):
     if randomDither is not None:
@@ -115,11 +115,11 @@ def rgbToBlock(rgb, palette=opaquePalette, randomDither=None):
                 rgb[1]+uniform(-randomDither,randomDither),
                 rgb[2]+uniform(-randomDither,randomDither))
     bestColor = palette[0]
-    bestDistSq = 255*255*3
+    bestDist = 255*3
     for c in palette:
-        d = rgbDistSq(c[1],rgb)
-        if d < bestDistSq:
-            bestDistSq = d
+        d = rgbDist(c[1],rgb)
+        if d < bestDist:
+            bestDist = d
             bestColor = c
     return bestColor
     
