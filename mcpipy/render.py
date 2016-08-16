@@ -1,5 +1,4 @@
-﻿
-#www.stuffaboutcode.com
+﻿#www.stuffaboutcode.com
 #Raspberry Pi, Minecraft - Create 3D Model from Obj file
 # Version 2 - draws complete faces rather than wireframes and uses materials
 """
