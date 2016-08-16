@@ -1,3 +1,8 @@
+#
+# Use this in place of minecraft.py to test simple scripts without Minecraft
+# if you have vpython installed. This only supports a small subset of the full API.
+#
+
 from __future__ import absolute_import
 from visual import *
 from .util import flatten,floorFlatten
