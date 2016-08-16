@@ -75,4 +75,4 @@ class Minecraft:
 
     @staticmethod
     def create(address = None, port = None):
-        return VPython_Minecraft()
+        return Minecraft()
