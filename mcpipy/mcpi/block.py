@@ -34,6 +34,9 @@ class Block:
            return iter((self.id, self.data, self.nbt))
         else:
            return iter((self.id, self.data))
+           
+    def __hash__(self):
+        return hash((self.id, self.data, self.nbt))
 
     def __repr__(self):
         if self.nbt is None:
@@ -41,7 +44,16 @@ class Block:
         else:
             return "Block(%d, %d, %s)"%(self.id, self.data, repr(self.nbt))
 
-
+    @staticmethod
+    def byName(name):
+        try:
+            name = name.upper()
+            b = globals()[name]
+            if isinstance(b, Block):
+                return b
+        except:
+            pass
+        return STONE
 
 AIR                 = Block(0)
 STONE               = Block(1)
@@ -70,6 +82,7 @@ LAPIS_LAZULI_BLOCK  = Block(22)
 SANDSTONE           = Block(24)
 SANDSTONE_SMOOTH    = Block(SANDSTONE.id, 2)
 BED                 = Block(26)
+BED_BLOCK           = Block(26)
 COBWEB              = Block(30)
 GRASS_TALL          = Block(31)
 WOOL                = Block(35)
@@ -277,3 +290,17 @@ STONE_DIORITE = Block(STONE.id, 3)
 STONE_DIORITE_SMOOTH = Block(STONE.id, 4)
 STONE_ANDESITE = Block(STONE.id, 5)
 STONE_ANDESITE_SMOOTH = Block(STONE.id, 6)
+ANVIL = Block(145)
+BEACON = Block(138)
+BED_OBJECT = Block(355)
+BEETROOT = Block(434)
+BREWING_STAND = Block(117)
+CAKE = Block(92)
+CARROTS = Block(141)
+CAULDRON = Block(380)
+COMMAND_BLOCK = Block(137)
+CHORUS_FLOWER = Block(200)
+CHORUS_PLANT = Block(199)
+COCOA_PLANT = Block(127)
+COMPARATOR_OFF = Block(149)
+COMPARATOR_ON = Block(150)
