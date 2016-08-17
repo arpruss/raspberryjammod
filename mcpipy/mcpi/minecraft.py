@@ -374,7 +374,9 @@ class Minecraft:
     @staticmethod
     def create(address = None, port = None):
         return Minecraft(Connection(address, port))
-
+        
+if 'VPYTHON_MCPI' in environ:
+    from .vpython_minecraft import Minecraft
 
 if __name__ == "__main__":
     mc = Minecraft.create()

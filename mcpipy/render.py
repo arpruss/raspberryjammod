@@ -458,7 +458,7 @@ class Mesh(object):
     SUPPORTED_ARCHIVES = set(['gz','zip'])
 
     def __init__(self,infile,minecraft=None,rewrite=True):
-         if minecraft:
+         if minecraft is not None:
              self.setBlock = minecraft.setBlock
              self.message = minecraft.postToChat
          else:
