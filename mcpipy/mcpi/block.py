@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from . import settings
+import re
 
 class Block:
     """Minecraft PI block description. Can be sent to Minecraft.setBlock/s"""
@@ -46,14 +47,24 @@ class Block:
 
     @staticmethod
     def byName(name):
-        try:
-            name = name.upper()
-            b = globals()[name]
-            if isinstance(b, Block):
-                return b
-        except:
-            pass
-        return STONE
+        components = re.split('[\s,:]+', name.upper(), maxsplit=3)
+        newBlock = Block(None,data=0,nbt=None)
+        if components[0][0].isalpha():
+            try:
+                b = globals()[components[0]]
+                if isinstance(b, Block):
+                    newBlock.id =  b.id
+                    newBlock.data = b.data
+            except:
+                newBlock.id = STONE.id
+                newBlock.data = STONE.data
+        if newBlock.id is None:
+            newBlock.id = int(components[0])
+        if len(components) > 1 and components[1].isdigit():
+            newBlock.data = int(components[1])
+        if components[-1][0] == '{':
+            newBlock.nbt = components[-1]
+        return newBlock
 
 AIR                 = Block(0)
 STONE               = Block(1)
@@ -254,9 +265,10 @@ else:
     LEAVES_ACACIA_PERMANENT = LEAVES_OAK_PERMANENT
     LEAVES_DARK_OAK_PERMANENT = LEAVES_JUNGLE_PERMANENT
 
-# the following may or may not be found in PEONY
+# the following may or may not be found in PI and other older ersions
 BONE_BLOCK = Block(216)    
 DIRT_COARSE = Block(DIRT.id, 1)
+DIRT_PODZOL = Block(DIRT.id, 2)
 EMERALD_BLOCK = Block(133)
 EMERALD_ORE = Block(129)
 END_BRICKS = Block(206)
@@ -304,3 +316,17 @@ CHORUS_PLANT = Block(199)
 COCOA_PLANT = Block(127)
 COMPARATOR_OFF = Block(149)
 COMPARATOR_ON = Block(150)
+DAYLIGHT_SENSOR = Block(151)
+DEADBUSH = Block(32)
+DISPENSER = Block(23)
+DOOR_ACACIA = Block(430)
+DOOR_BIRCH = Block(428)
+DOOR_DARK_OAK = Block(431)
+DOOR_JUNGLE = Block(429)
+DOOR_SPRUCE = Block(427)
+DRAGON_EGG = Block(122)
+DROPPER = Block(158)
+ENCHANTING_TABLE = Block(116)
+END_PORTAL_FRAME = Block(120)
+END_ROD = Block(198)
+FERN = Block(GRASS_TALL.id, 2)

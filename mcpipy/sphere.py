@@ -1,12 +1,7 @@
 from mcturtle import *
+from mcpi.block import Block
 import sys
 from ast import literal_eval
-
-def parseBlock(s):
-    try:
-        return literal_eval(s)
-    except:
-        return globals()[s.upper()]
 
 t = Turtle()
 t.pendelay(0)
@@ -15,7 +10,7 @@ if len(sys.argv) >= 2:
 else:
     radius = 10
 if len(sys.argv) >= 3:
-    material = parseBlock(sys.argv[2])
+    material = Block.byName(sys.argv[2])
 else:
     material = GOLD_BLOCK
 t.penwidth(2*radius)

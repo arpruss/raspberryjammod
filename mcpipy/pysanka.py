@@ -14,15 +14,8 @@ from mc import *
 import colors
 import sys
 import os
-from ast import literal_eval
 from PIL import Image
 from random import uniform
-
-def parseBlock(s):
-    try:
-        return literal_eval(s)
-    except:
-        return globals()[s.upper()]
 
 def egg(block=GOLD_BLOCK, h=40, a=2.5, b=1, c=0.1, sphere=False):
     def radius(y):

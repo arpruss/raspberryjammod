@@ -7,22 +7,27 @@ from __future__ import absolute_import
 from visual import *
 from .util import flatten,floorFlatten
 from .block import Block
-from .vpython_colors import opaquePalette,translucentPalette
+from .vpython_colors import colors
 from .vec3 import Vec3
 import time
 
-def getColorRGB(block):
+def getColorRGBA(block):
     if block.id == 0:
-        return (255,255,255),0.0
-    for collection in (opaquePalette,translucentPalette):
-        for c in collection:
-            if c[0].id == block.id and c[0].data == block.data:
-                return (c[1][0]/255., c[1][1]/255., c[1][2]/255.),0.25 if collection==translucentPalette else 1.0
-    for collection in (opaquePalette,translucentPalette):
-        for c in collection:
-            if c[0].id == block.id:
-                return (c[1][0]/255., c[1][1]/255., c[1][2]/255.),0.25 if collection==translucentPalette else 1.0
-	return color.blue,1.0
+        return 255,255,255,0
+    try:
+        return colors[block]
+    except:
+        try:
+            return colors[Block(block.id, block.data)]
+        except:
+            try:
+                return colors[Block(block.id)]
+            except:
+                return 0,255,0,255
+                
+def getColorScaled(block):
+    r,g,b,opacity = getColorRGBA(block)
+    return (r/255.,g/255.,b/255.),opacity/255.
     
 class Ignore:
     def undefinedFunction(self, *args):
@@ -64,7 +69,7 @@ class Minecraft:
                 self.scene[coords].visible = False
                 del self.scene[coords]
         else:
-            c,opacity = getColorRGB(Block(adjArgs[3],adjArgs[4]))
+            c,opacity = getColorScaled(Block(adjArgs[3],adjArgs[4]))
             self.scene[coords] = box(pos=tuple(coords), length=1, height=1, width=1, color=c, opacity=opacity)
 
     def setBlocks(self, *args):
@@ -80,7 +85,7 @@ class Minecraft:
                             self.scene[(x,y,z)].visible = False
                             del self.scene[(x,y,z)]
         else:
-            c,opacity = getColorRGB(Block(args[3],args[4]))
+            c,opacity = getColorScaled(Block(args[3],args[4]))
             for x in range(min(args[0],args[3]),max(args[0],args[3])+1):
                 for y in range(min(args[1],args[4]),max(args[1],args[4])+1):
                     for z in range(min(args[2],args[5]),max(args[2],args[5])+1):
