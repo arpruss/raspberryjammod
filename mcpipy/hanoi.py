@@ -1,5 +1,5 @@
 from mc import *
-from time import sleep
+import time
 
 def drawPillar(n,h1,h2):
     mc.setBlocks(pillarPos[n].x, pillarPos[n].y+h1, pillarPos[n].z,
@@ -22,7 +22,7 @@ def moveRing(source, dest):
     eraseRing(source, len(pillars[source]), ring)
     drawRing(dest, len(pillars[dest]), ring)
     pillars[dest].append(ring)
-    sleep(delay)
+    time.sleep(delay)
     
 def moveRings(source, dest, helper, count):
     if count == 1:

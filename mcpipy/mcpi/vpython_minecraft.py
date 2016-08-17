@@ -9,10 +9,11 @@ from .util import flatten,floorFlatten
 from .block import Block
 from .vpython_colors import opaquePalette,translucentPalette
 from .vec3 import Vec3
+import time
 
 def getColorRGB(block):
     if block.id == 0:
-        return (255,255,255)
+        return (255,255,255),0.0
     for collection in (opaquePalette,translucentPalette):
         for c in collection:
             if c[0].id == block.id and c[0].data == block.data:
@@ -28,8 +29,7 @@ class Ignore:
         pass
         
     def __getattr__(self,name):
-        return self.undefinedFunction
-        
+        return self.undefinedFunction        
 	
 class Minecraft:
     """The main class to interact with a running instance of Minecraft Pi."""
@@ -89,3 +89,6 @@ class Minecraft:
     @staticmethod
     def create(address = None, port = None):
         return Minecraft()
+
+# some monkey-patching        
+time.sleep = sleep
