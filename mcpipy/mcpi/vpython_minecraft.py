@@ -16,7 +16,7 @@ def getColorScaled(block):
     
 class Ignore:
     def undefinedFunction(self, *args):
-        pass
+        return []
         
     def __getattr__(self,name):
         return self.undefinedFunction        
@@ -32,6 +32,8 @@ class Minecraft:
         self.player.getTilePos = lambda : Vec3(0,0,0)
         self.player.getRotation = lambda : 0
         self.player.getPitch = lambda : 0
+        
+        self.events = Ignore()     
         
     def undefinedFunction(self, *args):
         pass
