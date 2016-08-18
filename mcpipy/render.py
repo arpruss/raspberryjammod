@@ -101,21 +101,6 @@ def safeEval(p):
         raise ValueError("Insecure entry")
     return eval(p)
 
-def parseBlock(data,default):
-    if '__' in data:
-        raise ValueError("Insecure entry")
-    b = Block(0,0)
-    tokens = re.split("[\\s,]+", data)
-    haveBlock = False
-    start = eval(tokens[0])
-    if isinstance(start,Block):
-        b = copy(start)
-    else:
-        b.id = int(start)
-    if len(tokens) > 1:
-        b.data = int(eval(tokens[1]))
-    return Block(b.id,b.data)
-
 class MeshFile(object):
     def __init__(self):
         self.vertices = []
@@ -534,7 +519,7 @@ class Mesh(object):
                              return found.group(2)
                      token = found.group(1).lower()
                      if materialMode:
-                         self.materialBlockDict[found.group(1)] = parseBlock(found.group(2),self.default)
+                         self.materialBlockDict[found.group(1)] = Block.byName(found.group(2),default=self.default)
                      elif token == "file":
                          self.specifiedMeshName = getString()
                          self.meshName = dirname + "/" + self.specifiedMeshName
@@ -553,7 +538,7 @@ class Mesh(object):
                      elif token == "size":
                          self.size = safeEval(found.group(2))
                      elif token == "default":
-                         self.default = parseBlock(found.group(2),self.default)
+                         self.default = Block.byName(found.group(2),default=self.default)
                      elif token == "yaw":
                          self.preYaw = safeEval(found.group(2))
                      elif token == "pitch":

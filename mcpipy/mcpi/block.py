@@ -36,7 +36,7 @@ class Block:
             try:
                 return Block.toRGBA[Block(self.id)]
             except:
-                return Block.toRGBA[STONE]
+                return Block.toRGBA[Block(1)]
 
     def __iter__(self):
         """Allows a Block to be sent whenever id [and data] is needed"""
@@ -55,18 +55,22 @@ class Block:
             return "Block(%d, %d, %s)"%(self.id, self.data, repr(self.nbt))
 
     @staticmethod
-    def byName(name):
-        components = re.split('[\s,:]+', name.upper(), maxsplit=3)
+    def byName(name, default=None):
+        components = re.split('[\s,:]+', name.strip().replace(".id", "").upper(), maxsplit=3)
         newBlock = Block(None,data=0,nbt=None)
         if components[0][0].isalpha():
             try:
                 b = globals()[components[0]]
                 if isinstance(b, Block):
-                    newBlock.id =  b.id
+                    newBlock.id = b.id
                     newBlock.data = b.data
             except:
-                newBlock.id = STONE.id
-                newBlock.data = STONE.data
+                if default is None:
+                    newBlock.id = STONE.id
+                    newBlock.data = STONE.data
+                else:
+                    newBlock.id = default.id
+                    newBlock.data = default.data
         if newBlock.id is None:
             newBlock.id = int(components[0])
         if len(components) > 1 and components[1].isdigit():

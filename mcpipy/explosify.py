@@ -5,13 +5,6 @@
 from mc import *
 import math
 import sys
-from ast import literal_eval
-
-def parseBlock(s):
-    try:
-        return literal_eval(s)
-    except:
-        return globals()[s.upper()]
 
 def replace(mcx,mcy,mcz,R,mcblock):
   for x in range(-R,R):
@@ -29,7 +22,7 @@ b = TNT
 if len(sys.argv) >= 2:
    R = int(sys.argv[1])
    if len(sys.argv) >= 3:
-      b = parseBlock(sys.argv[2])
+      b = Block.byName(sys.argv[2])
 
 replace(playerPos.x, playerPos.y, playerPos.z, R, b)
 

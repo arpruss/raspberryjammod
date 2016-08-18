@@ -1,7 +1,6 @@
 from mcturtle import *
 from mcpi.block import Block
 import sys
-from ast import literal_eval
 
 t = Turtle()
 t.pendelay(0)

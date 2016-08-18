@@ -1,12 +1,5 @@
 from mc import *
 import sys
-from ast import literal_eval
-
-def parseBlock(s):
-    try:
-        return literal_eval(s)
-    except:
-        return globals()[s.upper()]
 
 def egg(block=GOLD_BLOCK, h=40, a=2.5, b=1, c=0.1):
     for y in range(0,h+1):
@@ -32,7 +25,7 @@ else:
     height = 50
     
 if len(sys.argv) >= 3:
-    material = parseBlock(sys.argv[2])
+    material = Block.byName(sys.argv[2])
 else:
     material = GOLD_BLOCK
 
