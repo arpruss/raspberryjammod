@@ -9,7 +9,7 @@
 #
 
 
-from mc import *
+from mine import *
 from time import sleep,time
 from random import randint
 import input
@@ -19,8 +19,8 @@ from fonts import FONTS
 FONT = 'thin9pt' #metrix7pt
 HEIGHT = 20
 WIDTH = 10
-BORDER = WOOL_BLACK
-BACKGROUND = STAINED_GLASS_BLACK
+BORDER = block.WOOL_BLACK
+BACKGROUND = block.STAINED_GLASS_BLACK
 DISTANCE = 14
 
 DELAYS = ( 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.05)
@@ -132,7 +132,7 @@ def drawBoard():
     mc.setBlocks(left+WIDTH, bottom, plane, left+WIDTH, bottom+HEIGHT-1, plane, BORDER)
     mc.setBlocks(left-1, bottom-1, plane-1, left+WIDTH, bottom+HEIGHT, plane-1, BACKGROUND)
 #    mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane, AIR)
-    mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane+DISTANCE, AIR)
+    mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane+DISTANCE, block.AIR)
     
 def movePiece(oldX, oldY, oldPieceState, x, y, pieceState):
     new = set(pieceState.getCoordinates(x, y))
@@ -140,7 +140,7 @@ def movePiece(oldX, oldY, oldPieceState, x, y, pieceState):
         old = set(oldPieceState.getCoordinates(oldX, oldY))
         
         for (x,y) in old-new:
-            mc.setBlock(x+left, y+bottom, plane, AIR)
+            mc.setBlock(x+left, y+bottom, plane, block.AIR)
 
         new = new - old
 
@@ -148,7 +148,7 @@ def movePiece(oldX, oldY, oldPieceState, x, y, pieceState):
         mc.setBlock(x+left, y+bottom, plane, pieceState.color)
 
 def eraseNext():
-    mc.setBlocks(left+WIDTH+2,bottom+3,plane,left+WIDTH+2+3,bottom+6,plane,AIR)
+    mc.setBlocks(left+WIDTH+2,bottom+3,plane,left+WIDTH+2+3,bottom+6,plane,block.AIR)
         
 def drawNext(nextPieceState):
     eraseNext()
@@ -157,7 +157,7 @@ def drawNext(nextPieceState):
         
 def makePieceState():
     n = randint(0, len(PIECES)-1)
-    return PieceState(PIECES[n], randint(0,3), Block(WOOL.id, (n+1) % 16))
+    return PieceState(PIECES[n], randint(0,3), Block(block.WOOL.id, (n+1) % 16))
         
 def placePiece(state, nextPieceState):
     global descendDelay, droppedFrom, didShowNext
@@ -182,12 +182,12 @@ def hide():
     text.drawText(mc, FONTS['nicefontbold'], 
                     Vec3(left+WIDTH//2,bottom+5,plane), 
                     Vec3(1,0,0), Vec3(0,1,0), 
-                    "P", SEA_LANTERN, align=text.ALIGN_CENTER)
+                    "P", block.SEA_LANTERN, align=text.ALIGN_CENTER)
     
 def restore(x, y, curPieceState):
     for xx in range(WIDTH):
         for yy in range(HEIGHT):
-            mc.setBlock(xx+left,yy+bottom,plane,board[xx][yy] or AIR)
+            mc.setBlock(xx+left,yy+bottom,plane,board[xx][yy] or block.AIR)
     movePiece(None, None, None, x, y, curPieceState)
     
 def addPiece(x, y, curPieceState):
@@ -212,10 +212,10 @@ def addPiece(x, y, curPieceState):
                     for x in range(WIDTH):
                         b = board[x][y2+1]
                         board[x][y2] = b
-                        mc.setBlock(left+x,bottom+y2,plane,b if b is not None else AIR)
+                        mc.setBlock(left+x,bottom+y2,plane,b if b is not None else block.AIR)
                 for x in range(WIDTH):
                     board[x][HEIGHT-1] = None
-                    mc.setBlock(left+x,bottom+HEIGHT-1,plane,AIR)
+                    mc.setBlock(left+x,bottom+HEIGHT-1,plane,block.AIR)
                 
         if not foundRow:
             break
@@ -235,13 +235,13 @@ def updateText(buffer,x,y,s,align):
         text.drawText(mc, FONTS['thin9pt'], 
                         Vec3(x,y,plane), 
                         Vec3(1,0,0), Vec3(0,1,0), 
-                        s, SEA_LANTERN, background=None, align=align, buffer=newBuffer)
+                        s, block.SEA_LANTERN, background=None, align=align, buffer=newBuffer)
     for pos in buffer:
         if pos not in newBuffer:
-            mc.setBlock(pos, AIR)
+            mc.setBlock(pos, block.AIR)
     for pos in newBuffer:
         if pos not in buffer:
-            mc.setBlock(pos, SEA_LANTERN)
+            mc.setBlock(pos, block.SEA_LANTERN)
     return newBuffer        
         
 def updateScoreAndLevel():

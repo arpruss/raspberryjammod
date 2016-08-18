@@ -1,6 +1,6 @@
-from mc import *
+from mine import *
 
-def globe(center, radius=40, spacing_degrees=10, block=STAINED_GLASS_YELLOW):
+def globe(center, radius=40, spacing_degrees=10, block=block.STAINED_GLASS_YELLOW):
     quality = int(radius * 2*pi * 2)
 
     # longitude lines
@@ -33,7 +33,7 @@ def globe(center, radius=40, spacing_degrees=10, block=STAINED_GLASS_YELLOW):
 if __name__ == "__main__":        
     mc = Minecraft()
     center = mc.player.getPos()
-    radius = 40        
-    globe((center.x,center.y+radius,center.z), radius-1, 360./(2*pi*2*radius), STAINED_GLASS_BLUE)
-    globe((center.x,center.y+radius,center.z), radius, 10, STAINED_GLASS_YELLOW)
+    radius = 40
+    globe((center.x,center.y+radius,center.z), radius-1, 360./(2*pi*2*radius), block.STAINED_GLASS_BLUE)
+    globe((center.x,center.y+radius,center.z), radius, 10, block.STAINED_GLASS_YELLOW)
     

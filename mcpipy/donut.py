@@ -6,7 +6,7 @@
 # Draw a water-filled donut
 #
 
-from mc import *
+from mine import *
 
 def draw_donut(mcx,mcy,mcz,R,r,mcblock):
   for x in range(-R-r,R+r):
@@ -25,7 +25,7 @@ mc = Minecraft()
 
 playerPos = mc.player.getPos()
 
-draw_donut(playerPos.x, playerPos.y + 9, playerPos.z, 18, 9, GLASS)
+draw_donut(playerPos.x, playerPos.y + 9, playerPos.z, 18, 9, block.GLASS)
 mc.postToChat("Glass donut done")
-draw_donut(playerPos.x, playerPos.y + 9, playerPos.z, 18, 6, WATER_STATIONARY)
+draw_donut(playerPos.x, playerPos.y + 9, playerPos.z, 18, 6, block.WATER_STATIONARY)
 mc.postToChat("Water donut done")

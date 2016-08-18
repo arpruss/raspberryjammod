@@ -8,7 +8,7 @@
 # earth.py [size [filename]]
 #
 
-from mc import *
+from mine import *
 import os.path,sys
 from PIL import Image
 from pysanka import egg, getPixel

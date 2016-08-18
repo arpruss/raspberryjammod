@@ -1,7 +1,7 @@
-from mc import *
+from mine import *
 import sys
 
-def egg(block=GOLD_BLOCK, h=40, a=2.5, b=1, c=0.1):
+def egg(block=block.GOLD_BLOCK, h=40, a=2.5, b=1, c=0.1):
     for y in range(0,h+1):
         l = y / float(h)
         # Formula from: http://www.jolyon.co.uk/myresearch/image-analysis/egg-shape-modelling/
@@ -27,7 +27,7 @@ else:
 if len(sys.argv) >= 3:
     material = Block.byName(sys.argv[2])
 else:
-    material = GOLD_BLOCK
+    material = block.GOLD_BLOCK
 
 pos = mc.player.getPos()
 

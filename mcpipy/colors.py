@@ -189,7 +189,7 @@ def imageToBlocks(getPixel, width, height, palette=opaquePalette, dither=None):
         raise ValueError('Unknown dithering algorithm')
 
 if __name__ == '__main__':
-    from mc import Minecraft
+    from mine import Minecraft
     
     mc = Minecraft()
     pos = mc.player.getTilePos()

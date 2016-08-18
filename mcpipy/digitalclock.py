@@ -2,15 +2,15 @@
 # Code by Alexander Pruss and under the MIT license
 #
 
-from mc import *
+from mine import *
 import text
 import datetime
 import time
 import sys
 import fonts
 
-foreground = SEA_LANTERN # this needs Minecraft 1.8
-background = AIR
+foreground = block.SEA_LANTERN # this needs Minecraft 1.8
+background = block.AIR
 
 try:
     foreground = Block.byName(sys.argv[1])

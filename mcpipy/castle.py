@@ -2,7 +2,7 @@
 # Code by Alexander Pruss and under the MIT license
 #
 
-from mc import *
+from mine import *
 import random
 import sys
 
@@ -12,7 +12,7 @@ def getHeightBelow(x,y,z):
     else:
         y0 = y - 255
         while y > y0:
-           if mc.getBlock(x,y,z) != AIR.id:
+           if mc.getBlock(x,y,z) != block.AIR.id:
                return y
            y -= 1
         return min(mc.getHeight(x,z),y)
@@ -63,7 +63,7 @@ def moatSide(x1,y1,z1, x2,y2,z2, depth):
 
     while True:
         y0 = getHeightBelow(x,y1,z)
-        mc.setBlocks(x,y0-depth+1,z,x,y0,z,WATER_STATIONARY)
+        mc.setBlocks(x,y0-depth+1,z,x,y0,z,block.WATER_STATIONARY)
         if x >= x2 and z >= z2:
             return
         if x < x2:
@@ -97,8 +97,9 @@ def tower(x,y,z,width,baseHeight,altHeight,innerHeight,distribution):
 mc = Minecraft()
 pos = mc.player.getTilePos()
 
-distribution = ((.05,MOSS_STONE), (.1,Block(STONE_BRICK.id, 1)), (.2,Block(STONE_BRICK.id, 2)),
-                (.651,Block(STONE_BRICK.id, 0)))
+distribution = ((.05,block.MOSS_STONE), (.1,Block(block.STONE_BRICK.id, 1)), 
+                (.2,Block(block.STONE_BRICK.id, 2)),
+                (.651,Block(block.STONE_BRICK.id, 0)))
 
 wallSize = 51
 groundY = 1+getHeightBelow(pos.x, pos.y, pos.z)

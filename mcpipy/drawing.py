@@ -449,7 +449,7 @@ class Drawing:
     TO_DEGREES = 180. / pi
 
     def __init__(self,mc=None):
-        if mc:
+        if mc is not None:
              self.mc = mc
         else:
              self.mc = minecraft.Minecraft()

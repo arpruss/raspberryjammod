@@ -6,7 +6,7 @@
 # Draw Borromean rings
 #
 
-from mc import *
+from mine import *
 
 def ball(x0,y0,z0,r,block_type,done):
   for x in range(-r,r):
@@ -36,7 +36,7 @@ while t < 2*pi:
   x = x0+int( scale * cos(t) )
   y = y0+int( scale * ( sin(t) + r) )
   z = z0+int( scale * - cos(3*t)/3 )
-  ball(x,y,z,4,GOLD_BLOCK,done)
+  ball(x,y,z,4,block.GOLD_BLOCK,done)
   t += 2*pi / 10000
 
 done = set()
@@ -45,7 +45,7 @@ while t < 2*pi:
   x = x0+int( scale * (cos(t) + 0.5) )
   y = y0+int( scale * ( sin(t) - r/2) )
   z = z0+int( scale * - cos(3*t)/3 )
-  ball(x,y,z,4,LAPIS_LAZULI_BLOCK,done)
+  ball(x,y,z,4,block.LAPIS_LAZULI_BLOCK,done)
   t += 2*pi / 10000
 
 done = set()
@@ -54,5 +54,5 @@ while t < 2*pi:
   x = x0+int( scale * ( cos(t) - 0.5 ) )
   y = y0+int( scale * ( sin(t) - r/2) )
   z = z0+int( scale * - cos(3*t)/3 )
-  ball(x,y,z,4,DIAMOND_BLOCK,done)
+  ball(x,y,z,4,block.DIAMOND_BLOCK,done)
   t += 2*pi / 10000

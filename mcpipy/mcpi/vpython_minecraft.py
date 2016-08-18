@@ -55,6 +55,9 @@ class Minecraft:
                 del self.scene[coords]
         else:
             c,opacity = getColorScaled(Block(adjArgs[3],adjArgs[4]))
+            if coords in self.scene:
+                self.scene[coords].visible = False
+                del self.scene[coords]            
             self.scene[coords] = box(pos=tuple(coords), length=1, height=1, width=1, color=c, opacity=opacity)
 
     def setBlocks(self, *args):
@@ -74,7 +77,11 @@ class Minecraft:
             for x in range(min(args[0],args[3]),max(args[0],args[3])+1):
                 for y in range(min(args[1],args[4]),max(args[1],args[4])+1):
                     for z in range(min(args[2],args[5]),max(args[2],args[5])+1):
-                        self.scene[(x,y,z)] = box(pos=(x,y,z), length=1, height=1, width=1, color=c, opacity=opacity)
+                        coords = (x,y,z)
+                        if coords in self.scene:
+                            self.scene[coords].visible = False
+                            del self.scene[coords]
+                        self.scene[coords] = box(pos=coords, length=1, height=1, width=1, color=c, opacity=opacity)
 
     @staticmethod
     def create(address = None, port = None):

@@ -4,7 +4,7 @@
 
 #
 
-from mc import *
+from mine import *
 import colors
 import sys
 import os
@@ -58,6 +58,6 @@ for dither,name in dithers:
     text.drawText(mc, FONTS['thin9pt'], 
                         Vec3(x0,pos.y+height+1,pos.z), 
                         Vec3(1,0,0), Vec3(0,1,0), 
-                        name, SEA_LANTERN, background=None)
+                        name, block.SEA_LANTERN, background=None)
     x0 += width + 2
    

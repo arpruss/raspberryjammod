@@ -1,4 +1,4 @@
-from mc import *
+from mine import *
 import pygame.camera
 import colors
 from time import sleep
@@ -23,7 +23,7 @@ camlist = pygame.camera.list_cameras()
 
 if camlist:
     cam = pygame.camera.Camera(camlist[0],(640,480))
-    current = [[AIR for y in range(height)] for x in range(width)]
+    current = [[block.AIR for y in range(height)] for x in range(width)]
     random.seed(1234) # ensure same seed for each frame
     while True:
         image = pygame.transform.scale(cam.get_image(), (width,height))
