@@ -2,6 +2,11 @@
 # Use this in place of minecraft.py to test simple scripts without Minecraft
 # if you have vpython installed. This only supports a small subset of the full API.
 #
+# This gets substituted for Minecraft.py if you have the VPYTHON_MCPI environment
+# variable set to something. If you have a Linux-style commandline, you can run
+# demo scripts against vpython as follows:
+#   VPYTHON_MCPI=1 python trefoil2.py
+#
 
 from __future__ import absolute_import
 from visual import *
@@ -22,8 +27,6 @@ class Ignore:
         return self.undefinedFunction        
 	
 class Minecraft:
-    """The main class to interact with a running instance of Minecraft Pi."""
-
     def __init__(self, connection=None, autoId=True):
         self.scene = {}
         self.player = Ignore()
@@ -89,5 +92,5 @@ class Minecraft:
     def create(address = None, port = None):
         return Minecraft()
 
-# some monkey-patching
+# monkey-patch normal sleep function with visual python's
 time.sleep = sleep
