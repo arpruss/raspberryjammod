@@ -1,4 +1,8 @@
 #
+# DEPRECATED: use mine.py
+#
+
+#
 # Code by Alexander Pruss and under the MIT license
 #
 
