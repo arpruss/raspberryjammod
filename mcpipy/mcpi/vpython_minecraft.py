@@ -15,6 +15,18 @@ from .block import Block
 from .vec3 import Vec3
 import time
 
+materialList = [None for i in range(Block.MAX_MATERIAL+1)]
+materialList[Block.MATERIAL_DEFAULT] = materials.plastic
+materialList[Block.MATERIAL_WOOD] = materials.wood
+materialList[Block.MATERIAL_STONE] = materials.rough
+materialList[Block.MATERIAL_PLASTIC] = materials.plastic
+materialList[Block.MATERIAL_EMISSIVE] = materials.emissive
+materialList[Block.MATERIAL_ROUGH] = materials.rough
+
+
+def getMaterial(block):
+    return materialList[block.getMaterial()]    
+
 def getColorScaled(block):
     r,g,b,opacity = block.getRGBA()
     return (r/255.,g/255.,b/255.),opacity/255.
@@ -63,7 +75,18 @@ class Minecraft:
             if coords in self.scene:
                 self.scene[coords].visible = False
                 del self.scene[coords]            
-            self.scene[coords] = box(pos=tuple(coords), length=1, height=1, width=1, color=c, opacity=opacity)
+            m = getMaterial(Block(adjArgs[3],adjArgs[4]))
+            self.scene[coords] = box(pos=tuple(coords), length=1, height=1, width=1, color=c, opacity=opacity, material=m)
+
+    def getHeight(self, *args):
+        args = map(int, list(floorFlatten(args)))
+        x0 = args[0]
+        z0 = args[1]
+        h = -20
+        for (x,y,z) in self.scene:
+            if x == x0 and z == z0 and y > h:
+                h = y
+        return h
 
     def setBlocks(self, *args):
         args = map(int, list(floorFlatten(args)))
@@ -78,7 +101,8 @@ class Minecraft:
                             self.scene[(x,y,z)].visible = False
                             del self.scene[(x,y,z)]
         else:
-            c,opacity = getColorScaled(Block(args[3],args[4]))
+            c,opacity = getColorScaled(Block(args[6],args[7]))
+            m = getMaterial(Block(args[6],args[7]))
             for x in range(min(args[0],args[3]),max(args[0],args[3])+1):
                 for y in range(min(args[1],args[4]),max(args[1],args[4])+1):
                     for z in range(min(args[2],args[5]),max(args[2],args[5])+1):
@@ -86,7 +110,7 @@ class Minecraft:
                         if coords in self.scene:
                             self.scene[coords].visible = False
                             del self.scene[coords]
-                        self.scene[coords] = box(pos=coords, length=1, height=1, width=1, color=c, opacity=opacity)
+                        self.scene[coords] = box(pos=coords, length=1, height=1, width=1, color=c, opacity=opacity, material=m)
 
     @staticmethod
     def create(address = None, port = None):
