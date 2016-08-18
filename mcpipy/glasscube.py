@@ -2,7 +2,7 @@
 # Code by Alexander Pruss and under the MIT license
 #
 
-from mcturtle import *
+from mine import *
 
 t = Turtle()
 t.turtle(None)
@@ -16,7 +16,7 @@ def face():
     t.yaw(90)
   t.endface()
 
-t.penblock(GLASS)
+t.penblock(block.GLASS)
 for i in range(2):
   face()
   t.roll(-90)

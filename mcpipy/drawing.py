@@ -4,7 +4,6 @@
 
 import mcpi.minecraft as minecraft
 import mcpi.block as block
-from mcpi.block import *
 from mcpi.entity import *
 from math import *
 from numbers import Number,Integral
@@ -509,15 +508,15 @@ if __name__ == "__main__":
     d = Drawing()
     pos = d.mc.player.getPos()
     d.face([(pos.x,pos.y,pos.z),(pos.x+20,pos.y+20,pos.z),(pos.x+20,pos.y+20,pos.z+20),
-         (pos.x,pos.y,pos.z+20)], GLASS)
+         (pos.x,pos.y,pos.z+20)], block.GLASS)
     n = 20
     for t in range(0,n):
         (x1,z1) = (100*cos(t*2*pi/n),80*sin(t*2*pi/n))
         for p in traverse(V3(pos.x,pos.y-1,pos.z),V3(pos.x+x1,pos.y-1,pos.z+z1)):
-            d.mc.setBlock(p,OBSIDIAN)
+            d.mc.setBlock(p,block.OBSIDIAN)
     n = 40
     vertices = []
     for t in range(0,n):
         (x1,z1) = (100*cos(t*2*pi/n),80*sin(t*2*pi/n))
         vertices.append((pos.x+x1,pos.y,pos.z+z1))
-    d.face(vertices, STAINED_GLASS_BLUE)
+    d.face(vertices, block.STAINED_GLASS_BLUE)

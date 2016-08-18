@@ -9,7 +9,7 @@ from __future__ import print_function
 #
 
 from collections import OrderedDict
-from mc import *
+from mine import *
 from vehicle import *
 from text import *
 from fonts import *
@@ -17,7 +17,7 @@ import drawing
 import time
 import sys
 
-LABEL_BLOCK = REDSTONE_BLOCK
+LABEL_BLOCK = block.REDSTONE_BLOCK
 
 try:
     import _sunfish as sunfish
@@ -73,18 +73,18 @@ def toAlgebraicMove(rowColMove):
     return 'abcdefgh'[c0]+str(r0+1)+'abcdefgh'[c1]+str(r1+1)
 
 def drawSquare(row,col):
-    block = OBSIDIAN if (col + row) % 2 == 0 else QUARTZ_BLOCK
+    block = block.OBSIDIAN if (col + row) % 2 == 0 else block.QUARTZ_BLOCK
     mc.setBlocks(corner.x+row*8,corner.y-1,corner.z+col*8,corner.x+row*8+7,corner.y-1,corner.z+col*8+7,block)
 
 def highlightSquare(row,col):
     mc.setBlocks(corner.x+row*8,corner.y-1,corner.z+col*8,
-                    corner.x+row*8+7,corner.y-1,corner.z+col*8,REDSTONE_BLOCK)
+                    corner.x+row*8+7,corner.y-1,corner.z+col*8,block.REDSTONE_BLOCK)
     mc.setBlocks(corner.x+row*8,corner.y-1,corner.z+col*8,
-                    corner.x+row*8,corner.y-1,corner.z+col*8+7,REDSTONE_BLOCK)
+                    corner.x+row*8,corner.y-1,corner.z+col*8+7,block.REDSTONE_BLOCK)
     mc.setBlocks(corner.x+row*8+7,corner.y-1,corner.z+col*8,
-                    corner.x+row*8+7,corner.y-1,corner.z+col*8+7,REDSTONE_BLOCK)
+                    corner.x+row*8+7,corner.y-1,corner.z+col*8+7,block.REDSTONE_BLOCK)
     mc.setBlocks(corner.x+row*8,corner.y-1,corner.z+col*8+7,
-                    corner.x+row*8+7,corner.y-1,corner.z+col*8+7,REDSTONE_BLOCK)
+                    corner.x+row*8+7,corner.y-1,corner.z+col*8+7,block.REDSTONE_BLOCK)
 
 def drawEmptyBoard():
     mc.setBlocks(corner.x,corner.y,corner.z,corner.x+63,corner.y+MAXHEIGHT,corner.z+63,0)
@@ -193,8 +193,8 @@ KING = (
     ".xxxx.",
     "xxxxxx"))
 
-BLACK = WOOL_GRAY
-WHITE = WOOL_WHITE
+BLACK = block.WOOL_GRAY
+WHITE = block.WOOL_WHITE
 
 pieceBitmaps = {
     'P':PAWN,
@@ -365,7 +365,7 @@ def myGetBlockWithData(pos):
     for boardPos in pieces:
         if pos in pieces[boardPos].curVehicle:
             return pieces[boardPos].curVehicle[pos]
-    return AIR
+    return block.AIR
 
 # z coordinate is cols
 # x coordinate is rows

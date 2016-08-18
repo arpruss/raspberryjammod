@@ -1,20 +1,20 @@
-from mc import *
+from mine import *
 from time import sleep
 
 def drawPillar(n,h1,h2):
     mc.setBlocks(pillarPos[n].x, pillarPos[n].y+h1, pillarPos[n].z,
-        pillarPos[n].x, pillarPos[n].y+h2, pillarPos[n].z, STONE)
+        pillarPos[n].x, pillarPos[n].y+h2, pillarPos[n].z, block.STONE)
 
 def drawRing(n, height, ring):
     size = ring
     mc.setBlocks(pillarPos[n].x-size, pillarPos[n].y+height, pillarPos[n].z-size,
-        pillarPos[n].x+size, pillarPos[n].y+height, pillarPos[n].z+size, WOOL_RED)
+        pillarPos[n].x+size, pillarPos[n].y+height, pillarPos[n].z+size, block.WOOL_RED)
     drawPillar(n, height, height)
     
 def eraseRing(n, height, ring):
     size = ring
     mc.setBlocks(pillarPos[n].x-size, pillarPos[n].y+height, pillarPos[n].z-size,
-        pillarPos[n].x+size, pillarPos[n].y+height, pillarPos[n].z+size, AIR)
+        pillarPos[n].x+size, pillarPos[n].y+height, pillarPos[n].z+size, block.AIR)
     drawPillar(n, height, height)
     
 def moveRing(source, dest):

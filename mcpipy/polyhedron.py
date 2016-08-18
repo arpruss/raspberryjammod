@@ -740,6 +740,8 @@ def polyhedron(d,n,faceMode,x,y,z,size,faceBlock,edgeBlock=None):
                 prev = vertex
 
 if __name__ == "__main__":
+    import mcpi.block as block
+    
     d = drawing.Drawing()
 
     if len(sys.argv)>1:
@@ -755,4 +757,4 @@ if __name__ == "__main__":
         size = 50
 
     pos = d.mc.player.getPos()
-    polyhedron(d,n,faceMode,pos.x, pos.y, pos.z, size,drawing.GLASS,drawing.STONE)
+    polyhedron(d,n,faceMode,pos.x, pos.y, pos.z, size, block.GLASS, block.STONE)

@@ -2,7 +2,7 @@
 # Code by Alexander Pruss and under the MIT license
 #
 
-from mc import *
+from mine import *
 import sys
 import time
 from NeuroPy.NeuroPy import NeuroPy
@@ -26,12 +26,12 @@ def callback(a):
     if a > up:
        pos = mc.player.getPos()
        pos.y = pos.y + 1
-       if mc.getBlock(pos.x,pos.y,pos.z) == AIR.id:
+       if mc.getBlock(pos.x,pos.y,pos.z) == block.AIR.id:
           mc.player.setPos(pos)
     elif a < down:
        pos = mc.player.getPos()
        pos.y = pos.y - 1
-       if mc.getBlock(pos.x,pos.y,pos.z) == AIR.id:
+       if mc.getBlock(pos.x,pos.y,pos.z) == block.AIR.id:
           mc.player.setPos(pos)
 
 if meditation:

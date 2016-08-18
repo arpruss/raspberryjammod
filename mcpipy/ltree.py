@@ -3,11 +3,11 @@
 #
 
 import lsystem
-from mcturtle import *
+from mine import *
 
 t = Turtle()
 t.pendelay(0)
-t.penblock(WOOD)
+t.penblock(block.WOOD)
 t.turtle(None)
 t.pitch(90)
 

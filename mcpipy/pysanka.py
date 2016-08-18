@@ -10,14 +10,14 @@
 # Yeah, these arguments are a mess!
 
 
-from mc import *
+from mine import *
 import colors
 import sys
 import os
 from PIL import Image
 from random import uniform
 
-def egg(block=GOLD_BLOCK, h=40, a=2.5, b=1, c=0.1, sphere=False):
+def egg(block=block.GOLD_BLOCK, h=40, a=2.5, b=1, c=0.1, sphere=False):
     def radius(y):
         if y < 0 or y >= h:
             return 0

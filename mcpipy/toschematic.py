@@ -1,4 +1,4 @@
-from mc import *
+from mine import *
 from ast import literal_eval
 import os
 import sys

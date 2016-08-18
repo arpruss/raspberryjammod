@@ -1,4 +1,4 @@
-from mc import *
+from mine import *
 from time import sleep
 from sys import argv
 import input
@@ -19,7 +19,7 @@ else:
 lastPlatform = None
 lastPlatformBlock = None
 
-UNSOLID = set([WATER_FLOWING.id,WATER_STATIONARY.id,AIR.id,LAVA_FLOWING.id,LAVA_STATIONARY.id])
+UNSOLID = set([block.WATER_FLOWING.id,block.WATER_STATIONARY.id,block.AIR.id,block.LAVA_FLOWING.id,block.LAVA_STATIONARY.id])
 
 while True:
     pos = mc.entity.getPos(entity)
@@ -51,12 +51,12 @@ while True:
             block = mc.getBlock(under)
             if block in UNSOLID:
                 drew = under
-                mc.setBlock(drew,GLASS)
+                mc.setBlock(drew,block.GLASS)
             else:
                 drew = None
             mc.entity.setPos(entity,pos)
             if lastPlatform is not None and lastPlatform != under:
-                mc.setBlock(lastPlatform,AIR)
+                mc.setBlock(lastPlatform,block.AIR)
                 lastPlatform = None
             if drew:
                 lastPlatform = drew

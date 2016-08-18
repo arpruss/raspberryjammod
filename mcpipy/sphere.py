@@ -1,4 +1,4 @@
-from mcturtle import *
+from mineturtle import *
 from mcpi.block import Block
 import sys
 
@@ -11,7 +11,7 @@ else:
 if len(sys.argv) >= 3:
     material = Block.byName(sys.argv[2])
 else:
-    material = GOLD_BLOCK
+    material = block.GOLD_BLOCK
 t.penwidth(2*radius)
 t.penblock(material)
 t.go(0)

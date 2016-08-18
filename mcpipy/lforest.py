@@ -7,7 +7,7 @@ from __future__ import print_function
 
 import lsystem
 import random
-from mcturtle import *
+from mine import *
 
 t = Turtle()
 t.pendelay(0)
@@ -24,12 +24,12 @@ def tree():
     length = 10
 
     t.pendown()
-    t.penblock(WOOD)
+    t.penblock(block.WOOD)
     rules = {'A': [(0.55,'^f[^^f>>>>>>A]>>>[^^f>>>>>>A]>>>>>[^^f>>>>>>A]'),
                     (0.25,'^f>>[^^f>>>>>>A]>>>[^^f>>>>>>A]')]}
 
     axiom = 'fA'
-    material = WOOD
+    material = block.WOOD
 
     t.penwidth(thickness)
     t.penblock(material)
@@ -50,7 +50,7 @@ def tree():
         if thickness < 1:
             thickness = 1
         if length <= 1.6:
-            t.penblock(LEAVES_OAK_PERMANENT)
+            t.penblock(block.LEAVES_OAK_PERMANENT)
         t.penwidth(thickness)
 
     def pop():

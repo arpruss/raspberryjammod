@@ -5,16 +5,16 @@
 # Code by Alexander Pruss and under the MIT license
 #
 
-from mc import *
+from mine import *
 from sys import argv,version
 import mcpi.nbt as nbt
 import json
 
-NEED_SUPPORT = set((SAPLING.id,WATER_FLOWING.id,LAVA_FLOWING.id,GRASS_TALL.id,34,FLOWER_YELLOW.id,
-                    FLOWER_CYAN.id,MUSHROOM_BROWN.id,MUSHROOM_RED.id,TORCH.id,63,DOOR_WOOD.id,LADDER.id,
-                    66,68,69,70,DOOR_IRON.id,72,75,76,77,SUGAR_CANE.id,93,94,96,104,105,106,108,111,
+NEED_SUPPORT = set((block.SAPLING.id,block.WATER_FLOWING.id,block.LAVA_FLOWING.id,block.GRASS_TALL.id,34,block.FLOWER_YELLOW.id,
+                    block.FLOWER_CYAN.id,block.MUSHROOM_BROWN.id,block.MUSHROOM_RED.id,block.TORCH.id,63,block.DOOR_WOOD.id,block.LADDER.id,
+                    66,68,69,70,block.DOOR_IRON.id,72,75,76,77,block.SUGAR_CANE.id,93,94,96,104,105,106,108,111,
                     113,115,116,117,122,127,131,132,141,142,143,145,147,148,149,150,151,154,157,
-                    167,SUNFLOWER.id,176,177,178,183,184,185,186,187,188,189,190,191,192,
+                    167,block.SUNFLOWER.id,176,177,178,183,184,185,186,187,188,189,190,191,192,
                     193,194,195,196,197))
 
 def getValue(v):
@@ -60,7 +60,7 @@ def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,c
     corner2 = (x0+sizeX-1,y0+sizeY-1,z0+sizeZ-1)
 
     if clear:
-        mc.setBlocks(corner1,corner2,AIR)
+        mc.setBlocks(corner1,corner2,block.AIR)
 
     blocks = schematic["Blocks"].value
     data = schematic["Data"].value
@@ -73,9 +73,9 @@ def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,c
             e['y'].value += y0
             e['z'].value += z0
             tileEntityDict[origCoords] = nbtToJson(e)
-    check1 = lambda b : b != CARPET.id and b not in NEED_SUPPORT
+    check1 = lambda b : b != block.CARPET.id and b not in NEED_SUPPORT
     check2 = lambda b : b in NEED_SUPPORT
-    check3 = lambda b : b == CARPET.id
+    check3 = lambda b : b == block.CARPET.id
     mc.postToChat("Rendering");
     for check in (check1,check2,check3):
         for y in range(sizeY):
@@ -85,12 +85,12 @@ def importSchematic(mc,path,x0,y0,z0,centerX=False,centerY=False,centerZ=False,c
                 for z in range(sizeZ):
                     i = offset(x,y,z)
                     b = blocks[i]
-                    if b == AIR.id:
+                    if b == block.AIR.id:
                         continue
                     d = data[i]
                     if not check(b):
                         if check == check1:
-                            b = AIR.id
+                            b = block.AIR.id
                             d = 0
                         else:
                             continue
@@ -129,6 +129,6 @@ if __name__=='__main__':
     (corner0,corner1)=importSchematic(mc,path,pos.x,pos.y,pos.z,centerX=True,centerZ=True)
     mc.postToChat("Done drawing, putting player on top")
     y = corner1[1]
-    while y > -256 and mc.getBlock(pos.x,y-1,pos.z) == AIR.id:
+    while y > -256 and mc.getBlock(pos.x,y-1,pos.z) == block.AIR.id:
         y -= 1
     mc.player.setTilePos(pos.x,y,pos.z)

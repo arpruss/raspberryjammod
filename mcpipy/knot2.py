@@ -6,7 +6,7 @@
 # Draw a knot
 #
 
-from mc import *
+from mine import *
 
 def ball(x0,y0,z0,r,block_type,done):
   for x in range(-r,r):
@@ -32,5 +32,5 @@ while t < 2*pi:
   x = playerPos.x+int( scale * cos(2*t) * (3 + cos(5*t)) )
   y = playerPos.y+int( scale * sin(2*t) * (3 + cos(5*t)) )
   z = playerPos.z+int( scale * sin(5*t) )
-  ball(x,y,z,4,GLOWSTONE_BLOCK,done)
+  ball(x,y,z,4,block.GLOWSTONE_BLOCK,done)
   t += 2*pi / 10000

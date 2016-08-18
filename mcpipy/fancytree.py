@@ -2,7 +2,7 @@
 # Code by Alexander Pruss and under the MIT license
 #
 
-from mcturtle import *
+from mine import *
 import random
 
 def tree(depth,thickness,branchLen):
@@ -11,9 +11,9 @@ def tree(depth,thickness,branchLen):
     if random.random() < 0.2:
         return
     if branchLen < 4:
-        t.penblock(LEAVES_OAK_PERMANENT)
+        t.penblock(block.LEAVES_OAK_PERMANENT)
     else:
-        t.penblock(WOOD)
+        t.penblock(block.WOOD)
     t.penwidth(thickness)
     t.go(branchLen)
     newThickness = thickness / 2

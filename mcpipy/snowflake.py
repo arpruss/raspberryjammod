@@ -3,10 +3,10 @@
 #
 
 import lsystem
-from mcturtle import *
+from mineturtle import *
 t = Turtle()
 t.pendelay(0)
-t.penblock(GOLD_BLOCK)
+t.penblock(block.GOLD_BLOCK)
 t.turtle(None)
 
 rules = { 'F': 'F-F++F-F' }

@@ -5,7 +5,7 @@
 #
 
 from __future__ import print_function
-from mc import *
+from mine import *
 #import pygame.image # comment this out if not using images - it's slow to import.  If you uncomment, uncomment the image reference below.
 import random
 import server
@@ -287,7 +287,7 @@ def officeblock(wallmaterial):
     goody = (point.y%5 == 1) or (point.y%5 == 2)
     goodz = (point.z%5 == 1) or (point.z%5 == 2)
     if (goodx and goody) or (goodz and goody):
-      return GLASS
+      return block.GLASS
     else:
       return wallmaterial
   return f
@@ -317,13 +317,13 @@ def tomaterial(r,g,b):
   # Just a quick hack for now - could of course add more colours
   # and a way of finding the nearest supported colour.
   if (r,g,b) == (255,255,255):  # white
-    return AIR
+    return block.AIR
   elif (r,g,b) == (0,0,0):  # black
-    return OBSIDIAN
+    return block.OBSIDIAN
   elif (r,g,b) == (188,17,66):  # pink
-    return REDSTONE_ORE
+    return block.REDSTONE_ORE
   elif (r,g,b) == (117,169,40):  # green
-    return MELON
+    return block.MELON
   else:
     return None
 
@@ -382,7 +382,7 @@ by multiplying them together.
 
 def clear(shape, transform=identity()):
   """Remove any non-air blocks in the given shape."""
-  fillshape(shape,transform,AIR)
+  fillshape(shape,transform,block.AIR)
 
 def main():
   global mc
@@ -392,48 +392,48 @@ hilly worlds."""
   
   # Create a large empty space with a neat, grassy floor. Takes a long time!
   clear(cuboid(100,10,120))
-  fillshape(floor(100,120), shift(0,-1,0), material=GRASS)
+  fillshape(floor(100,120), shift(0,-1,0), material=block.GRASS)
 
   # Introduce basic shapes/transformations/fill functions.
-  fillshape(arrow, material=STONE)
-  fillshape(arrow, shift(6,0,0), STONE)
-  fillshape(arrow, shift(12,0,0)*rotationx(90), STONE)
-  fillshape(arrow, shift(18,0,0)*rotationx(45), STONE)
-  fillshape(arrow, shift(24,0,0), fillfunc=chequers(WOOD, STONE))
+  fillshape(arrow, material=block.STONE)
+  fillshape(arrow, shift(6,0,0), block.STONE)
+  fillshape(arrow, shift(12,0,0)*rotationx(90), block.STONE)
+  fillshape(arrow, shift(18,0,0)*rotationx(45), block.STONE)
+  fillshape(arrow, shift(24,0,0), fillfunc=chequers(block.WOOD, block.STONE))
 
   # Introduce generator functions.
-  fillshape(cuboid(4,4,4), shift(30,0,0), STONE)
-  fillshape(cuboid(3,8,2), shift(36,0,0), STONE)
+  fillshape(cuboid(4,4,4), shift(30,0,0), block.STONE)
+  fillshape(cuboid(3,8,2), shift(36,0,0), block.STONE)
 
   # Show other simple shapes.
-  fillshape(sphere(5), shift(45,5,0), STONE)
-  fillshape(pyramid(5), shift(50,0,0), STONE)
-  fillshape(cylinder(5,4), shift(65,0,0), STONE)
-  fillshape(cone(5,5), shift(75,0,0), STONE)
+  fillshape(sphere(5), shift(45,5,0), block.STONE)
+  fillshape(pyramid(5), shift(50,0,0), block.STONE)
+  fillshape(cylinder(5,4), shift(65,0,0), block.STONE)
+  fillshape(cone(5,5), shift(75,0,0), block.STONE)
   
   # Show some fill functions.
-  fillshape(cuboid(4,4,4), shift(80,0,5), fillfunc=chequers(GOLD_BLOCK, IRON_BLOCK))
-  fillshape(pyramid(5), shift(80,0,10), fillfunc=randomfill([SAND, SANDSTONE]))
-  fillshape(hollowcuboid(4,6,4), shift(80,0,22), WOOD)
-  fillshape(building(2,6,2), shift(80,0,30), fillfunc=officeblock(COBBLESTONE))
+  fillshape(cuboid(4,4,4), shift(80,0,5), fillfunc=chequers(block.GOLD_BLOCK, block.IRON_BLOCK))
+  fillshape(pyramid(5), shift(80,0,10), fillfunc=randomfill([block.SAND, block.SANDSTONE]))
+  fillshape(hollowcuboid(4,6,4), shift(80,0,22), block.WOOD)
+  fillshape(building(2,6,2), shift(80,0,30), fillfunc=officeblock(block.COBBLESTONE))
 
   # Line drawing.
-  fillshape(line(80,0,40,85,5,45), material=WOOL)
-  fillshape(line(80,0,40,80,2,50), material=WOOL)
-  fillshape(line(80,2,50,85,5,45), material=WOOL)
+  fillshape(line(80,0,40,85,5,45), material=block.WOOL)
+  fillshape(line(80,0,40,80,2,50), material=block.WOOL)
+  fillshape(line(80,2,50,85,5,45), material=block.WOOL)
   
   # Fun lava sphere.
-  fillshape(sphere(10), shift(80,10,60), GLASS)
-  fillshape(sphere(9), shift(80,10,60), LAVA)
+  fillshape(sphere(10), shift(80,10,60), block.GLASS)
+  fillshape(sphere(9), shift(80,10,60), block.LAVA)
 
   # Fractals - far easier to code than to build by hand.
-  fillshape(mengersponge(0), shift(70,0,75), IRON_BLOCK)
-  fillshape(mengersponge(1), shift(66,0,75), IRON_BLOCK)
-  fillshape(mengersponge(2), shift(56,0,75), IRON_BLOCK)
-  fillshape(mengersponge(3), shift(28,0,75), IRON_BLOCK)
+  fillshape(mengersponge(0), shift(70,0,75), block.IRON_BLOCK)
+  fillshape(mengersponge(1), shift(66,0,75), block.IRON_BLOCK)
+  fillshape(mengersponge(2), shift(56,0,75), block.IRON_BLOCK)
+  fillshape(mengersponge(3), shift(28,0,75), block.IRON_BLOCK)
 
   # Maze.
-  fillshape(maze(25,25), shift(0,0,75), STONE)
+  fillshape(maze(25,25), shift(0,0,75), block.STONE)
 
   # Picture - can use the same technique to draw text.
 #  fillshape(cuboid(24,30,1), shift(0,0,30), fillfunc=image("pi.png",24,30))

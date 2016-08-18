@@ -10,7 +10,7 @@
 # sun, moon or pluto.
 #
 
-from mc import *
+from mine import *
 from vehicle import *
 import time
 import sys
@@ -82,7 +82,7 @@ center = mc.player.getPos()
 azi = mc.player.getRotation() * pi/180.
 alt = -mc.player.getPitch() * pi/180.
 
-GRENADE = { (-1,0,0):TNT, (1,0,0):TNT, (0,-1,0):TNT, (0,1,0):TNT, (0,0,1):TNT, (0,0,-1):TNT }
+GRENADE = { (-1,0,0):block.TNT, (1,0,0):block.TNT, (0,-1,0):block.TNT, (0,1,0):block.TNT, (0,0,1):block.TNT, (0,0,-1):block.TNT }
 
 grenade = Vehicle(mc, False)
 grenade.setVehicle(GRENADE)
@@ -105,4 +105,4 @@ while True:
     if t > path[-1][0]:
         break
 
-mc.setBlock(path[-1][1],FIRE)
+mc.setBlock(path[-1][1],block.FIRE)

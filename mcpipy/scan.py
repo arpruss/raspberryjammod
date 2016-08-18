@@ -1,6 +1,6 @@
 from vehicle import Vehicle,getSavePath,getLoadPath
 import sys
-from mc import *
+from mine import *
 from time import sleep
 import os
 
@@ -66,7 +66,7 @@ def restore(vehicle,name,pos):
     maxY = max(y for (x,y,z) in vehicle.baseVehicle)
     maxZ = max(z for (x,y,z) in vehicle.baseVehicle)
     mc.postToChat('Erasing')
-    mc.setBlocks(pos.x+minX,pos.y+minY,pos.z+minZ,pos.x+maxX,pos.y+maxY,pos.z+maxZ,AIR)
+    mc.setBlocks(pos.x+minX,pos.y+minY,pos.z+minZ,pos.x+maxX,pos.y+maxY,pos.z+maxZ,block.AIR)
     mc.postToChat('Drawing')
     vehicle.draw(pos.x,pos.y,pos.z,vehicle.baseAngle)
     mc.postToChat('Done')
@@ -102,7 +102,7 @@ for x in range(corner1[0],corner2[0]+1):
     for y in range(corner1[1],corner2[1]+1):
         for z in range(corner1[2],corner2[2]+1):
             block = vehicle.getBlockWithData(basePos.x+x,basePos.y+y,basePos.z+z)
-            if block.id != AIR.id:
+            if block.id != block.AIR.id:
                 dict[(x,y,z)] = block
 mc.postToChat("Scanned "+str(len(dict))+" blocks")
 vehicle.setVehicle(dict, rot)

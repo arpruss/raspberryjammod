@@ -2,9 +2,9 @@
 # Code by Alexander Pruss and under the MIT license
 #
 
-from mcturtle import *
+from mineturtle import *
 t = Turtle()
-t.penblock(GOLD_BLOCK)
+t.penblock(block.GOLD_BLOCK)
 t.turtle(GIANT)
 t.pendelay(0.01)
 for i in range(7):

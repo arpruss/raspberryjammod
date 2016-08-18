@@ -2,7 +2,7 @@
 # Code by Alexander Pruss and under the MIT license
 #
 import lsystem
-from mcturtle import *
+from mine import *
 from sys import argv
 t = Turtle()
 t.pendelay(0)
@@ -18,7 +18,7 @@ def go():
   global count
   # seven segments per basic unit
   if count % 7 == 0:
-      t.penblock(Block(WOOL.id, (count/7)%16))
+      t.penblock(Block(block.WOOL.id, (count/7)%16))
   count += 1
   t.go(4)
 

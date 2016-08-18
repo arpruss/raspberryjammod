@@ -2,7 +2,7 @@
 # Code by Alexander Pruss and under the MIT license
 #
 
-from mc import *
+from mine import *
 
 def draw_surface(xf,yf,zf,a0,a1,asteps,b0,b1,bsteps,ox,oy,oz,scalex,scaley,scalez,mcblock,mcmeta):
   for i in range(asteps):
@@ -25,7 +25,7 @@ zformula = lambda a,b: 4 * (1- cos(a)/2) * sin(b)
 
 scale = 3
 
-b = STAINED_GLASS.id
+b = block.STAINED_GLASS.id
 m = 5
 
 draw_surface(xformula,yformula,zformula,0,2*pi,150*scale,0,2*pi,150*scale,playerPos.x,playerPos.y+16*scale,playerPos.z,scale,scale,scale,b, m)

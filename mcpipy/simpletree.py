@@ -2,7 +2,7 @@
 # Code by Alexander Pruss and under the MIT license
 #
 
-from mcturtle import *
+from mineturtle import *
 t = Turtle()
 t.pendelay(0)
 t.turtle(None)
@@ -18,6 +18,6 @@ def tree(counter,branchLen):
     t.roll(90)
   t.back(branchLen)
 
-t.penblock(WOOD)
+t.penblock(block.WOOD)
 t.verticalangle(90)
 tree(6,20)

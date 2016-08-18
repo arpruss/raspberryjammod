@@ -6,7 +6,7 @@
 # Draw a knot
 #
 
-from mc import *
+from mine import *
 
 mc = Minecraft()
 playerPos = mc.player.getPos()
@@ -22,6 +22,6 @@ while t < 2*pi:
   y = y0+5*scale+int( scale * sin(2*t) * (3 + cos(5*t)) )
   z = z0+int( scale * sin(5*t) )
   if (x,y,z) not in done:
-      mc.setBlock(x,y,z,GOLD_BLOCK)
+      mc.setBlock(x,y,z,block.GOLD_BLOCK)
       done.add((x,y,z))
   t += 2*pi / 10000

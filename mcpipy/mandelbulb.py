@@ -6,7 +6,7 @@
 #
 # Options for half: south, north, east, west, up, down
 
-from mc import *
+from mine import *
 import mcpi.settings as settings
 import cmath
 import time
@@ -38,7 +38,7 @@ if len(sys.argv) < 4:
 else:
     half = sys.argv[3].lower()[0]
 
-palette = list(reversed([WOOL_WHITE,HARDENED_CLAY_STAINED_WHITE,WOOL_PINK,WOOL_LIGHT_GRAY,WOOL_LIGHT_BLUE,WOOL_MAGENTA,WOOL_PURPLE,HARDENED_CLAY_STAINED_LIGHT_BLUE,HARDENED_CLAY_STAINED_LIGHT_GRAY,HARDENED_CLAY_STAINED_MAGENTA,HARDENED_CLAY_STAINED_PINK,HARDENED_CLAY_STAINED_RED,WOOL_RED,REDSTONE_BLOCK,HARDENED_CLAY_STAINED_ORANGE,WOOL_ORANGE,HARDENED_CLAY_STAINED_YELLOW,WOOL_YELLOW,WOOL_LIME,HARDENED_CLAY_STAINED_LIME,HARDENED_CLAY_STAINED_PURPLE,HARDENED_CLAY_STAINED_CYAN,WOOL_CYAN,WOOL_BLUE,HARDENED_CLAY_STAINED_BLUE,WOOL_GRAY,HARDENED_CLAY_STAINED_GREEN,WOOL_GREEN,HARDENED_CLAY_STAINED_BROWN,WOOL_BROWN,HARDENED_CLAY_STAINED_GRAY,WOOL_BLACK]));
+palette = list(reversed([block.WOOL_WHITE,block.HARDENED_CLAY_STAINED_WHITE,block.WOOL_PINK,block.WOOL_LIGHT_GRAY,block.WOOL_LIGHT_BLUE,block.WOOL_MAGENTA,block.WOOL_PURPLE,block.HARDENED_CLAY_STAINED_LIGHT_BLUE,block.HARDENED_CLAY_STAINED_LIGHT_GRAY,block.HARDENED_CLAY_STAINED_MAGENTA,block.HARDENED_CLAY_STAINED_PINK,block.HARDENED_CLAY_STAINED_RED,block.WOOL_RED,block.REDSTONE_BLOCK,block.HARDENED_CLAY_STAINED_ORANGE,block.WOOL_ORANGE,block.HARDENED_CLAY_STAINED_YELLOW,block.WOOL_YELLOW,block.WOOL_LIME,block.HARDENED_CLAY_STAINED_LIME,block.HARDENED_CLAY_STAINED_PURPLE,block.HARDENED_CLAY_STAINED_CYAN,block.WOOL_CYAN,block.WOOL_BLUE,block.HARDENED_CLAY_STAINED_BLUE,block.WOOL_GRAY,block.HARDENED_CLAY_STAINED_GREEN,block.WOOL_GREEN,block.HARDENED_CLAY_STAINED_BROWN,block.WOOL_BROWN,block.HARDENED_CLAY_STAINED_GRAY,block.WOOL_BLACK]));
 
 def positions(pos,scale):
     yield pos
@@ -128,7 +128,7 @@ def draw():
             for mcZ in rangeZ:
                 radius = calculate(toBulb(centerMC,centerBulb,scale,mcX,mcY,mcZ),scale)
                 if radius < 0:
-                    mc.setBlock(mcX,mcY,mcZ,AIR)
+                    mc.setBlock(mcX,mcY,mcZ,block.AIR)
                 else:
                     i = int(len(palette) / (fractalSize/2) * radius)
                     if i >= len(palette):

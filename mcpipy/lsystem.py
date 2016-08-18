@@ -7,7 +7,7 @@
 import collections
 import random
 import mcpi.settings
-from mcturtle import *
+from mine import *
 
 try:
     basestring
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     t.go(10)
     t.verticalangle(90)
     t.pendown()
-    t.penblock(WOOD)
+    t.penblock(block.WOOD)
 
 # a fairly simple example with rules from http://www.nbb.cornell.edu/neurobio/land/OldStudentProjects/cs490-94to95/hwchen/
 #    rules = {'F':'F[-&<F][<++&F]||F[--&>F][+&F]'}
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     angle = 15
     thickness = 8
     length = 10 if mcpi.settings.isPE else 15;
-    material = WOOD
+    material = block.WOOD
     t.penwidth(thickness)
     t.penblock(material)
 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         if thickness < 1:
             thickness = 1
         if length <= 1:
-            t.penblock(LEAVES_OAK_PERMANENT)
+            t.penblock(block.LEAVES_OAK_PERMANENT)
         t.penwidth(thickness)
 
     def pop():

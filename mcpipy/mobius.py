@@ -2,7 +2,7 @@
 # Code by Alexander Pruss and under the MIT license
 #
 
-from mc import *
+from mine import *
 import sys
 
 def draw_surface(xf,yf,zf,a0,a1,asteps,b0,b1,bsteps,ox,oy,oz,scalex,scaley,scalez,mcblock,mcmeta):
@@ -26,7 +26,7 @@ zformula = lambda a,b: (3 + a * cos(b/2)) * sin(b)
 
 scale = 15
 
-b = STONE
+b = block.STONE
 m = 0
 
 draw_surface(xformula,yformula,zformula,-1.,1.,10*scale,0,2*pi,30*scale,playerPos.x,playerPos.y+scale,playerPos.z,scale,scale,scale,b, m)

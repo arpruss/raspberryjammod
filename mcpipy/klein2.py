@@ -2,7 +2,7 @@
 # Code by Alexander Pruss and under the MIT license
 #
 
-from mc import *
+from mine import *
 
 def draw_surface(xf,yf,zf,a0,a1,asteps,b0,b1,bsteps,ox,oy,oz,scalex,scaley,scalez,mcblock,mcmeta):
   for i in range(asteps):
@@ -19,7 +19,7 @@ playerPos = mc.player.getPos()
 
 scale = 3
 
-b = STAINED_GLASS.id
+b = block.STAINED_GLASS.id
 m = 5
 
 # http://www.gnuplotting.org/klein-bottle/

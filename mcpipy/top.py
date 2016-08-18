@@ -1,4 +1,4 @@
-from mc import *
+from mine import *
 
 mc = Minecraft()
 
