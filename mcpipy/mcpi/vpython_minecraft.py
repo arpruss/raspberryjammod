@@ -7,26 +7,11 @@ from __future__ import absolute_import
 from visual import *
 from .util import flatten,floorFlatten
 from .block import Block
-from .vpython_colors import colors
 from .vec3 import Vec3
 import time
 
-def getColorRGBA(block):
-    if block.id == 0:
-        return 255,255,255,0
-    try:
-        return colors[block]
-    except:
-        try:
-            return colors[Block(block.id, block.data)]
-        except:
-            try:
-                return colors[Block(block.id)]
-            except:
-                return 0,255,0,255
-                
 def getColorScaled(block):
-    r,g,b,opacity = getColorRGBA(block)
+    r,g,b,opacity = block.getRGBA()
     return (r/255.,g/255.,b/255.),opacity/255.
     
 class Ignore:
