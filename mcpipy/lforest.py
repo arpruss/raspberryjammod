@@ -7,7 +7,7 @@ from __future__ import print_function
 
 import lsystem
 import random
-from mine import *
+from mineturtle import *
 
 t = Turtle()
 t.pendelay(0)

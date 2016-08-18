@@ -2,8 +2,9 @@
 # Code by Alexander Pruss and under the MIT license
 #
 import lsystem
-from mine import *
+from mineturtle import *
 from sys import argv
+
 t = Turtle()
 t.pendelay(0)
 t.turtle(None)

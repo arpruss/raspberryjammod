@@ -3,7 +3,7 @@
 #
 
 import lsystem
-from mine import *
+from mineturtle import *
 
 t = Turtle()
 t.pendelay(0)

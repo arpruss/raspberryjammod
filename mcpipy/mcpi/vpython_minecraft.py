@@ -87,5 +87,5 @@ class Minecraft:
     def create(address = None, port = None):
         return Minecraft()
 
-# some monkey-patching        
+# some monkey-patching
 time.sleep = sleep

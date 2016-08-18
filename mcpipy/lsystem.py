@@ -7,7 +7,7 @@
 import collections
 import random
 import mcpi.settings
-from mine import *
+from mineturtle import *
 
 try:
     basestring
@@ -126,3 +126,4 @@ if __name__ == "__main__":
     }
 
     lsystem(axiom, rules, dictionary, 9 if mcpi.settings.isPE else 11)
+    
