@@ -10,6 +10,7 @@
 
 from __future__ import absolute_import
 from visual import *
+import thread
 from .util import flatten,floorFlatten
 from .block import Block
 from .vec3 import Vec3
@@ -23,6 +24,7 @@ materialList[Block.MATERIAL_PLASTIC] = materials.plastic
 materialList[Block.MATERIAL_EMISSIVE] = materials.emissive
 materialList[Block.MATERIAL_ROUGH] = materials.rough
 
+originalsleep = None
 
 def getMaterial(block):
     return materialList[block.getMaterial()]    
@@ -39,7 +41,7 @@ class Ignore:
         return self.undefinedFunction        
 	
 class Minecraft:
-    def __init__(self, connection=None, autoId=True):
+    def __init__(self, connection=None, autoId=True, player=False):
         self.scene = {}
         self.player = Ignore()
 
@@ -48,7 +50,53 @@ class Minecraft:
         self.player.getRotation = lambda : 0
         self.player.getPitch = lambda : 0
         
-        self.events = Ignore()     
+        self.events = Ignore()
+        
+        if player:
+            self.x = 0.5
+            self.y = 0.5
+            self.z = 0.5
+            self.yaw = 0
+
+            self.updatePosition = True      
+            self.me = cone(pos=(self.x-0.5,self.y,self.z-0.5), axis=(1,0,0), radius=0.5)        
+            #self.me.pos = (self.x-0.5,self.y,self.z-0.5)        
+            thread.start_new_thread(self.moveAround, ())
+            scene.bind('keydown', self.keyInput)
+        
+    def keyInput(self,evt):        
+        if evt.key == 'w':
+            self.x -= .25 * -sin(radians(self.yaw))
+            self.z -= .25 * cos(radians(self.yaw))
+            self.updatePosition = True
+        elif evt.key == 's':
+            self.x += .25 * -sin(radians(self.yaw))
+            self.z += .25 * cos(radians(self.yaw))
+            self.updatePosition = True
+        elif evt.key == 'a':
+            self.x += .25 * -sin(radians(self.yaw+90))
+            self.z += .25 * cos(radians(self.yaw+90))
+            self.updatePosition = True
+        elif evt.key == 'd':
+            self.x += .25 * -sin(radians(self.yaw-90))
+            self.z += .25 * cos(radians(self.yaw-90))
+            self.updatePosition = True
+        elif evt.key == 'q':
+            self.yaw -= 45/2.
+            self.updatePosition = True
+        elif evt.key == 'e':
+            self.yaw += 45./2.
+            self.updatePosition = True
+        self.yaw %= 360.
+        
+    def moveAround(self):
+        while True:
+            originalsleep(0.05)
+            if self.updatePosition:
+                axis = (sin(radians(self.yaw)), 0, -cos(radians(self.yaw)))
+                self.me.pos = (self.x-0.5,self.y,self.z-0.5)        
+                self.me.axis = axis
+                self.updatePosition = False
         
     def undefinedFunction(self, *args):
         pass
@@ -60,22 +108,22 @@ class Minecraft:
         print(message)
 		
     def setBlock(self, *args):
-        adjArgs = map(int, list(floorFlatten(args)))
-        for i in range(len(adjArgs), 5):
-            adjArgs.append(0)
+        args = map(int, list(floorFlatten(args)))
+        for i in range(len(args), 5):
+            args.append(0)
             
-        coords = tuple(adjArgs[0:3])
+        coords = tuple(args[0:3])
 		
-        if adjArgs[3] == 0:
+        if args[3] == 0:
             if coords in self.scene:
                 self.scene[coords].visible = False
                 del self.scene[coords]
         else:
-            c,opacity = getColorScaled(Block(adjArgs[3],adjArgs[4]))
+            c,opacity = getColorScaled(Block(args[3],args[4]))
             if coords in self.scene:
                 self.scene[coords].visible = False
                 del self.scene[coords]            
-            m = getMaterial(Block(adjArgs[3],adjArgs[4]))
+            m = getMaterial(Block(args[3],args[4]))
             self.scene[coords] = box(pos=tuple(coords), length=1, height=1, width=1, color=c, opacity=opacity, material=m)
 
     def getHeight(self, *args):
@@ -117,4 +165,5 @@ class Minecraft:
         return Minecraft()
 
 # monkey-patch normal sleep function with visual python's
+originalsleep = time.sleep
 time.sleep = sleep
