@@ -14,6 +14,7 @@ import thread
 from .util import flatten,floorFlatten
 from .block import Block
 from .vec3 import Vec3
+from os import environ
 import time
 
 materialList = [None for i in range(Block.MAX_MATERIAL+1)]
@@ -41,26 +42,32 @@ class Ignore:
         return self.undefinedFunction        
 	
 class Minecraft:
-    def __init__(self, connection=None, autoId=True, player=False):
+    def __init__(self, connection=None, autoId=True):
         self.scene = {}
-        self.player = Ignore()
+        self.x = 0.5
+        self.y = 0.5
+        self.z = 0.5
+        self.yaw = 0
 
-        self.player.getPos = lambda : Vec3(0,0,0)
-        self.player.getTilePos = lambda : Vec3(0,0,0)
-        self.player.getRotation = lambda : 0
-        self.player.getPitch = lambda : 0
-        
         self.events = Ignore()
         
-        if player:
-            self.x = 0.5
-            self.y = 0.5
-            self.z = 0.5
-            self.yaw = 0
+        self.player = Ignore()
+        
+        self.player.getPos = lambda : Vec3(self.x,self.y,self.z)
+        self.player.getTilePos = lambda : Vec3(int(floor(self.x)),int(floor(self.y)),int(floor(self.z)))
+        self.player.getRotation = lambda : self.yaw
+        self.player.getPitch = lambda : 0
+        
+        self.entity = Ignore()
 
-            self.updatePosition = True      
-            self.me = cone(pos=(self.x-0.5,self.y,self.z-0.5), axis=(1,0,0), radius=0.5)        
-            #self.me.pos = (self.x-0.5,self.y,self.z-0.5)        
+        self.entity.getPos = lambda a: Vec3(self.x,self.y,self.z)
+        self.entity.getTilePos = lambda a: Vec3(int(floor(self.x)),int(floor(self.y)),int(floor(self.z)))
+        self.entity.getRotation = lambda a: self.yaw
+        self.entity.getPitch = lambda a: 0
+        
+        if environ.get('VPYTHON_MCPI', '1') == 'player':
+            self.me = cone(pos=(self.x-0.5,self.y,self.z-0.5), axis=(1,0,0), radius=0.5)
+            self.updatePosition()
             thread.start_new_thread(self.moveAround, ())
             scene.bind('keydown', self.keyInput)
         
@@ -68,35 +75,39 @@ class Minecraft:
         if evt.key == 'w':
             self.x -= .25 * -sin(radians(self.yaw))
             self.z -= .25 * cos(radians(self.yaw))
-            self.updatePosition = True
+            self.needUpdate = True
         elif evt.key == 's':
             self.x += .25 * -sin(radians(self.yaw))
             self.z += .25 * cos(radians(self.yaw))
-            self.updatePosition = True
+            self.needUpdate = True
         elif evt.key == 'a':
             self.x += .25 * -sin(radians(self.yaw+90))
             self.z += .25 * cos(radians(self.yaw+90))
-            self.updatePosition = True
+            self.needUpdate = True
         elif evt.key == 'd':
             self.x += .25 * -sin(radians(self.yaw-90))
             self.z += .25 * cos(radians(self.yaw-90))
-            self.updatePosition = True
+            self.needUpdate = True
         elif evt.key == 'q':
             self.yaw -= 45/2.
-            self.updatePosition = True
+            self.needUpdate = True
         elif evt.key == 'e':
             self.yaw += 45./2.
-            self.updatePosition = True
+            self.needUpdate = True
         self.yaw %= 360.
+        
+    def updatePosition(self):
+        axis = (sin(radians(self.yaw)), 0, -cos(radians(self.yaw)))
+        self.me.pos = (self.x-0.5,self.y,self.z-0.5)        
+        self.me.axis = axis
+        self.me.visible = True
+        self.needUpdate = False
         
     def moveAround(self):
         while True:
             originalsleep(0.05)
-            if self.updatePosition:
-                axis = (sin(radians(self.yaw)), 0, -cos(radians(self.yaw)))
-                self.me.pos = (self.x-0.5,self.y,self.z-0.5)        
-                self.me.axis = axis
-                self.updatePosition = False
+            if self.needUpdate:
+                self.updatePosition()
         
     def undefinedFunction(self, *args):
         pass
