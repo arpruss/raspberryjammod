@@ -153,9 +153,9 @@ class Turtle:
         """Move with drawing"""
         self.pen = True
 
-    def penblock(self, block):
+    def penblock(self, b):
         """Set material of pen block"""
-        self.block = block
+        self.block = b
 
     def positionIn(self):
         pos = self.mc.player.getPos()

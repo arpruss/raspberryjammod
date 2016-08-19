@@ -758,10 +758,10 @@ class Mesh(object):
         self.corner2 = (V3(maximum) * scale + translate).iceil()
 
     def drawVertices(self, vertices, material):
-        block = self.materialBlocks[material]
+        b = self.materialBlocks[material]
         for vertex in vertices:
             if material != self.drawRecord.get(vertex):
-                self.setBlock(vertex, block)
+                self.setBlock(vertex, b)
                 self.drawRecord[vertex] = material
 
     def render(self):

@@ -103,12 +103,12 @@ def draw():
 
         esc = escapeTime(c)
         if esc < 0:
-            block = block.AIR
+            b = block.AIR
         elif esc < ESCAPE:
-            block = palette[esc % len(palette)]
+            b = palette[esc % len(palette)]
         else:
-            block = black
-        mc.setBlock(mcX, centerMC.y, mcY,block)
+            b = black
+        mc.setBlock(mcX, centerMC.y, mcY, b)
         if count >= 1000:
             if pollZoom():
                 break

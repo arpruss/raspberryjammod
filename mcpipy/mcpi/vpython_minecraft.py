@@ -76,7 +76,7 @@ class PlayerCommand:
         self.mc.updatePosition()
         
     def setPitch(self, pitch):
-        self.mc.yaw = yaw
+        self.mc.pitch = pitch
         self.mc.updatePosition()
         
     def undefinedFunction(self, *args):
@@ -121,12 +121,12 @@ class Minecraft:
 
     def keyInput(self,evt):        
         if evt.key == 'w':
-            self.x -= .25 * -sin(radians(self.yaw))
-            self.z -= .25 * cos(radians(self.yaw))
-            self.updatePosition()
-        elif evt.key == 's':
             self.x += .25 * -sin(radians(self.yaw))
             self.z += .25 * cos(radians(self.yaw))
+            self.updatePosition()
+        elif evt.key == 's':
+            self.x -= .25 * -sin(radians(self.yaw))
+            self.z -= .25 * cos(radians(self.yaw))
             self.updatePosition()
         elif evt.key == 'a':
             self.x += .25 * -sin(radians(self.yaw+90))
@@ -151,7 +151,7 @@ class Minecraft:
         
     def updatePosition(self):
         self.yaw %= 360.
-        axis = (sin(radians(self.yaw)), 0, -cos(radians(self.yaw)))
+        axis = (-sin(radians(self.yaw)), 0, cos(radians(self.yaw)))
         self.me.pos = (self.x-0.5,self.y,self.z-0.5)        
         self.me.axis = axis
         self.me.visible = True

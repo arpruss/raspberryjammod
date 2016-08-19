@@ -48,8 +48,8 @@ while True:
     if move:
         if player:
             under = (int(floor(pos.x)),int(floor(pos.y))-1,int(floor(pos.z)))
-            block = mc.getBlock(under)
-            if block in UNSOLID:
+            b = mc.getBlock(under)
+            if b in UNSOLID:
                 drew = under
                 mc.setBlock(drew,block.GLASS)
             else:
@@ -60,7 +60,7 @@ while True:
                 lastPlatform = None
             if drew:
                 lastPlatform = drew
-                lastPlatformBlock = block
+                lastPlatformBlock = b
         else:
             mc.entity.setPos(entity,pos)
     sleep(0.2)

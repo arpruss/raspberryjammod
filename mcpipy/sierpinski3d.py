@@ -62,8 +62,8 @@ tetrahedra = sierpinski(height,pos.x,pos.y+height,pos.z,levels)
 mc.postToChat("Drawing")
 if len(argv) >= 2:
     specifiedBlock = Block.byName(argv[1])
-    block = lambda level : specifiedBlock
+    b = lambda level : specifiedBlock
 else:
-    block = lambda level : RAINBOW[level % len(RAINBOW)]
+    b = lambda level : RAINBOW[level % len(RAINBOW)]
 for tet in tetrahedra:
-    drawTetrahedron(tet[1],tet[2],block(tet[0]))
+    drawTetrahedron(tet[1],tet[2],b(tet[0]))
