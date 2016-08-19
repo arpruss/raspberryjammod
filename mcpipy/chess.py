@@ -73,8 +73,8 @@ def toAlgebraicMove(rowColMove):
     return 'abcdefgh'[c0]+str(r0+1)+'abcdefgh'[c1]+str(r1+1)
 
 def drawSquare(row,col):
-    block = block.OBSIDIAN if (col + row) % 2 == 0 else block.QUARTZ_BLOCK
-    mc.setBlocks(corner.x+row*8,corner.y-1,corner.z+col*8,corner.x+row*8+7,corner.y-1,corner.z+col*8+7,block)
+    b = block.OBSIDIAN if (col + row) % 2 == 0 else block.QUARTZ_BLOCK
+    mc.setBlocks(corner.x+row*8,corner.y-1,corner.z+col*8,corner.x+row*8+7,corner.y-1,corner.z+col*8+7,b)
 
 def highlightSquare(row,col):
     mc.setBlocks(corner.x+row*8,corner.y-1,corner.z+col*8,

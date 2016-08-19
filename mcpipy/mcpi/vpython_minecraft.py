@@ -34,13 +34,68 @@ def getColorScaled(block):
     r,g,b,opacity = block.getRGBA()
     return (r/255.,g/255.,b/255.),opacity/255.
     
-class Ignore:
+class Ignore(object):
     def undefinedFunction(self, *args):
         return []
         
     def __getattr__(self,name):
         return self.undefinedFunction        
-	
+
+class PlayerCommand:
+    def __init__(self, mc):
+        self.mc = mc
+
+    def getPos(self):
+        return Vec3(self.mc.x,self.mc.y,self.mc.z)
+        
+    def getTilePos(self):
+        return Vec3(int(floor(self.mc.x)),int(floor(self.mc.y)),int(floor(self.mc.z)))
+        
+    def getRotation(self):
+        return self.mc.yaw
+
+    def getPitch(self):
+        return self.mc.pitch
+        
+    def setTilePos(self, *args):
+        args = tuple(int(x) for x in floorFlatten(args))
+        self.mc.x = args[0]
+        self.mc.y = args[1]
+        self.mc.z = args[2]
+        self.mc.updatePosition()
+        
+    def setPos(self, *args):
+        args = tuple(float(x) for x in flatten(args))
+        self.mc.x = args[0]
+        self.mc.y = args[1]
+        self.mc.z = args[2]
+        self.mc.updatePosition()
+        
+    def setRotation(self, yaw):
+        self.mc.yaw = yaw
+        self.mc.updatePosition()
+        
+    def setPitch(self, pitch):
+        self.mc.yaw = yaw
+        self.mc.updatePosition()
+        
+    def undefinedFunction(self, *args):
+        return []
+        
+    def __getattr__(self,name):
+        return self.undefinedFunction        
+
+class EntityCommand:
+    def __init__(self, playerCommand):
+        self.playerCommand = playerCommand
+        
+    def passToPlayer(self,function,*args):
+        args = tuple(flatten(args))
+        getattr(self.playerCommand, function)(args[1:])
+        
+    def __getattr__(self,name):
+        return lambda(args): self.passToPlayer(self,name,args)
+        
 class Minecraft:
     def __init__(self, connection=None, autoId=True):
         self.scene = {}
@@ -48,75 +103,73 @@ class Minecraft:
         self.y = 0.5
         self.z = 0.5
         self.yaw = 0
+        self.pitch = 0
 
         self.events = Ignore()
+        self.player = PlayerCommand(self)
+        self.entity = EntityCommand(self.player)
         
-        self.player = Ignore()
+        self.me = cone(pos=(self.x-0.5,self.y,self.z-0.5), axis=(1,0,0), radius=0.5, color=color.red, visible=False)
+        scene.bind('keydown', self.keyInput)
         
-        self.player.getPos = lambda : Vec3(self.x,self.y,self.z)
-        self.player.getTilePos = lambda : Vec3(int(floor(self.x)),int(floor(self.y)),int(floor(self.z)))
-        self.player.getRotation = lambda : self.yaw
-        self.player.getPitch = lambda : 0
+    def undefinedFunction(self, *args):
+        return []
         
-        self.entity = Ignore()
+    def __getattr__(self,name):
+        print(name)
+        return self.undefinedFunction        
 
-        self.entity.getPos = lambda a: Vec3(self.x,self.y,self.z)
-        self.entity.getTilePos = lambda a: Vec3(int(floor(self.x)),int(floor(self.y)),int(floor(self.z)))
-        self.entity.getRotation = lambda a: self.yaw
-        self.entity.getPitch = lambda a: 0
-        
-        if environ.get('VPYTHON_MCPI', '1') == 'player':
-            self.me = cone(pos=(self.x-0.5,self.y,self.z-0.5), axis=(1,0,0), radius=0.5)
-            self.updatePosition()
-            thread.start_new_thread(self.moveAround, ())
-            scene.bind('keydown', self.keyInput)
-        
     def keyInput(self,evt):        
         if evt.key == 'w':
             self.x -= .25 * -sin(radians(self.yaw))
             self.z -= .25 * cos(radians(self.yaw))
-            self.needUpdate = True
+            self.updatePosition()
         elif evt.key == 's':
             self.x += .25 * -sin(radians(self.yaw))
             self.z += .25 * cos(radians(self.yaw))
-            self.needUpdate = True
+            self.updatePosition()
         elif evt.key == 'a':
             self.x += .25 * -sin(radians(self.yaw+90))
             self.z += .25 * cos(radians(self.yaw+90))
-            self.needUpdate = True
+            self.updatePosition()
         elif evt.key == 'd':
             self.x += .25 * -sin(radians(self.yaw-90))
             self.z += .25 * cos(radians(self.yaw-90))
-            self.needUpdate = True
+            self.updatePosition()
         elif evt.key == 'q':
             self.yaw -= 45/2.
-            self.needUpdate = True
+            self.updatePosition()
         elif evt.key == 'e':
             self.yaw += 45./2.
-            self.needUpdate = True
-        self.yaw %= 360.
+            self.updatePosition()
+        elif evt.key == ' ':
+            self.y += 0.25
+            self.updatePosition()
+        elif evt.key == '.':
+            self.y -= 0.25
+            self.updatePosition()
         
     def updatePosition(self):
+        self.yaw %= 360.
         axis = (sin(radians(self.yaw)), 0, -cos(radians(self.yaw)))
         self.me.pos = (self.x-0.5,self.y,self.z-0.5)        
         self.me.axis = axis
         self.me.visible = True
-        self.needUpdate = False
         
     def moveAround(self):
         while True:
             originalsleep(0.05)
             if self.needUpdate:
                 self.updatePosition()
-        
-    def undefinedFunction(self, *args):
-        pass
-        
-    def __getattr__(self, name):
-        return self.undefinedFunction
-        
+                
     def postToChat(self, message):
         print(message)
+        
+    def setBlockWithNBT(self, *args):
+        self.setBlock(*args)
+		
+    def setBlocksWithNBT(self, *args):
+        self.setBlocks(*args)
 		
     def setBlock(self, *args):
         args = map(int, list(floorFlatten(args)))
@@ -136,6 +189,7 @@ class Minecraft:
                 del self.scene[coords]            
             m = getMaterial(Block(args[3],args[4]))
             self.scene[coords] = box(pos=tuple(coords), length=1, height=1, width=1, color=c, opacity=opacity, material=m)
+            self.scene[coords].mcBlock = (args[3],args[4])
 
     def getHeight(self, *args):
         args = map(int, list(floorFlatten(args)))
@@ -146,6 +200,20 @@ class Minecraft:
             if x == x0 and z == z0 and y > h:
                 h = y
         return h
+        
+    def getBlock(self, *args):
+        coords = tuple(int(x) for x in floorFlatten(args))
+        if coords in self.scene:
+            return self.scene[coords].mcBlock[0]
+
+    def getBlockWithData(self, *args):
+        coords = tuple(int(x) for x in floorFlatten(args))
+        if coords in self.scene:
+            b = self.scene[coords]
+            return b.mcBlock[0]
+            
+    def getBlockWithNBT(self, *args):
+        return self.getBlockWithData(*args)
 
     def setBlocks(self, *args):
         args = map(int, list(floorFlatten(args)))
@@ -170,6 +238,7 @@ class Minecraft:
                             self.scene[coords].visible = False
                             del self.scene[coords]
                         self.scene[coords] = box(pos=coords, length=1, height=1, width=1, color=c, opacity=opacity, material=m)
+                        self.scene[coords].mcBlock = (args[6],args[7])
 
     @staticmethod
     def create(address = None, port = None):
