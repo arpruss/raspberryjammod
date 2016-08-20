@@ -57,6 +57,9 @@ class PlayerCommand:
     def getPitch(self):
         return self.mc.pitch
         
+    def getDirection(self):
+        return Vec3(-sin(radians(self.mc.yaw))*cos(radians(self.mc.pitch)), -sin(radians(self.mc.pitch)), cos(radians(self.mc.yaw))*cos(radians(self.mc.pitch)))
+        
     def setTilePos(self, *args):
         args = tuple(int(x) for x in floorFlatten(args))
         self.mc.x = args[0]
@@ -151,10 +154,21 @@ class Minecraft:
         
     def updatePosition(self):
         self.yaw %= 360.
-        axis = (-sin(radians(self.yaw)), 0, cos(radians(self.yaw)))
+        axis = tuple(self.player.getDirection())
         self.me.pos = (self.x-0.5,self.y,self.z-0.5)        
         self.me.axis = axis
         self.me.visible = True
+        
+    def findBlock(self, maxR=5):
+        axis = self.player.getDirection()
+        pos = Vec3(self.x, self.y, self.z)
+        while r < maxR:
+            pos2 = pos + axis * r
+            coord = (int(floor(pos2.x)),int(floor(pos2.y)),int(floor(pos2.z)))
+            if coord in self.scene:
+                return coord, self.scene[coord]
+            r += .05
+        return None
         
     def moveAround(self):
         while True:
