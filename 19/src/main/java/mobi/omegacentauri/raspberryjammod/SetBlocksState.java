@@ -10,8 +10,8 @@ public class SetBlocksState extends SetBlockState {
 	int y2;
 	int z2;
 	
-	public SetBlocksState(Location corner1, Location corner2, short id, short meta) {
-		super(id, meta);
+	public SetBlocksState(Permission permission, Location corner1, Location corner2, short id, short meta) {
+		super(permission, id, meta);
 		
 		int x1 = corner1.getX();
 		int y1 = corner1.getY();
@@ -41,6 +41,9 @@ public class SetBlocksState extends SetBlockState {
 					// TODO: fix in client-only mode
 					if (! RaspberryJamMod.apiActive)
 						break;
+
+					if (permission != null && ! permission.isPermitted(pos.world, x, z))
+						continue;
 
 					BlockPos here = new BlockPos(x,y,z);
 					IBlockState oldState = pos.world.getBlockState(here);

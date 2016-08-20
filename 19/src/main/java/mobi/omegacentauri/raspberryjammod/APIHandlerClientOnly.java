@@ -34,7 +34,7 @@ public class APIHandlerClientOnly extends APIHandler {
 			fail("Minecraft client not yet available");
 			return false;
 		}		
-
+		
 		serverWorlds = new World[] { mc.theWorld };
 		
 		if (mc.thePlayer == null) {
@@ -45,6 +45,7 @@ public class APIHandlerClientOnly extends APIHandler {
 		playerId = mc.thePlayer.getEntityId();
 		playerMP = null;
 		havePlayer = true;
+		permission = null;
 		return true;
 	}
 

@@ -119,6 +119,7 @@ public class APIHandler {
 	protected List<String> passwords = null;
 	protected boolean authenticated;
 	public static final String PASSWORD_DATA = "passwords.dat";
+	public static final String PERMISSION_DATA = "rjmpermissions.dat";
 	private String salt = null;
 	private boolean authenticationSetup;
 	private List<HitDescription> hits = new LinkedList<HitDescription>();
@@ -127,6 +128,9 @@ public class APIHandler {
 	private boolean detectLeftClick;
 	private static final int MAX_CHATS = 512;
 	private static final int MAX_HITS = 512;
+	public Permission permission = null;
+	private boolean handledPermission;
+	private String authenticatedUsername = null;
 
 	public APIHandler(MCEventHandler eventHandler, PrintWriter writer) throws IOException {
 		this(eventHandler, writer, true);
@@ -141,8 +145,10 @@ public class APIHandler {
 		this.writer = writer;
 		this.havePlayer = false;
 		this.playerMP = null;
+		this.handledPermission = false;
         this.detectLeftClick = RaspberryJamMod.leftClickToo;
-		eventHandler.registerAPIHandler(this);
+
+        eventHandler.registerAPIHandler(this);
 
 		if (needAuthentication) {
 			File pass = new File(PASSWORD_DATA); 
@@ -152,9 +158,12 @@ public class APIHandler {
 				BufferedReader r = new BufferedReader(new FileReader(pass));
 				String l;
 				while (null != (l=r.readLine())) {
-					String[] data = l.trim().split("\\s+");
-					usernames.add(data[0]);
-					passwords.add(data[1]);
+					l = l.trim();
+					String[] data = l.split("\\s+");
+					if (data.length >= 2) {
+						usernames.add(data[0]);
+						passwords.add(data[1]);
+					}
 				}
 				r.close();
                 
@@ -192,12 +201,12 @@ public class APIHandler {
 	
 	protected boolean setup() {
 		serverWorlds = RaspberryJamMod.minecraftServer.worldServers;
-		
+
 		if (serverWorlds == null) {
 			fail("Worlds not available");
 			return false;
 		}
-
+		
 		if (! havePlayer) {
 			if (RaspberryJamMod.integrated) {
 				mc = Minecraft.getMinecraft();
@@ -242,6 +251,7 @@ public class APIHandler {
 			if (playerMP != null)
 				havePlayer = true;
 		}
+
 		return true;
 	}
 	
@@ -273,6 +283,7 @@ public class APIHandler {
 				
 				if (input.equals(dataDigest)) {
                     System.out.println("Authenticated "+usernames.get(i));
+                    authenticatedUsername = usernames.get(i);
 					authenticated = true;
 					return;
 				}
@@ -290,6 +301,10 @@ public class APIHandler {
 		
 		if (!setup())
 			return;
+		
+		if (!handledPermission) {
+			handlePermission();
+		}
 		
 		Scanner scan = null;
 
@@ -330,6 +345,44 @@ public class APIHandler {
 	}
 
 
+	private void handlePermission() {
+		File perm = new File(PERMISSION_DATA); 
+		if (perm.exists()) {
+			String permissionString = "";
+			
+			try {
+				permission = new Permission(serverWorlds);
+				BufferedReader r = new BufferedReader(new FileReader(perm));
+				String l;
+				String toMatch;
+				if (authenticatedUsername != null) {
+					toMatch = authenticatedUsername + " ";
+				}
+				else {
+					toMatch = null;
+				}
+				while (null != (l=r.readLine())) {
+					l = l.trim();
+					if (l.startsWith("*")) {
+						permission.add(l.substring(1));
+					}
+					else if (toMatch != null && l.startsWith(toMatch)) {
+						permission.add(l.substring(toMatch.length()));
+					}
+				}
+				r.close();
+				if (permission.permitsEverything())
+					permission = null;
+			}
+			catch (Exception e) {
+				System.err.println("Error in reading permissions file");
+				permission = new Permission(serverWorlds);
+				permission.add(null, Permission.ALL, Permission.ALL, Permission.ALL, Permission.ALL, false);
+			}
+		}
+		handledPermission = true;            
+	}
+
 	protected void runCommand(String cmd, String args, Scanner scan) 
 			throws InputMismatchException, NoSuchElementException, IndexOutOfBoundsException {
 
@@ -343,15 +396,15 @@ public class APIHandler {
 
 			if (tagString.contains("{")) {
 				try {
-					setState = new SetBlockNBT(pos, id, meta, 
+					setState = new SetBlockNBT(permission, pos, id, meta, 
 							JsonToNBT.getTagFromJson(tagString));
 				} catch (NBTException e) {
 					System.err.println("Cannot parse NBT");
-					setState = new SetBlockState(pos, id, meta);
+					setState = new SetBlockState(permission, pos, id, meta);
 				}
 			}
 			else {
-				setState = new SetBlockState(pos, id, meta);
+				setState = new SetBlockState(permission, pos, id, meta);
 			}
 
 			eventHandler.queueServerAction(setState);
@@ -458,13 +511,13 @@ public class APIHandler {
 
 			if (tagString.contains("{")) {
 				try {
-					setState = new SetBlocksNBT(pos1, pos2, id, meta, JsonToNBT.getTagFromJson(tagString));
+					setState = new SetBlocksNBT(permission, pos1, pos2, id, meta, JsonToNBT.getTagFromJson(tagString));
 				} catch (NBTException e) {
-					setState = new SetBlocksState(pos1, pos2, id, meta);
+					setState = new SetBlocksState(permission, pos1, pos2, id, meta);
 				}
 			}
 			else {
-				setState = new SetBlocksState(pos1, pos2, id, meta);
+				setState = new SetBlocksState(permission, pos1, pos2, id, meta);
 			}
 
 			eventHandler.queueServerAction(setState);

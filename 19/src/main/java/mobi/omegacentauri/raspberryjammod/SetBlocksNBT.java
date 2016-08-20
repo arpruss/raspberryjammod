@@ -11,8 +11,8 @@ import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;
 public class SetBlocksNBT extends SetBlocksState {
 	NBTTagCompound nbt;
 	
-	public SetBlocksNBT(Location corner1, Location corner2, short id, short meta, NBTTagCompound nbt) {
-		super(corner1, corner2, id, meta);
+	public SetBlocksNBT(Permission permission, Location corner1, Location corner2, short id, short meta, NBTTagCompound nbt) {
+		super(permission, corner1, corner2, id, meta);
 		this.nbt = nbt;
 	}
 	
@@ -20,6 +20,7 @@ public class SetBlocksNBT extends SetBlocksState {
 	public void execute() {
 		int y1 = pos.getY();
 		int z1 = pos.getZ();
+
 		IBlockState state = safeGetStateFromMeta(Block.getBlockById(id),meta);
 		
 		for (int x = pos.getX() ; x <= x2 ; x++)
@@ -29,6 +30,9 @@ public class SetBlocksNBT extends SetBlocksState {
 					// TODO: fix in client-only mode
 					if (! RaspberryJamMod.apiActive)
 						break;
+					
+					if (permission != null && ! permission.isPermitted(pos.world, x, z))
+						continue;
 
 					BlockPos here = new BlockPos(x,y,z);
 					

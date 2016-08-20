@@ -25,7 +25,7 @@ OutputDir=build\
 OutputBaseFilename=RaspberryJamMod-Installer
 SolidCompression=yes
 Compression=lzma2/ultra64
-LicenseFile=py27\LICENSE.txt
+LicenseFile=pylicense.txt
 PrivilegesRequired=lowest
 
 [Languages]
@@ -63,8 +63,8 @@ Source: "19\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\
 Source: "194\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.9.4\"
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10\"
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10.2\"
-Source: "py27\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python27\Interpreter
-Source: "py3\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python3\Interpreter
+Source: "py27\*"; Excludes: "py27\Lib\site-packages\pip\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python27\Interpreter
+Source: "py3\*"; Excludes: "py3\Lib\site-packages\pip\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python3\Interpreter
 Source: "config27\raspberryjammod.cfg"; DestDir: "{userappdata}\.minecraft\config"; Flags: confirmoverwrite; Components: Python\Python27\Interpreter\Config
 Source: "config3\raspberryjammod.cfg"; DestDir: "{userappdata}\.minecraft\config"; Flags: confirmoverwrite; Components: Python\Python3\Interpreter\Config
 
