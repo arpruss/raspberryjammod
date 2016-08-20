@@ -152,14 +152,14 @@ class Vehicle():
 
         self.curLocation = None
 
-    def safeSetBlockWithData(self,pos,block):
+    def safeSetBlockWithData(self,pos,b):
         """
         Draw block, making sure buttons are not depressed. This is to fix a glitch where launching 
         the vehicle script from a commandblock resulted in re-pressing of the button.
         """
-        if block.id == WOOD_BUTTON.id or block.id == STONE_BUTTON.id:
-            block = Block(block.id, block.data & ~0x08)
-        self.setBlockWithData(pos,block)
+        if b.id == WOOD_BUTTON.id or b.id == STONE_BUTTON.id:
+            b = Block(b.id, b.data & ~0x08)
+        self.setBlockWithData(pos,b)
 
     def scan(self,x0,y0,z0,angle=0,flash=True):
         positions = {}
@@ -171,9 +171,9 @@ class Vehicle():
         if seed is None:
             return {}
 
-        block = self.getBlockWithData(seed)
-        self.curVehicle = {seed:block}
-        if flash and block.id not in Vehicle.NEED_SUPPORT:
+        b = self.getBlockWithData(seed)
+        self.curVehicle = {seed:b}
+        if flash and b.id not in Vehicle.NEED_SUPPORT:
             self.mc.setBlock(seed,GLOWSTONE_BLOCK)
         newlyAdded = set(self.curVehicle.keys())
 
@@ -191,15 +191,15 @@ class Vehicle():
                             abs(pos[1]-y0) <= Vehicle.MAX_DISTANCE and
                             abs(pos[2]-z0) <= Vehicle.MAX_DISTANCE ):
                             searched.add(pos)
-                            block = self.getBlockWithData(pos)
-                            if block.id in Vehicle.TERRAIN:
-                                if ((block.id == WATER_STATIONARY.id or block.id == WATER_FLOWING.id) and 
+                            b = self.getBlockWithData(pos)
+                            if b.id in Vehicle.TERRAIN:
+                                if ((b.id == WATER_STATIONARY.id or b.id == WATER_FLOWING.id) and 
                                     (self.highWater is None or self.highWater < pos[1])):
                                     self.highWater = pos[1]
                             else:
-                                self.curVehicle[pos] = block
+                                self.curVehicle[pos] = b
                                 adding.add(pos)
-                                if flash and block.id not in Vehicle.NEED_SUPPORT:
+                                if flash and b.id not in Vehicle.NEED_SUPPORT:
                                     self.mc.setBlock(pos,GLOWSTONE_BLOCK)
             newlyAdded = adding
 
@@ -288,40 +288,40 @@ class Vehicle():
 
     # TODO: rotate blocks other than stairs and buttons
     @staticmethod
-    def rotateBlock(block,amount):
-        if block.id in Vehicle.STAIRS:
-            meta = block.data
-            return Block(block.id, (meta & ~0x03) |
+    def rotateBlock(b,amount):
+        if b.id in Vehicle.STAIRS:
+            meta = b.data
+            return Block(b.id, (meta & ~0x03) |
                          Vehicle.stairDirectionsClockwise[(Vehicle.stairToClockwise[meta & 0x03] + amount) % 4])
-        elif block.id in Vehicle.LADDERS_FURNACES_CHESTS_SIGNS_ETC:
-            high = block.data & 0x08
-            meta = block.data & 0x07
+        elif b.id in Vehicle.LADDERS_FURNACES_CHESTS_SIGNS_ETC:
+            high = b.data & 0x08
+            meta = b.data & 0x07
             if meta < 2:
-                return block
-            block = copy(block)
-            block.data = high | Vehicle.chestDirectionsClockwise[(Vehicle.chestToClockwise[meta] + amount) % 4]
-            return block
-        elif block.id == STONE_BUTTON.id or block.id == WOOD_BUTTON.id:
-            direction = block.data & 0x07
+                return b
+            b = copy(b)
+            b.data = high | Vehicle.chestDirectionsClockwise[(Vehicle.chestToClockwise[meta] + amount) % 4]
+            return b
+        elif b.id == STONE_BUTTON.id or b.id == WOOD_BUTTON.id:
+            direction = b.data & 0x07
             if direction < 1 or direction > 4:
-                return block
+                return b
             direction = 1 + Vehicle.stairDirectionsClockwise[(Vehicle.stairToClockwise[direction-1] + amount) % 4]
-            return Block(block.id, (block.data & ~0x07) | direction)
-        elif block.id in Vehicle.REDSTONE_COMPARATORS_REPEATERS:
-            return Block(block.id, (block.data & ~0x03) | (((block.data & 0x03) + amount) & 0x03))
-        elif block.id == 96 or block.id == 167:
+            return Block(b.id, (b.data & ~0x07) | direction)
+        elif b.id in Vehicle.REDSTONE_COMPARATORS_REPEATERS:
+            return Block(b.id, (b.data & ~0x03) | (((b.data & 0x03) + amount) & 0x03))
+        elif b.id == 96 or b.id == 167:
             # trapdoors
-            meta = block.data
-            return Block(block.id, (meta & ~0x03) |
+            meta = b.data
+            return Block(b.id, (meta & ~0x03) |
                          Vehicle.stairDirectionsClockwise[(Vehicle.stairToClockwise[meta & 0x03] - amount) % 4])
-        elif block.id in Vehicle.DOORS:
-            meta = block.data
+        elif b.id in Vehicle.DOORS:
+            meta = b.data
             if meta & 0x08:
-                return block
+                return b
             else:
-                return Block(block.id, (meta & ~0x03) | (((meta & 0x03) + amount) & 0x03))
+                return Block(b.id, (meta & ~0x03) | (((meta & 0x03) + amount) & 0x03))
         else:
-            return block
+            return b
 
     @staticmethod
     def rotate(dict, amount):
@@ -368,12 +368,12 @@ class Vehicle():
             else:
                 erase[pos] = self.curVehicle[pos]
         for pos in newVehicle:
-            block = newVehicle[pos]
-            if pos not in self.curVehicle or self.curVehicle[pos] != block:
-                todo[pos] = block
+            b = newVehicle[pos]
+            if pos not in self.curVehicle or self.curVehicle[pos] != b:
+                todo[pos] = b
                 if pos not in self.curVehicle and self.nondestructive:
                     curBlock = self.getBlockWithData(pos)
-                    if curBlock == block:
+                    if curBlock == b:
                         del todo[pos]
                     self.saved[pos] = curBlock
                     erase[pos] = curBlock
@@ -459,10 +459,10 @@ if __name__ == '__main__':
         for x in range(corner1[0],corner2[0]+1):
             for y in range(corner1[1],corner2[1]+1):
                 for z in range(corner1[2],corner2[2]+1):
-                    block = vehicle.getBlockWithData(x,y,z)
-                    if block.id != AIR.id and block.id != WATER_STATIONARY.id and block.id != WATER_FLOWING.id:
+                    b = vehicle.getBlockWithData(x,y,z)
+                    if b.id != AIR.id and b.id != WATER_STATIONARY.id and b.id != WATER_FLOWING.id:
                         pos = (x-basePos.x,y-basePos.y,z-basePos.z)
-                        dict[pos] = block
+                        dict[pos] = b
         minecraft.postToChat("Found "+str(len(dict))+" blocks")
         vehicle.setVehicle(dict, startRot)
 

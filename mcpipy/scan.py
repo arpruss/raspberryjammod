@@ -101,9 +101,9 @@ dict = {}
 for x in range(corner1[0],corner2[0]+1):
     for y in range(corner1[1],corner2[1]+1):
         for z in range(corner1[2],corner2[2]+1):
-            block = vehicle.getBlockWithData(basePos.x+x,basePos.y+y,basePos.z+z)
-            if block.id != block.AIR.id:
-                dict[(x,y,z)] = block
+            b = vehicle.getBlockWithData(basePos.x+x,basePos.y+y,basePos.z+z)
+            if b.id != block.AIR.id:
+                dict[(x,y,z)] = b
 mc.postToChat("Scanned "+str(len(dict))+" blocks")
 vehicle.setVehicle(dict, rot)
 save(vehicle,sys.argv[1])
