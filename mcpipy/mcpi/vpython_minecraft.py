@@ -7,12 +7,19 @@
 # demo scripts against vpython as follows:
 #   VPYTHON_MCPI=1 python trefoil2.py
 #
+# You have a fake player (a red cone) which you can control with:
+#   asdw: move 
+#   q/e: rotate  (use shift for speed)
+#   space/. up/down
+#   enter: right-click-with-sword
+#   F2: first person view toggle (buggy)
 
 from __future__ import absolute_import
 from visual import *
 import thread
 from .util import flatten,floorFlatten
 from .block import Block
+from .event import BlockEvent
 from .vec3 import Vec3
 from os import environ
 import time
@@ -34,7 +41,15 @@ def getColorScaled(block):
     r,g,b,opacity = block.getRGBA()
     return (r/255.,g/255.,b/255.),opacity/255.
     
-class Ignore(object):
+class EventCommand:
+    def __init__(self, mc):
+        self.mc = mc
+        
+    def pollBlockHits(self):
+        hits = self.mc.hits
+        self.mc.hits = []
+        return hits
+
     def undefinedFunction(self, *args):
         return []
         
@@ -102,13 +117,18 @@ class EntityCommand:
 class Minecraft:
     def __init__(self, connection=None, autoId=True):
         self.scene = {}
+        
+        self.hits = []
+        
         self.x = 0.5
         self.y = 0.5
         self.z = 0.5
         self.yaw = 0
         self.pitch = 0
+        
+        self.follow = False
 
-        self.events = Ignore()
+        self.events = EventCommand(self)
         self.player = PlayerCommand(self)
         self.entity = EntityCommand(self.player)
         
@@ -127,23 +147,45 @@ class Minecraft:
             self.x += .25 * -sin(radians(self.yaw))
             self.z += .25 * cos(radians(self.yaw))
             self.updatePosition()
+        if evt.key == 'W':
+            self.x += -sin(radians(self.yaw))
+            self.z += cos(radians(self.yaw))
+            self.updatePosition()
         elif evt.key == 's':
             self.x -= .25 * -sin(radians(self.yaw))
             self.z -= .25 * cos(radians(self.yaw))
             self.updatePosition()
-        elif evt.key == 'a':
+        elif evt.key == 'S':
+            self.x -= -sin(radians(self.yaw))
+            self.z -= cos(radians(self.yaw))
+            self.updatePosition()
+        elif evt.key == 'd':
             self.x += .25 * -sin(radians(self.yaw+90))
             self.z += .25 * cos(radians(self.yaw+90))
             self.updatePosition()
-        elif evt.key == 'd':
-            self.x += .25 * -sin(radians(self.yaw-90))
-            self.z += .25 * cos(radians(self.yaw-90))
+        elif evt.key == 'D':
+            self.x += -sin(radians(self.yaw+90))
+            self.z += cos(radians(self.yaw+90))
+            self.updatePosition()
+        elif evt.key == 'a':
+            self.x += .25 * sin(radians(self.yaw+90))
+            self.z += .25 * -cos(radians(self.yaw+90))
+            self.updatePosition()
+        elif evt.key == 'A':
+            self.x += sin(radians(self.yaw+90))
+            self.z += -cos(radians(self.yaw+90))
             self.updatePosition()
         elif evt.key == 'q':
             self.yaw -= 45/2.
             self.updatePosition()
+        elif evt.key == 'Q':
+            self.yaw -= 45.
+            self.updatePosition()
         elif evt.key == 'e':
             self.yaw += 45./2.
+            self.updatePosition()
+        elif evt.key == 'E':
+            self.yaw += 45.
             self.updatePosition()
         elif evt.key == ' ':
             self.y += 0.25
@@ -151,33 +193,51 @@ class Minecraft:
         elif evt.key == '.':
             self.y -= 0.25
             self.updatePosition()
+        elif evt.key == 'f2':
+            self.follow = not self.follow
+            print (self.follow)
+            self.updatePosition()
+        elif evt.key == '\r' or evt.key == '\n':
+            coords = self.findBlock()
+            if coords is not None:
+                self.hits.append(BlockEvent(BlockEvent.HIT, coords[0], coords[1], coords[2], 7, 1))                    
         
     def updatePosition(self):
         self.yaw %= 360.
-        axis = tuple(self.player.getDirection())
-        self.me.pos = (self.x-0.5,self.y,self.z-0.5)        
+        axis = vector(tuple(self.player.getDirection()))
+        self.me.pos = vector(self.x-0.5,self.y,self.z-0.5)        
         self.me.axis = axis
         self.me.visible = True
+        if self.follow:
+            scene.autocenter = False
+            scene.autoscale = False
+            scene.center = self.me.pos
+            scene.forward = axis
+            scene.scale = (0.2,0.2,0.2)
+        else:
+            scene.autocenter = True
+            scene.autoscale = True
         
     def findBlock(self, maxR=5):
         axis = self.player.getDirection()
         pos = Vec3(self.x, self.y, self.z)
+        r = 0.5
         while r < maxR:
             pos2 = pos + axis * r
             coord = (int(floor(pos2.x)),int(floor(pos2.y)),int(floor(pos2.z)))
             if coord in self.scene:
-                return coord, self.scene[coord]
+                return coord
             r += .05
         return None
         
-    def moveAround(self):
-        while True:
-            originalsleep(0.05)
-            if self.needUpdate:
-                self.updatePosition()
-                
     def postToChat(self, message):
         print(message)
+        
+    def getPlayerId(self, *args):
+        return 1
+        
+    def getPlayerIds(self, *args):
+        return [1]
         
     def setBlockWithNBT(self, *args):
         self.setBlock(*args)
@@ -253,6 +313,19 @@ class Minecraft:
                             del self.scene[coords]
                         self.scene[coords] = box(pos=coords, length=1, height=1, width=1, color=c, opacity=opacity, material=m)
                         self.scene[coords].mcBlock = (args[6],args[7])
+
+    def getBlocks(self, *args):
+        args = map(int, list(floorFlatten(args)))
+        out = []
+        for y in range(min(args[1],args[4]),max(args[1],args[4])+1):
+            for x in range(min(args[0],args[3]),max(args[0],args[3])+1):
+                for z in range(min(args[2],args[5]),max(args[2],args[5])+1):
+                    coords = (x,y,z)
+                    if coords in self.scene:
+                        out.append(self.scene[coords].mcBlock[0])
+                    else:
+                        out.append(0)
+        return out
 
     @staticmethod
     def create(address = None, port = None):

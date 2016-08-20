@@ -3,7 +3,7 @@
 # Copyright (c) 2015 Alexander R. Pruss
 # MIT License
 #
-# life.py [[size [fraction]]
+# life.py [size [fraction]
 # 
 # Default size: 50
 # If fraction is omitted, you can draw whatever you like. Otherwise, the specified fraction is used.
