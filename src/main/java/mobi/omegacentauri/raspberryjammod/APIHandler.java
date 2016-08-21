@@ -444,6 +444,9 @@ public class APIHandler {
 		else if (cmd.startsWith("camera.")) {
 			cameraCommand(cmd.substring(7), scan);
 		}
+        else {
+            unknownCommand();
+        }
 	}
 	
 	protected void removeEntity(int id) {
@@ -587,7 +590,14 @@ public class APIHandler {
 				System.out.println(""+e);
 			}
 		}
+        else {
+            unknownCommand();
+        }
 	}
+    
+    protected void unknownCommand() {
+        fail("unknown command");
+    }
 
 	protected void entityCommand(int id, String cmd, Scanner scan) {
 		if (cmd.equals(GETPOS)) {
@@ -623,6 +633,9 @@ public class APIHandler {
 		else if (cmd.equals(SETDIMENSION)) {			
 			entitySetDimension(id, scan.nextInt());
 		}
+        else {
+            unknownCommand();
+        }
 	}
 
 	protected void entitySetDirection(int id, Scanner scan) {
