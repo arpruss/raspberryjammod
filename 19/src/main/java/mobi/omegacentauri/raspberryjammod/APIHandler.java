@@ -129,7 +129,7 @@ public class APIHandler {
 	private static final int MAX_CHATS = 512;
 	private static final int MAX_HITS = 512;
 	public Permission permission = null;
-	private boolean handledPermission;
+	protected boolean handledPermission = false;
 	private String authenticatedUsername = null;
 
 	public APIHandler(MCEventHandler eventHandler, PrintWriter writer) throws IOException {
@@ -304,6 +304,7 @@ public class APIHandler {
 		
 		if (!handledPermission) {
 			handlePermission();
+			handledPermission = true;            
 		}
 		
 		Scanner scan = null;
@@ -380,7 +381,6 @@ public class APIHandler {
 				permission.add(null, Permission.ALL, Permission.ALL, Permission.ALL, Permission.ALL, false);
 			}
 		}
-		handledPermission = true;            
 	}
 
 	protected void runCommand(String cmd, String args, Scanner scan) 
@@ -573,7 +573,7 @@ public class APIHandler {
 						}
 					}
 				}
-				fail("Unknown player");
+				unknownCommand();
 			}
 			else {
 				// unofficial API to get current player ID
@@ -621,6 +621,13 @@ public class APIHandler {
 		else if (cmd.startsWith("camera.")) {
 			cameraCommand(cmd.substring(7), scan);
 		}
+		else {
+			unknownCommand();
+		}
+	}
+	
+	protected void unknownCommand() {
+		fail("unknown command");
 	}
 	
 	protected void removeEntity(int id) {
@@ -788,6 +795,9 @@ public class APIHandler {
 				System.out.println(""+e);
 			}
 		}
+		else {
+			unknownCommand();
+		}
 	}
 
 	protected void entityCommand(int id, String cmd, Scanner scan) {
@@ -823,6 +833,9 @@ public class APIHandler {
 		}
 		else if (cmd.equals(SETDIMENSION)) {			
 			entitySetDimension(id, scan.nextInt());
+		}
+		else {
+			unknownCommand();
 		}
 	}
 

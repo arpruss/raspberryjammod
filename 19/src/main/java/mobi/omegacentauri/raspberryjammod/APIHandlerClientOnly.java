@@ -20,6 +20,8 @@ public class APIHandlerClientOnly extends APIHandler {
 
 	public APIHandlerClientOnly(MCEventHandler eventHandler, PrintWriter writer) throws IOException {
 		super(eventHandler, writer, false);
+		
+		handledPermission = true;
 	}
 
 	@Override
