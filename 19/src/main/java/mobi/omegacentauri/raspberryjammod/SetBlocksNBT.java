@@ -11,8 +11,8 @@ import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;
 public class SetBlocksNBT extends SetBlocksState {
 	NBTTagCompound nbt;
 	
-	public SetBlocksNBT(Permission permission, Location corner1, Location corner2, short id, short meta, NBTTagCompound nbt) {
-		super(permission, corner1, corner2, id, meta);
+	public SetBlocksNBT(Location corner1, Location corner2, short id, short meta, NBTTagCompound nbt) {
+		super(corner1, corner2, id, meta);
 		this.nbt = nbt;
 	}
 	
@@ -31,9 +31,6 @@ public class SetBlocksNBT extends SetBlocksState {
 					if (! RaspberryJamMod.apiActive)
 						break;
 					
-					if (permission != null && ! permission.isPermitted(pos.world, x, z))
-						continue;
-
 					BlockPos here = new BlockPos(x,y,z);
 					
 					pos.world.setBlockState(here, state, 2);

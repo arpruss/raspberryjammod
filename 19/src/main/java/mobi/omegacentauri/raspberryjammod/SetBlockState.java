@@ -15,19 +15,16 @@ public class SetBlockState extends ServerAction {
 	Location pos;
 	short id;
 	short meta;
-	Permission permission;
 
-	public SetBlockState(Permission permission, short id, short meta) {
-		this.permission = permission;
+	public SetBlockState(short id, short meta) {
 		this.id = id;
 		this.meta = meta;
 	}
 
-	public SetBlockState(Permission permission, Location pos, short id, short meta) {
+	public SetBlockState(Location pos, short id, short meta) {
 		this.pos = pos;
 		this.id = id;
 		this.meta = meta;
-		this.permission = permission;
 	}
 	
 	public IBlockState safeGetStateFromMeta(Block b, int meta) {
@@ -56,9 +53,6 @@ public class SetBlockState extends ServerAction {
 	
 	@Override
 	public void execute() {
-		if (permission != null && ! permission.isPermitted(pos.world, pos.getX(), pos.getZ()))
-			return;
-		
 		IBlockState oldState = pos.world.getBlockState(pos);
 		Block oldBlock = oldState.getBlock();
 		

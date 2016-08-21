@@ -41,7 +41,7 @@ public class Permission {
 	}
 	
 	public void add(String s) {
-		s = s.replaceAll("\\s", "");
+		s = s.toLowerCase().replaceAll("[\\s()]", "");
 		String[] items = s.split("(?=(permit|forbid))");
 		for (String item : items) {
 			boolean permitted = item.startsWith("permit");
@@ -57,8 +57,32 @@ public class Permission {
 					add(world,ALL,ALL,ALL,ALL,permitted);
 				}
 				else {
-					add(world,Integer.parseInt(args[1]),Integer.parseInt(args[2]),
-							Integer.parseInt(args[3]),Integer.parseInt(args[4]), permitted);
+					boolean relative = false;
+					if (args[1].startsWith("r")) {
+						args[1] = args[1].substring(1);
+						relative = true;
+					}
+					int x1 = Integer.parseInt(args[1]);
+					int z1 = Integer.parseInt(args[2]);
+					int x2 = Integer.parseInt(args[3]);
+					int z2 = Integer.parseInt(args[4]);
+					
+					if (relative) {
+						if (world == null) {
+							for (World w : worlds) {
+								add(w,x1+w.getSpawnPoint().getX(),z1+w.getSpawnPoint().getZ(),
+										x2+w.getSpawnPoint().getX(),z2+w.getSpawnPoint().getZ(), permitted);
+							}
+						}
+						else {
+							add(world,x1+world.getSpawnPoint().getX(),z1+world.getSpawnPoint().getZ(),
+									x2+world.getSpawnPoint().getX(),z2+world.getSpawnPoint().getZ(), 
+									permitted);
+						}
+					}
+					else {
+						add(world,x1,z1,x2,z2,permitted);
+					}
 				}
 			}
 			catch(Exception e) {
@@ -75,13 +99,26 @@ public class Permission {
 			return true; // DEFAULT: permit
 		for (Rectangle r : rectangles) {
 			if (r.contains(w,x,z)) {
-//				System.out.println("permission "+x+" "+z+" "+r.permitted);
 				return r.permitted;
 			}
 		}
 		return true;
 	}
 	
+	public boolean isPermitted(World world, int x1, int z1, int x2, int z2) {
+		if (rectangles == null)
+			return true; // DEFAULT: permit
+		for (Rectangle r : rectangles) {
+			if (r.permitted && r.contains(world, x1, z1, x2, z2)) {
+				return true;
+			}
+			else if (! r.permitted && r.overlaps(world, x1, z1, x2, z2)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	static class Rectangle {
 		int minX; // Minecraft coordinates
 		int minZ;
@@ -127,6 +164,51 @@ public class Permission {
 		public boolean contains(Rectangle r) {
 			return (world == null || world == r.world) && 
 					(minX == ALL || (minX <= r.minX && r.maxX <= maxX && minZ <= r.minZ && r.maxZ <= maxZ));
+		}
+		
+		public boolean contains(World w, int _x1, int _z1, int _x2, int _z2) {
+			int x1,z1,x2,z2;
+			if (_x1 < _x2) {
+				x1 = _x1;
+				x2 = _x2;
+			}
+			else {
+				x1 = _x2;
+				x2 = _x1;
+			}
+			if (_z1 < _z2) {
+				z1 = _z1;
+				z2 = _z2;
+			}
+			else {
+				z1 = _z2;
+				z2 = _z1;
+			}
+			return (world == null || world == w) && 
+					(minX == ALL || (minX <= x1 && x2 <= maxX && minZ <= z1 && z2 <= maxZ));
+		}
+		
+		public boolean overlaps(World w, int _x1, int _z1, int _x2, int _z2) {
+			int x1,z1,x2,z2;
+			if (_x1 < _x2) {
+				x1 = _x1;
+				x2 = _x2;
+			}
+			else {
+				x1 = _x2;
+				x2 = _x1;
+			}
+			if (_z1 < _z2) {
+				z1 = _z1;
+				z2 = _z2;
+			}
+			else {
+				z1 = _z2;
+				z2 = _z1;
+			}
+			if (world != null && world != w)
+				return false;
+			return !(maxX < x1 || x2 < minX || maxZ < z1 || z2 < minZ);
 		}
 	}
 }

@@ -118,8 +118,8 @@ public class APIHandler {
 	protected List<String> usernames = null;
 	protected List<String> passwords = null;
 	protected boolean authenticated;
-	public static final String PASSWORD_DATA = "passwords.dat";
-	public static final String PERMISSION_DATA = "rjmpermissions.dat";
+	public static final String PASSWORD_DATA = "raspberryjammod_passwords.dat";
+	public static final String PERMISSION_DATA = "raspberryjammod_permissions.dat";
 	private String salt = null;
 	private boolean authenticationSetup;
 	private List<HitDescription> hits = new LinkedList<HitDescription>();
@@ -388,6 +388,10 @@ public class APIHandler {
 
 		if (cmd.equals(SETBLOCK)) {
 			Location pos = getBlockLocation(scan);
+			
+			if (permission != null && permission.isPermitted(pos.world, pos.getX(), pos.getZ()))
+				return;
+			
 			short id = scan.nextShort();
 			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
 			String tagString = getRest(scan);
@@ -396,15 +400,15 @@ public class APIHandler {
 
 			if (tagString.contains("{")) {
 				try {
-					setState = new SetBlockNBT(permission, pos, id, meta, 
+					setState = new SetBlockNBT(pos, id, meta, 
 							JsonToNBT.getTagFromJson(tagString));
 				} catch (NBTException e) {
 					System.err.println("Cannot parse NBT");
-					setState = new SetBlockState(permission, pos, id, meta);
+					setState = new SetBlockState(pos, id, meta);
 				}
 			}
 			else {
-				setState = new SetBlockState(permission, pos, id, meta);
+				setState = new SetBlockState(pos, id, meta);
 			}
 
 			eventHandler.queueServerAction(setState);
@@ -427,6 +431,7 @@ public class APIHandler {
 		else if (cmd.equals(GETBLOCKS)) {
 			Location pos1 = getBlockLocation(scan);
 			Location pos2 = getBlockLocation(scan);
+
 			StringBuilder out = new StringBuilder();
 			int x1 = Math.min(pos1.getX(), pos2.getX());
 			int x2 = Math.max(pos1.getX(), pos2.getX());
@@ -502,6 +507,12 @@ public class APIHandler {
 			Location pos1 = getBlockLocation(scan);
 			Location pos2 = getBlockLocation(scan);
 
+			/* TODO? do partial drawing in case of partial overlap with forbidden area.
+			 */
+			if (permission != null && permission.isPermitted(pos1.world, pos1.getX(), pos1.getZ(),
+					pos2.getX(), pos2.getZ()))
+				return;
+			
 			short id = scan.nextShort();
 			short meta = scan.hasNextShort() ? scan.nextShort() : 0;
 
@@ -511,13 +522,13 @@ public class APIHandler {
 
 			if (tagString.contains("{")) {
 				try {
-					setState = new SetBlocksNBT(permission, pos1, pos2, id, meta, JsonToNBT.getTagFromJson(tagString));
+					setState = new SetBlocksNBT(pos1, pos2, id, meta, JsonToNBT.getTagFromJson(tagString));
 				} catch (NBTException e) {
-					setState = new SetBlocksState(permission, pos1, pos2, id, meta);
+					setState = new SetBlocksState(pos1, pos2, id, meta);
 				}
 			}
 			else {
-				setState = new SetBlocksState(permission, pos1, pos2, id, meta);
+				setState = new SetBlocksState(pos1, pos2, id, meta);
 			}
 
 			eventHandler.queueServerAction(setState);
@@ -624,6 +635,12 @@ public class APIHandler {
 		double y0 = scan.nextDouble();
 		double z0 = scan.nextDouble();
 		Vec3w pos = Location.decodeVec3w(serverWorlds, x0, y0, z0);
+		
+		// TODO? Could do damage by spawning dragons close to a forbidden zone; perhaps forbid that?
+		if (permission != null && ! permission.isPermitted(pos.world, 
+				(int)Math.floor(pos.xCoord),(int)Math.floor(pos.zCoord)))
+			return;
+		
 		String tagString = getRest(scan);
 		Entity entity;
 		boolean fixGravity = false;
@@ -1219,7 +1236,4 @@ public class APIHandler {
 			return description;
 		}
 	}
-
-
-
 }
