@@ -58,7 +58,7 @@ public class Permission {
 				}
 				else {
 					boolean relative = false;
-					if (args[1].startsWith("r")) {
+					if (args[1].startsWith("s")) {
 						args[1] = args[1].substring(1);
 						relative = true;
 					}
