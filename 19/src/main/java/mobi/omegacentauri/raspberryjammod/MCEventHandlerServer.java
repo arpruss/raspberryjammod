@@ -1,8 +1,11 @@
 package mobi.omegacentauri.raspberryjammod;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
@@ -28,5 +31,16 @@ public class MCEventHandlerServer extends MCEventHandler {
 	@Override
 	protected World[] getWorlds() {
 		return RaspberryJamMod.minecraftServer.worldServers;
+	}
+	
+	@SubscribeEvent
+	public void onLivingHurtEvent(LivingHurtEvent event) {
+		if (event.getEntity() instanceof EntityPlayer &&
+				((RaspberryJamMod.noFallDamage && 
+				event.getSource() == DamageSource.fall) ||
+				(RaspberryJamMod.noInWallDamage && 
+				event.getSource() == DamageSource.inWall))) {
+				event.setCanceled(true);
+		}
 	}
 }
