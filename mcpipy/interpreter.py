@@ -14,8 +14,5 @@ try:
     userName = os.environ['MINECRAFT_PLAYER_NAME']
 except:
     userName = "unspecified"
-try:
-    userId = os.environ['MINECRAFT_PLAYER_ID']
-except:
-    userId = "unspecified"
-mc.postToChat("Invoked by user "+userName+" "+userId)
+mc.postToChat("Invoked by user "+userName+" "+str(mc.player.id))
+mc.postToChat("Server "+str(mc.conn.socket.getpeername()))
