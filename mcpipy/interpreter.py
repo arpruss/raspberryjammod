@@ -4,11 +4,11 @@
 # Useful for checking which interpreter RaspberryJamMod's /py command is picking up.
 #
 
-import mc
+from mine *
 import sys
 import os
 
-mc = mc.Minecraft()
+mc = Minecraft()
 mc.postToChat("Python interpreter "+sys.executable+" "+sys.version)
 try:
     userName = os.environ['MINECRAFT_PLAYER_NAME']
