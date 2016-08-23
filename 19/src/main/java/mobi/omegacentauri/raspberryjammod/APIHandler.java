@@ -573,7 +573,16 @@ public class APIHandler {
 						}
 					}
 				}
-				unknownCommand();
+				for (World w : serverWorlds) {
+					for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities) {
+						if (p.getUniqueID().toString().equals(name)) {
+							sendLine(p.getEntityId());
+							return;
+						}
+					}
+				}
+				
+				fail("unknown user");
 			}
 			else {
 				// unofficial API to get current player ID
