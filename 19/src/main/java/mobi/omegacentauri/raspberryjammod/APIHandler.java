@@ -28,6 +28,7 @@ import java.util.Scanner;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.main.GameConfiguration;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
@@ -52,6 +53,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 public class APIHandler {
@@ -60,6 +62,8 @@ public class APIHandler {
 	// camera.setNormal(id) and camera.setFollow(id) uses spectating, and so it moves the
 	// player along with the entity that was set as camera
 	protected static final String CHAT = "chat.post";
+	protected static final String APISUPPORTS = "api.supports";
+	protected static final String APIVERSION = "api.version";
 	protected static final String SETBLOCK = "world.setBlock";
 	protected static final String SETBLOCKS = "world.setBlocks"; 
 	protected static final String GETBLOCK = "world.getBlock";
@@ -103,6 +107,55 @@ public class APIHandler {
 	protected static final String SETROTATION = "setRotation";
 	protected static final String SETTILE = "setTile";
 	protected static final String SETFLYING = "setFlying";
+	
+	protected String[] fullCommands = {
+			 CHAT,
+			 APIVERSION,
+			 APISUPPORTS,
+			 SETBLOCK, 
+			 "+",
+			 SETBLOCKS, 
+			 GETBLOCK, 
+			 GETBLOCKWITHDATA, 
+			 GETBLOCKS,
+			 GETBLOCKSWITHDATA,
+			 GETHEIGHT, 
+			 WORLDSPAWNENTITY,
+			 WORLDSPAWNPARTICLE,
+			 WORLDDELETEENTITY,
+			 WORLDGETPLAYERIDS, 	
+			 WORLDGETPLAYERID, 
+			 WORLDSETTING,
+//			 GETLIGHTLEVEL,
+//			 SETLIGHTLEVEL,
+			 EVENTSBLOCKHITS,
+			 EVENTSCHATPOSTS,
+			 EVENTSCLEAR,
+			 EVENTSSETTING
+	};
+	
+	protected String[] cameraCommands = {
+			SETFOLLOW,
+			SETNORMAL,
+			GETENTITYID,
+			SETDEBUG,
+			SETDISTANCE
+	};
+	
+	protected String[] entityOrPlayerCommands = {
+			 GETDIRECTION,
+			 GETPITCH,
+			 GETPOS,
+			 GETROTATION,
+			 GETTILE,
+			 SETDIMENSION,
+			 SETDIRECTION,
+			 SETPITCH,
+			 SETPOS,
+			 SETROTATION,
+			 SETTILE,
+			 SETFLYING
+	};
 
 	protected static final float TOO_SMALL = (float) 1e-9;
 
@@ -310,10 +363,22 @@ public class APIHandler {
 		Scanner scan = null;
 
 		try {	
-			int paren = clientSentence.indexOf('(');
-			if (paren < 0)
-				return;
-			String cmd = clientSentence.substring(0, paren);
+			int paren;
+			String cmd;
+			if (clientSentence.startsWith("+")) {
+				paren = 0;
+				cmd = "world.setBlock";
+			}
+			else {
+				paren = clientSentence.indexOf('(');
+				if (paren < 0) {
+					if (! clientSentence.matches("^[\\s\r\n]*$")) {
+						unknownCommand();
+					}
+					return;
+				}
+				cmd = clientSentence.substring(0, paren);
+			}
 			String args = clientSentence.substring(paren + 1).replaceAll("[\\s\r\n]+$", "").replaceAll("\\)$", "");
 			if (cmd.startsWith("player.")) {
 				// Compatibility with the mcpi library included with Juice
@@ -630,9 +695,38 @@ public class APIHandler {
 		else if (cmd.startsWith("camera.")) {
 			cameraCommand(cmd.substring(7), scan);
 		}
+		else if(cmd.equals(APISUPPORTS)) {
+			String arg = scan.next();
+			if (arg == null) {
+				fail("invalid argument");
+				return;
+			}
+			String[] list = fullCommands;
+			if (arg.startsWith("camera.")) {
+				arg = arg.substring(7);
+				list = cameraCommands;
+			}
+			else if (arg.startsWith("entity.") || arg.startsWith("player.")) {
+				arg = arg.substring(7);
+				list = entityOrPlayerCommands;
+			}
+			for (String c : list) 
+				if (c.equals(arg)) {
+					sendLine(1);
+					return;
+				}
+			sendLine(0);
+		}
+		else if (cmd.equals(APIVERSION)) {
+			sendLine(RaspberryJamMod.MODID+"|"+RaspberryJamMod.VERSION+"|"+"java"+"|"+mcVersion());
+		}
 		else {
 			unknownCommand();
 		}
+	}
+	
+	protected String mcVersion() {
+		return "server|"+RaspberryJamMod.minecraftServer.getMinecraftVersion();
 	}
 	
 	protected void unknownCommand() {
@@ -1116,8 +1210,6 @@ public class APIHandler {
 
 	public void click(PlayerInteractEvent event, boolean right) {
 		EntityPlayer player = event.getEntityPlayer();
-		
-		System.out.println("Click "+right);
 		
 		if (player == null || player.getEntityWorld().isRemote != RaspberryJamMod.clientOnlyAPI )
 			return;

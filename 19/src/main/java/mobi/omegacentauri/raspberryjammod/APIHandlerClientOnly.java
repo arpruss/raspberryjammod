@@ -103,4 +103,12 @@ public class APIHandlerClientOnly extends APIHandler {
 	@Override
 	protected void cameraCommand(String cmd, Scanner scan) {
 	}
+	
+	@Override
+	protected String mcVersion() {
+		return "client|"+Minecraft.getMinecraft().getVersion();
+	}
+	
+	
+
 }
