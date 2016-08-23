@@ -275,25 +275,34 @@ public class APIHandler {
 				playerId = mc.thePlayer.getEntityId();
 				for (World w : serverWorlds) {
 					Entity e = w.getEntityByID(playerId);
-					if (e != null)
+					if (e != null) {
 						playerMP = (EntityPlayerMP)e;
+						break;
+					}
 				}
 			}
 			else {
 				playerMP = null;
-				int firstId = 0;
 				
-				for (World w : serverWorlds) {
-					for (EntityPlayer p : w.playerEntities) {
-						int id = p.getEntityId();
-						if (playerMP == null || id < firstId) {
-							firstId = id;
-							playerMP = (EntityPlayerMP)p;
-							playerId = id;
+				if (authenticatedUsername != null)
+					playerMP = (EntityPlayerMP)getPlayerByNameOrUUID(authenticatedUsername);
+				
+				if (playerMP == null) {
+					int firstId = 0;
+					
+					for (World w : serverWorlds) {
+						for (EntityPlayer p : w.playerEntities) {
+							int id = p.getEntityId();
+							if (playerMP == null || id < firstId) {
+								firstId = id;
+								playerMP = (EntityPlayerMP)p;
+								playerId = id;
+							}
 						}
 					}
 				}
 			}
+			
 			if (playerMP == null) {
 				// This check could be removed, but a connection to a server while there is no
 				// player on the server is more likely to be a hacking attempt, and so we'll
@@ -301,8 +310,9 @@ public class APIHandler {
 				fail("Player not found");
 				return false;
 			}
-			if (playerMP != null)
+			else {
 				havePlayer = true;
+			}
 		}
 
 		return true;
@@ -630,24 +640,13 @@ public class APIHandler {
 		else if (cmd.equals(WORLDGETPLAYERID)) {
 			if (scan.hasNext()) {
 				String name = scan.next();
-				for (World w : serverWorlds) {
-					for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities) {
-						if (p.getName().equals(name)) {
-							sendLine(p.getEntityId());
-							return;
-						}
-					}
-				}
-				for (World w : serverWorlds) {
-					for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities) {
-						if (p.getUniqueID().toString().equals(name)) {
-							sendLine(p.getEntityId());
-							return;
-						}
-					}
-				}
 				
-				fail("unknown user");
+				EntityPlayer player = getPlayerByNameOrUUID(name);
+				
+				if (player != null)
+					sendLine(player.getEntityId());
+				else
+					fail("Unknown player");
 			}
 			else {
 				// unofficial API to get current player ID
@@ -725,8 +724,26 @@ public class APIHandler {
 		}
 	}
 	
+	protected EntityPlayer getPlayerByNameOrUUID(String name) {
+		for (World w : serverWorlds) {
+			for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities) {
+				if (p.getName().equals(name)) {
+					return p;
+				}
+			}
+		}
+		for (World w : serverWorlds) {
+			for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities) {
+				if (p.getUniqueID().toString().equals(name)) {
+					return p;
+				}
+			}
+		}		
+		return null;
+	}
+	
 	protected String mcVersion() {
-		return "server|"+RaspberryJamMod.minecraftServer.getMinecraftVersion();
+		return RaspberryJamMod.minecraftServer.getMinecraftVersion();
 	}
 	
 	protected void unknownCommand() {
