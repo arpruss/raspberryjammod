@@ -80,6 +80,7 @@ public class APIHandler {
 	
 	protected static final String WORLDSETTING_WORLD_IMMUTABLE = "world_immutable";
 	protected static final String WORLDSETTING_INCLUDE_NBT = "include_nbt_with_data";
+	protected static final String WORLDSETTING_NAMETAGS_VISIBLE = "nametags_visible";
 //	protected static final String WORLDSETTING_PAUSE_DRAWING = "pause_drawing";
 	
 	protected static final String EVENTSSETTING_RESTRICT_TO_SWORD = "restrict_to_sword";
@@ -143,7 +144,8 @@ public class APIHandler {
 	
 	protected String[] worldSettings = {
 			WORLDSETTING_WORLD_IMMUTABLE, 
-			WORLDSETTING_INCLUDE_NBT
+			WORLDSETTING_INCLUDE_NBT,
+			WORLDSETTING_NAMETAGS_VISIBLE
 	};
 	
 	protected String[] eventsSettings = {
@@ -422,7 +424,12 @@ public class APIHandler {
 			scan.useDelimiter(",");
 
 			synchronized (eventHandler) {
-				runCommand(cmd, args, scan);
+				try {
+					runCommand(cmd, args, scan);
+				} 
+				catch(NoSuchElementException e) {
+					fail("Parsing error?");
+				}
 			}
 
 			scan.close();
@@ -698,6 +705,8 @@ public class APIHandler {
 				stopChanges = (scan.nextInt() != 0);
 			else if (setting.equals(WORLDSETTING_INCLUDE_NBT)) // connection-specific
 				includeNBTWithData = (scan.nextInt() != 0);
+			else if (setting.equals(WORLDSETTING_NAMETAGS_VISIBLE)) // across connections, standalone only
+				RaspberryJamMod.noNameTags = (scan.nextInt() == 0);
 //			else if (setting.equals(WORLDSETTING_PAUSE_DRAWING)) // across connections
 //				eventHandler.setPause(scan.nextInt() != 0);
 			// name_tags not supported

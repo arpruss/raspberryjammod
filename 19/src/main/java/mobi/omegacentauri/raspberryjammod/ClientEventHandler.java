@@ -19,6 +19,7 @@ import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.command.ICommand;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
@@ -32,6 +33,7 @@ import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.MouseEvent;
+import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.ServerChatEvent;
@@ -108,6 +110,13 @@ public class ClientEventHandler {
 		
 		closeAPI();
 	}	
+	
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onSpecialsPre(RenderLivingEvent.Specials.Pre event) {
+		if (RaspberryJamMod.noNameTags)
+			event.setCanceled(true);
+	}
 	
 	@SideOnly(Side.CLIENT)
 	public void registerCommand(ScriptExternalCommand c) {
