@@ -114,7 +114,7 @@ public class APIHandler {
 	protected static final String SETPOS = "setPos";
 	protected static final String SETROTATION = "setRotation";
 	protected static final String SETTILE = "setTile";
-	protected static final String SETFLYING = "setFlying";
+	protected static final String GETNAME = "getNameAndUUID";
 	
 	protected String[] fullCommands = {
 			 CHAT,
@@ -173,7 +173,7 @@ public class APIHandler {
 			 SETPOS,
 			 SETROTATION,
 			 SETTILE,
-			 SETFLYING
+			 GETNAME
 	};
 
 	protected static final float TOO_SMALL = (float) 1e-9;
@@ -993,9 +993,21 @@ public class APIHandler {
 		else if (cmd.equals(SETDIMENSION)) {			
 			entitySetDimension(id, scan.nextInt());
 		}
+		else if (cmd.equals(GETNAME)) {
+			entityGetNameAndUUID(id);
+		}
 		else {
 			unknownCommand();
 		}
+	}
+	
+	protected void entityGetNameAndUUID(int id) {
+		Entity e = getServerEntityByID(id);
+		if (e == null) {
+			fail("cannot find entity");
+			return;
+		}
+		sendLine(e.getName()+","+e.getUniqueID());
 	}
 
 	protected void entitySetDirection(int id, Scanner scan) {
