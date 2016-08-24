@@ -64,6 +64,19 @@ class CmdPositioner:
         s = self.conn.sendReceive(self.pkg + ".getRotation", id)
         return float(s)
 
+    def getNameAndUUID(self, id):
+        """Get entity name and unique ID (entityId:int) => string,string"""
+        s = self.conn.sendReceive(self.pkg + ".getNameAndUUID", id)
+        # just in case, allow name to have a comma; uuid can't
+        comma = s.rindex(",")
+        return s[:comma],s[comma+1:]
+        
+    def getName(self, id):
+        """Get entity name (entityId:int) => string"""
+        s = self.conn.sendReceive(self.pkg + ".getNameAndUUID", id)
+        # just in case, allow name to have a comma; uuid can't
+        return s[:s.rindex(",")]
+
     def getDirection(self, id):
         """Get entity direction (entityId:int) => Vec3"""
         s = self.conn.sendReceive(self.pkg + ".getDirection", id)
@@ -139,6 +152,10 @@ class CmdPlayer(CmdPositioner):
         return CmdPositioner.getTilePos(self, self.id)
     def setTilePos(self, *args):
         return CmdPositioner.setTilePos(self, self.id, args)
+    def getName(self):
+        return CmdPositioner.getName(self, self.id)
+    def getNameAndUUID(self):
+        return CmdPositioner.getNameAndUUID(self, self.id)
 
 class CmdCamera:
     def __init__(self, connection):
