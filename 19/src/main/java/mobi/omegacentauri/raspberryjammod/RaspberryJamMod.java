@@ -82,6 +82,7 @@ public class RaspberryJamMod
 	public static int currentPortNumber;
 	public static boolean noFallDamage = false;
 	public static boolean noInWallDamage = false;
+	public static boolean globalImmutable = false;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -132,6 +133,7 @@ public class RaspberryJamMod
 		clientOnlyAPI = configFile.getBoolean("Read-Only Client-Based API", Configuration.CATEGORY_GENERAL, false, "Read-only API");
 		noFallDamage = configFile.getBoolean("Disable Fall Damage", Configuration.CATEGORY_GENERAL, false, "Disable fall damage");
 		noInWallDamage = configFile.getBoolean("Disable Stuck-In-Wall Damage", Configuration.CATEGORY_GENERAL, false, "Disable stuck-in-wall damage");
+		globalImmutable = configFile.getBoolean("Immutability Setting Is Global", Configuration.CATEGORY_GENERAL, false, "Immutability setting applies to all players");
 		//		clientOnlyPortNumber = configFile.getInt("Port Number for Client-Only API", Configuration.CATEGORY_GENERAL, 0, 0, 65535, "Client-only API port number (normally 0)");
 
 		if (configFile.hasChanged())

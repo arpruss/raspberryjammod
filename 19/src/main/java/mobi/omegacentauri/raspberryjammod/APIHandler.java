@@ -77,6 +77,13 @@ public class APIHandler {
 	protected static final String WORLDGETPLAYERIDS = "world.getPlayerIds"; 	
 	protected static final String WORLDGETPLAYERID = "world.getPlayerId"; 
 	protected static final String WORLDSETTING = "world.setting";
+	
+	protected static final String WORLDSETTING_WORLD_IMMUTABLE = "world_immutable";
+	protected static final String WORLDSETTING_INCLUDE_NBT = "include_nbt_with_data";
+//	protected static final String WORLDSETTING_PAUSE_DRAWING = "pause_drawing";
+	
+	protected static final String EVENTSSETTING_RESTRICT_TO_SWORD = "restrict_to_sword";
+	protected static final String EVENTSSETTING_DETECT_LEFT_CLICK = "detect_left_click";
 
 //	protected static final String GETLIGHTLEVEL = "block.getLightLevel"; // EXPERIMENTAL AND UNSUPPORTED
 //	protected static final String SETLIGHTLEVEL = "block.setLightLevel"; // EXPERIMENTAL AND UNSUPPORTED
@@ -131,7 +138,17 @@ public class APIHandler {
 			 EVENTSBLOCKHITS,
 			 EVENTSCHATPOSTS,
 			 EVENTSCLEAR,
-			 EVENTSSETTING
+			 EVENTSSETTING,
+	};
+	
+	protected String[] worldSettings = {
+			WORLDSETTING_WORLD_IMMUTABLE, 
+			WORLDSETTING_INCLUDE_NBT
+	};
+	
+	protected String[] eventsSettings = {
+			EVENTSSETTING_RESTRICT_TO_SWORD,
+			EVENTSSETTING_DETECT_LEFT_CLICK
 	};
 	
 	protected String[] cameraCommands = {
@@ -184,6 +201,7 @@ public class APIHandler {
 	public Permission permission = null;
 	protected boolean handledPermission = false;
 	private String authenticatedUsername = null;
+	private boolean stopChanges = false;
 
 	public APIHandler(MCEventHandler eventHandler, PrintWriter writer) throws IOException {
 		this(eventHandler, writer, true);
@@ -676,19 +694,19 @@ public class APIHandler {
 		}
 		else if (cmd.equals(WORLDSETTING)) {
 			String setting = scan.next();
-			if (setting.equals("world_immutable")) // across connections
-				eventHandler.setStopChanges(scan.nextInt() != 0);
-			else if (setting.equals("include_nbt_with_data")) // connection-specific
+			if (setting.equals(WORLDSETTING_WORLD_IMMUTABLE)) // across connections
+				stopChanges = (scan.nextInt() != 0);
+			else if (setting.equals(WORLDSETTING_INCLUDE_NBT)) // connection-specific
 				includeNBTWithData = (scan.nextInt() != 0);
-			else if (setting.equals("pause_drawing")) // across connections
-				eventHandler.setPause(scan.nextInt() != 0);
+//			else if (setting.equals(WORLDSETTING_PAUSE_DRAWING)) // across connections
+//				eventHandler.setPause(scan.nextInt() != 0);
 			// name_tags not supported
 		}
 		else if (cmd.equals(EVENTSSETTING)) {
 			String setting = scan.next();
-			if (setting.equals("restrict_to_sword")) // connection-specific 
+			if (setting.equals(EVENTSSETTING_RESTRICT_TO_SWORD)) // connection-specific 
 				restrictToSword = (scan.nextInt() != 0);
-			else if (setting.equals("detect_left_click")) // across connections
+			else if (setting.equals(EVENTSSETTING_DETECT_LEFT_CLICK)) // connection-specific
 				detectLeftClick =  (scan.nextInt() != 0);
 		}
 		else if (cmd.startsWith("camera.")) {
@@ -700,30 +718,42 @@ public class APIHandler {
 				fail("invalid argument");
 				return;
 			}
-			String[] list = fullCommands;
-			if (arg.startsWith("camera.")) {
-				arg = arg.substring(7);
-				list = cameraCommands;
-			}
-			else if (arg.startsWith("entity.") || arg.startsWith("player.")) {
-				arg = arg.substring(7);
-				list = entityOrPlayerCommands;
-			}
-			for (String c : list) 
-				if (c.equals(arg)) {
-					sendLine(1);
-					return;
-				}
-			sendLine(0);
+			apiSupports(arg);
 		}
 		else if (cmd.equals(APIVERSION)) {
-			sendLine(RaspberryJamMod.MODID+"|"+RaspberryJamMod.VERSION+"|"+"java"+"|"+mcVersion());
+			sendLine(RaspberryJamMod.MODID+","+RaspberryJamMod.VERSION+","+"java"+","+mcVersion());
 		}
 		else {
 			unknownCommand();
 		}
 	}
 	
+	private void apiSupports(String arg) {
+		String[] list = fullCommands;
+		if (arg.startsWith("camera.")) {
+			arg = arg.substring(7);
+			list = cameraCommands;
+		}
+		else if (arg.startsWith("entity.") || arg.startsWith("player.")) {
+			arg = arg.substring(7);
+			list = entityOrPlayerCommands;
+		}
+		else if (arg.startsWith(WORLDSETTING+".")) {
+			arg = arg.substring(WORLDSETTING.length()+1);
+			list = worldSettings;
+		}
+		else if (arg.startsWith(EVENTSSETTING+".")) {
+			arg = arg.substring(EVENTSSETTING.length()+1);
+			list = eventsSettings;
+		}
+		for (String c : list) 
+			if (c.equals(arg)) {
+				sendLine(1);
+				return;
+			}
+		sendLine(0);
+	}
+
 	protected EntityPlayer getPlayerByNameOrUUID(String name) {
 		for (World w : serverWorlds) {
 			for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities) {
@@ -1240,10 +1270,12 @@ public class APIHandler {
 				}
 			}
 		}
-		if (eventHandler.stopChanges) {
+		if (stopChanges && (RaspberryJamMod.globalImmutable || 
+								(havePlayer && playerId == player.getEntityId()))) {
 			event.setCanceled(true);
 		}
 	}
+
 	private boolean holdingSword(EntityPlayer player) {
 		ItemStack item = player.getHeldItemMainhand();
 		if (item != null) {

@@ -41,7 +41,6 @@ import net.minecraftforge.fml.relauncher.Side;
 abstract public class MCEventHandler {
 	protected List<ServerAction> serverActionQueue = new ArrayList<ServerAction>();		
 	private static final int MAX_HITS = 512;
-	volatile boolean stopChanges = false;
 	private volatile boolean restrictToSword = true;
 	private volatile boolean detectLeftClick = false;
 	protected volatile boolean pause = false;
@@ -52,10 +51,6 @@ abstract public class MCEventHandler {
 		detectLeftClick = RaspberryJamMod.leftClickToo;
 	}
 
-	public void setStopChanges(boolean stopChanges) {
-		this.stopChanges = stopChanges;
-	}
-	
 //	@SubscribeEvent
 //	public void onInitMapGenEvent(InitMapGenEvent event) {
 //		System.out.println("Init map gen");

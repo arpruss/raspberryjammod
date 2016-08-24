@@ -106,7 +106,7 @@ public class APIHandlerClientOnly extends APIHandler {
 	
 	@Override
 	protected String mcVersion() {
-		return "client|"+Minecraft.getMinecraft().getVersion();
+		return Minecraft.getMinecraft().getVersion();
 	}
 	
 	
