@@ -10,9 +10,16 @@ import os
 
 mc = Minecraft()
 mc.postToChat("Python interpreter "+sys.executable+" "+sys.version)
+
+mc.player.getRotation()
+
 try:
-    userName = os.environ['MINECRAFT_PLAYER_NAME']
+    userName = mc.player.getName()
 except:
-    userName = "unspecified"
-mc.postToChat("Invoked by user "+userName+" "+str(mc.player.id))
+    try:
+        userName = os.environ['MINECRAFT_PLAYER_NAME']
+    except:
+        userName = "unspecified"
+
+mc.postToChat("Invoked by user "+userName)
 mc.postToChat("Server "+str(mc.conn.socket.getpeername()))

@@ -382,7 +382,7 @@ class Minecraft:
 
     def postToChat(self, msg):
         """Post a message to the game chat"""
-        self.conn.send("chat.post", msg)
+        self.conn.send("chat.post", msg.replace("\r"," ").replace("\n"," "))
 
     def setting(self, setting, status):
         """Set a world setting (setting, status). keys: world_immutable, nametags_visible"""
