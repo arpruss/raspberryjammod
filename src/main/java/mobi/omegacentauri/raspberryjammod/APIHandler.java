@@ -101,7 +101,7 @@ public class APIHandler {
 	protected static final String SETPOS = "setPos";
 	protected static final String SETROTATION = "setRotation";
 	protected static final String SETTILE = "setTile";
-	protected static final String SETFLYING = "setFlying";
+	protected static final String GETNAME = "getNameAndUUID";
 
 	protected static final float TOO_SMALL = (float) 1e-9;
 
@@ -633,6 +633,9 @@ public class APIHandler {
 		else if (cmd.equals(SETDIMENSION)) {			
 			entitySetDimension(id, scan.nextInt());
 		}
+		else if (cmd.equals(GETNAME)) {			
+			entityGetNameAndUUID(id);
+		}
         else {
             unknownCommand();
         }
@@ -669,6 +672,14 @@ public class APIHandler {
 		Entity e = getServerEntityByID(id);
 		if (e != null) 
 			eventHandler.queueServerAction(new SetDimension(e, dimension));
+	}
+
+	protected void entityGetNameAndUUID(int id) {
+		Entity e = getServerEntityByID(id);
+        if (e == null)
+            fail("Unknown entity");
+        else
+            sendLine(e.getName()+","+e.getUniqueID());
 	}
 
 	protected void entitySetDirection(Entity e, double x, double y, double z) {
