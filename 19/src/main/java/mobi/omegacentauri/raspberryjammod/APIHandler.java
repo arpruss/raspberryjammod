@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -103,18 +104,20 @@ public class APIHandler {
 	protected static final String SETDISTANCE = "setDistance"; // EXPERIMENTAL AND UNSUPPORTED
 
 	// player.* or entity.*
+	// adding any commands here requires adjusting tooManyPlayerCommandArguments()
+	// and entityOrPlayerCommands.
 	protected static final String GETDIRECTION = "getDirection";
 	protected static final String GETPITCH = "getPitch";
 	protected static final String GETPOS = "getPos";
 	protected static final String GETROTATION = "getRotation";
 	protected static final String GETTILE = "getTile";
+	protected static final String GETNAME = "getNameAndUUID";
 	protected static final String SETDIMENSION = "setDimension"; // EXPERIMENTAL AND UNSUPPORTED
 	protected static final String SETDIRECTION = "setDirection";
 	protected static final String SETPITCH = "setPitch";
 	protected static final String SETPOS = "setPos";
 	protected static final String SETROTATION = "setRotation";
 	protected static final String SETTILE = "setTile";
-	protected static final String GETNAME = "getNameAndUUID";
 	
 	protected String[] fullCommands = {
 			 CHAT,
@@ -167,15 +170,15 @@ public class APIHandler {
 			 GETPOS,
 			 GETROTATION,
 			 GETTILE,
-			 SETDIMENSION,
+			 GETNAME,
 			 SETDIRECTION,
-			 SETPITCH,
-			 SETPOS,
-			 SETROTATION,
 			 SETTILE,
-			 GETNAME
+			 SETPOS,
+			 SETDIMENSION,
+			 SETPITCH,
+			 SETROTATION,
 	};
-
+	
 	protected static final float TOO_SMALL = (float) 1e-9;
 
 	protected World[] serverWorlds;
@@ -410,15 +413,6 @@ public class APIHandler {
 				cmd = clientSentence.substring(0, paren);
 			}
 			String args = clientSentence.substring(paren + 1).replaceAll("[\\s\r\n]+$", "").replaceAll("\\)$", "");
-			if (cmd.startsWith("player.")) {
-				// Compatibility with the mcpi library included with Juice
-				if (args.startsWith("None,")) {
-					args = args.substring(5);
-				}
-				else if (args.equals("None")) {
-					args = "";
-				}
-			}
 
 			scan = new Scanner(args);
 			scan.useDelimiter(",");
@@ -634,10 +628,25 @@ public class APIHandler {
 			eventHandler.queueServerAction(setState);
 		}
 		else if (cmd.startsWith("player.")) {
-			if (havePlayer) 
-				entityCommand(playerId, cmd.substring(7), scan);
-			else
+			String subcommand = cmd.substring(7);
+			if (tooManyPlayerCommandArguments(subcommand, args)) {
+				String name = scan.next();
+				if (!name.equals("None")) {
+					EntityPlayer player = getPlayerByNameOrUUID(name);
+					if (player != null) 
+						entityCommand(player.getEntityId(), subcommand, scan);
+					else
+						fail("Player not found");
+					return;
+				}
+			}
+			
+			if (havePlayer) {
+				entityCommand(playerId, subcommand, scan);
+			}
+			else {
 				fail("Do not seem to have a player");
+			}
 		}
 		else if (cmd.startsWith("entity.")) {
 			entityCommand(scan.nextInt(), cmd.substring(7), scan);
@@ -737,6 +746,23 @@ public class APIHandler {
 		}
 	}
 	
+	private boolean tooManyPlayerCommandArguments(String subcommand, String args) {
+		// check if there are more arguments than are needed; this detects if the
+		// script slipped in a username, for compatibility with RaspberryJuice
+		int count = args.length() > 0 ? 1 : 0;
+		for (int i = args.length()-1; i >= 0 ; i--)
+			if (args.charAt(i) == ',')
+				count++;
+		if (subcommand.startsWith("get"))
+			return count > 0;
+		else if (subcommand.equals(SETDIRECTION) ||
+				subcommand.equals(SETTILE) || 
+				subcommand.equals(SETPOS))
+			return count > 3;
+		else
+			return count > 1;
+	}
+
 	private void apiSupports(String arg) {
 		String[] list = fullCommands;
 		if (arg.startsWith("camera.")) {
@@ -960,6 +986,11 @@ public class APIHandler {
 	}
 
 	protected void entityCommand(int id, String cmd, Scanner scan) {
+		Entity e = getServerEntityByID(id);
+		if (e == null) {
+			fail("cannot find entity");
+			return;
+		}
 		if (cmd.equals(GETPOS)) {
 			entityGetPos(id);
 		}
@@ -1003,10 +1034,6 @@ public class APIHandler {
 	
 	protected void entityGetNameAndUUID(int id) {
 		Entity e = getServerEntityByID(id);
-		if (e == null) {
-			fail("cannot find entity");
-			return;
-		}
 		sendLine(e.getName()+","+e.getUniqueID());
 	}
 

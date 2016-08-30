@@ -366,7 +366,7 @@ class Minecraft:
             return self.playerId
         else:
             return int(self.conn.sendReceive_flat("world.getPlayerId", flatten(args)))
-
+            
     def getPlayerEntityIds(self):
         """Get the entity ids of the connected players => [id:int]"""
         ids = self.conn.sendReceive("world.getPlayerIds")
