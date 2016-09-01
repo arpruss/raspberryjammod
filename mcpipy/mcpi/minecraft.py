@@ -125,9 +125,14 @@ class CmdEntity(CmdPositioner):
 
 class CmdPlayer(CmdPositioner):
     """Methods for the host (Raspberry Pi) player"""
-    def __init__(self, connection, playerId=()):
+    def __init__(self, connection, playerId=(), name=None):
+        if name is not None:
+            playerId = ()
         CmdPositioner.__init__(self, connection, "player" if playerId==() else "entity")
-        self.id = playerId
+        if name is not None:
+            self.id = name
+        else:
+            self.id = playerId
         self.conn = connection
 
     def getDirection(self):
@@ -202,7 +207,10 @@ class CmdEvents:
 class Minecraft:
     """The main class to interact with a running instance of Minecraft Pi."""
 
-    def __init__(self, connection=None, autoId=True):
+    def __init__(self, connection=None, autoId=True, name=None):
+        if name is not None:
+            autoId = False
+    
         if connection:
             self.conn = connection
         else:
@@ -234,7 +242,7 @@ class Minecraft:
                     else:
                         self.player = CmdPlayer(self.conn)
         else:
-            self.player = CmdPlayer(self.conn)
+            self.player = CmdPlayer(self.conn, name=name)
         
         self.events = CmdEvents(self.conn)
         self.enabledNBT = False
@@ -389,8 +397,8 @@ class Minecraft:
         self.conn.send("world.setting", setting, 1 if bool(status) else 0)
 
     @staticmethod
-    def create(address = None, port = None):
-        return Minecraft(Connection(address, port))
+    def create(address = None, port = None, name = None):
+        return Minecraft(Connection(address, port), name = None)
         
 if 'VPYTHON_MCPI' in environ:
     from .vpython_minecraft import Minecraft
