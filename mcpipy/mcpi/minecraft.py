@@ -112,16 +112,19 @@ class CmdPositioner:
         """Set entity tile position (entityId:int) => Vec3"""
         self.conn.send(self.pkg + ".setTile", id, floorFlatten(*args))
 
-    def setting(self, setting, status):
+    def setting(self, setting, status): 
         """Set a player setting (setting, status). keys: autojump"""
         self.conn.send(self.pkg + ".setting", setting, 1 if bool(status) else 0)
-
 
 class CmdEntity(CmdPositioner):
     """Methods for entities"""
     def __init__(self, connection):
         CmdPositioner.__init__(self, connection, "entity")
 
+    def postToChat(self, id, msg):
+        """Post a message to a particular player in game chat"""
+        self.conn.send(self.pkg + ".chat.post", id,
+            msg.replace("\r"," ").replace("\n"," "))
 
 class CmdPlayer(CmdPositioner):
     """Methods for the host (Raspberry Pi) player"""
@@ -135,6 +138,10 @@ class CmdPlayer(CmdPositioner):
             self.id = playerId
         self.conn = connection
 
+    def postToChat(self, msg):
+        """Post a message to a particular player in game chat"""
+        self.conn.send(self.pkg + ".chat.post", "" if self.id==() else self.id,
+            msg.replace("\r"," ").replace("\n"," "))
     def getDirection(self):
         return CmdPositioner.getDirection(self, self.id)
     def getPitch(self):

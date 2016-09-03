@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,7 +63,7 @@ public class APIHandler {
 	// camera.setFixed() unsupported
 	// camera.setNormal(id) and camera.setFollow(id) uses spectating, and so it moves the
 	// player along with the entity that was set as camera
-	protected static final String CHAT = "chat.post";
+	protected static final String CHATGLOBAL = "chat.post";
 	protected static final String APISUPPORTS = "api.supports";
 	protected static final String APIVERSION = "api.version";
 	protected static final String SETBLOCK = "world.setBlock";
@@ -118,9 +119,10 @@ public class APIHandler {
 	protected static final String SETPOS = "setPos";
 	protected static final String SETROTATION = "setRotation";
 	protected static final String SETTILE = "setTile";
+	protected static final String CHAT = "chat.post";
 	
 	protected String[] fullCommands = {
-			 CHAT,
+			 CHATGLOBAL,
 			 APIVERSION,
 			 APISUPPORTS,
 			 SETBLOCK, 
@@ -177,6 +179,7 @@ public class APIHandler {
 			 SETDIMENSION,
 			 SETPITCH,
 			 SETROTATION,
+			 CHAT
 	};
 	
 	protected static final float TOO_SMALL = (float) 1e-9;
@@ -631,7 +634,7 @@ public class APIHandler {
 			String subcommand = cmd.substring(7);
 			if (tooManyPlayerCommandArguments(subcommand, args)) {
 				String name = scan.next();
-				if (!name.equals("None")) {
+				if (!name.equals("None") && name.length()>0) {
 					EntityPlayer player = getPlayerByNameOrUUID(name);
 					if (player != null) 
 						entityCommand(player.getEntityId(), subcommand, scan);
@@ -651,7 +654,7 @@ public class APIHandler {
 		else if (cmd.startsWith("entity.")) {
 			entityCommand(scan.nextInt(), cmd.substring(7), scan);
 		}
-		else if (cmd.equals(CHAT)) {
+		else if (cmd.equals(CHATGLOBAL)) {
 			chat(args);
 		}
 		else if (cmd.equals(WORLDGETPLAYERIDS)) {
@@ -759,6 +762,10 @@ public class APIHandler {
 				subcommand.equals(SETTILE) || 
 				subcommand.equals(SETPOS))
 			return count > 3;
+		else if (subcommand.equals(CHAT)) {
+			// the player.chat command ALWAYS takes a player name, but perhaps blank
+			return true;
+		}
 		else
 			return count > 1;
 	}
@@ -875,6 +882,17 @@ public class APIHandler {
 		
 		//TODO: antigravity for NoAI:1
 	}
+
+	protected void chat(int id, String msg) {
+		Entity e = getServerEntityByID(id);
+		if (e == null || ! (e instanceof EntityPlayer)) {
+			fail("cannot find player");
+			return;
+		}
+		
+		e.addChatMessage(new TextComponentString(msg));
+	}
+	
 
 	protected void chat(String msg) {
 		if (! RaspberryJamMod.integrated || RaspberryJamMod.globalChatMessages) {
@@ -1296,9 +1314,13 @@ public class APIHandler {
 	}
 
 	static void globalMessage(String message) {
+		Set<EntityPlayer> done = new HashSet<EntityPlayer>();
 		for (World w : RaspberryJamMod.minecraftServer.worldServers) {
 			for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities ) {
-				p.addChatComponentMessage(new TextComponentString(message));
+				if (!done.contains(p)) {
+					p.addChatComponentMessage(new TextComponentString(message));
+					done.add(p);
+				}
 			}
 		}
 	}
