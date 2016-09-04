@@ -210,6 +210,7 @@ public class APIHandler {
 	protected boolean handledPermission = false;
 	private String authenticatedUsername = null;
 	private boolean stopChanges = false;
+	private boolean verifiedUser = false;
 
 	public APIHandler(MCEventHandler eventHandler, PrintWriter writer) throws IOException {
 		this(eventHandler, writer, true);
@@ -310,10 +311,14 @@ public class APIHandler {
 			else {
 				playerMP = null;
 				
-				if (authenticatedUsername != null)
+				if (authenticatedUsername != null) 
 					playerMP = (EntityPlayerMP)getPlayerByNameOrUUID(authenticatedUsername);
 				
-				if (playerMP == null) {
+				if (playerMP != null) {
+					verifiedUser = true;
+					playerId = playerMP.getEntityId();
+				}
+				else {
 					int firstId = 0;
 					
 					for (World w : serverWorlds) {
@@ -895,8 +900,14 @@ public class APIHandler {
 	
 
 	protected void chat(String msg) {
-		if (! RaspberryJamMod.integrated || RaspberryJamMod.globalChatMessages) {
+		if (RaspberryJamMod.globalChatMessages) {
 			globalMessage(msg);
+		}
+		else if (! RaspberryJamMod.integrated) {
+			if (verifiedUser)
+				chat(playerId, msg);
+			else
+				globalMessage(msg);
 		}
 		else {
 			mc.thePlayer.addChatComponentMessage(new TextComponentString(msg));
