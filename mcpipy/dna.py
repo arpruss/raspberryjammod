@@ -14,7 +14,7 @@ G = block.WOOL_BLUE
 T = block.WOOL_RED
 
 blocks = { "A":(A,T), "C":(C,G), "T":(T,A), "G":(G,C) }
-# sequence taken from chromosome 5, retrieved via Wolfram Alpha
+# sequence taken from somewhere in chromosome 5, retrieved via Wolfram Alpha
 sequence = "CAAAAGTGTGGGGAAATTAATTTGGGAATTACTCTCCTCATTGAAAAATATCTCATTTGCTAAAATAAGACAGTAAAACAGTACAGTTTAAATATTTATAAAAATAGGAAAGTTTGGCAAAAAGAGAGGAGTACACACCTGTGACTACTGAGTTGCTGTGAAAATTTCATTTCCTGATACAAAATTGTCTAAAGCACTTG"
 
 def getPair(i):
