@@ -1,6 +1,7 @@
 import mcpi.block as block
 from random import uniform
 import math
+import colors
 
 opaqueBlocks = [
   block.BONE_BLOCK,

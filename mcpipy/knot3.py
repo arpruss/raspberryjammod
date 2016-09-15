@@ -9,6 +9,7 @@
 #
 from mine import *
 from sys import argv
+import colors
 
 def ball(x0,y0,z0,r,block_type,done):
   for x in range(-r,r):
@@ -17,6 +18,15 @@ def ball(x0,y0,z0,r,block_type,done):
          if (x**2 + y**2 + z**2 <= r**2):
             if not (x0+x,y0+y,z0+z) in done:
                 mc.setBlock(x0+x,y0+y,z0+z,block_type)
+                done.add((x0+x,y0+y,z0+z))
+
+def ditheredBall(x0,y0,z0,r,rgb,done):
+  for x in range(-r,r):
+    for y in range(-r,r):
+      for z in range(-r,r):
+         if (x**2 + y**2 + z**2 <= r**2):
+            if not (x0+x,y0+y,z0+z) in done:
+                mc.setBlock(x0+x,y0+y,z0+z,colors.rgbToBlock(rgb, randomDither=30))
                 done.add((x0+x,y0+y,z0+z))
 
 mc = Minecraft()
@@ -64,6 +74,7 @@ while th < 2*pi:
   y = playerPos.y + int(scale * (yOffset+y)) 
   z = playerPos.z + int(scale * z)
 
-  ball(x,y,z,2,block.WOOL_BLUE,done)
+  hue = 180 * th / pi + 180 if th < pi else 360+180 - 180 * th / pi 
+  ditheredBall(x,y,z,2,colors.hsvToRGB(hue, 1, 1),done)
 
   th += 2*pi / 10000
