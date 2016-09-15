@@ -9,11 +9,11 @@
 from mine import *
 
 mc = Minecraft()
-playerPos = mc.player.getPos()
+playerPos = mc.player.getTilePos()
 scale = 10
-x0 = int(playerPos.x)
+x0 = playerPos.x
 y0 = int(playerPos.y+5*scale)
-z0 = int(playerPos.z)
+z0 = playerPos.z
 t = 0
 done = set()
 while t < 2*pi:

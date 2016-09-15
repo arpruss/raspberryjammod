@@ -18,12 +18,9 @@ def ball(x0,y0,z0,r,block_type,done):
                 done.add((x0+x,y0+y,z0+z))
 
 mc = Minecraft()
-playerPos = mc.player.getPos()
+playerPos = mc.player.getTilePos()
 
 scale = 10
-x0 = int(playerPos.x)
-y0 = int(playerPos.y + 5*scale)
-z0 = int(playerPos.z)
 
 done = set()
 t = 0
