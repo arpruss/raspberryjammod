@@ -41,7 +41,7 @@ t = 3
 m = 1
 n = 1.5
 scale = 15
-
+width = 2
 
 for i in range(1,len(argv)):
     variable,value = argv[i].split("=")
@@ -59,6 +59,8 @@ for i in range(1,len(argv)):
         h = float(value)
     elif variable == "scale":
         scale = float(value)
+    elif variable == "width":
+        width = float(value)
 
 yOffset = abs(m)+abs(n)+1
 
@@ -75,6 +77,6 @@ while th < 2*pi:
   z = playerPos.z + int(scale * z)
 
   hue = 180 * th / pi + 180 if th < pi else 360+180 - 180 * th / pi 
-  ditheredBall(x,y,z,2,colors.hsvToRGB(hue, 1, 1),done)
+  ditheredBall(x,y,z,width,colors.hsvToRGB(hue, 1, 1),done)
 
   th += 2*pi / 10000
