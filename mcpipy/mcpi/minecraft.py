@@ -124,7 +124,7 @@ class CmdEntity(CmdPositioner):
     def postToChat(self, id, msg):
         """Post a message to a particular player in game chat"""
         self.conn.send(self.pkg + ".chat.post", id,
-            msg.replace("\r"," ").replace("\n"," "))
+            str(msg).replace("\r"," ").replace("\n"," "))
 
 class CmdPlayer(CmdPositioner):
     """Methods for the host (Raspberry Pi) player"""
@@ -141,7 +141,7 @@ class CmdPlayer(CmdPositioner):
     def postToChat(self, msg):
         """Post a message to a particular player in game chat"""
         self.conn.send(self.pkg + ".chat.post", "" if self.id==() else self.id,
-            msg.replace("\r"," ").replace("\n"," "))
+            str(msg).replace("\r"," ").replace("\n"," "))
     def getDirection(self):
         return CmdPositioner.getDirection(self, self.id)
     def getPitch(self):
@@ -397,7 +397,7 @@ class Minecraft:
 
     def postToChat(self, msg):
         """Post a message to the game chat"""
-        self.conn.send("chat.post", msg.replace("\r"," ").replace("\n"," "))
+        self.conn.send("chat.post", str(msg).replace("\r"," ").replace("\n"," "))
 
     def setting(self, setting, status):
         """Set a world setting (setting, status). keys: world_immutable, nametags_visible"""
