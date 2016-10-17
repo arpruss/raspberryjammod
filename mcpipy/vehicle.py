@@ -30,6 +30,7 @@ from math import *
 import sys
 from copy import copy
 from ast import literal_eval
+from struct import pack
 import re
 
 def getSavePath(directory, extension):
@@ -83,17 +84,18 @@ class Vehicle():
     REDSTONE_COMPARATORS_REPEATERS = set((93,94,149,150,356,404))
     EMPTY = {}
 
-    def __init__(self,mc,nondestructive=False):
+    def __init__(self,mc=None,nondestructive=False):
         self.mc = mc
         self.nondestructive = nondestructive
         self.highWater = None
         self.baseVehicle = {}
-        if hasattr(Minecraft, 'getBlockWithNBT'):
-            self.getBlockWithData = self.mc.getBlockWithNBT
-            self.setBlockWithData = self.mc.setBlockWithNBT
-        else:
-            self.getBlockWithData = self.mc.getBlockWithData
-            self.setBlockWithData = self.mc.setBlock
+        if mc is not None:
+            if hasattr(Minecraft, 'getBlockWithNBT'):
+                self.getBlockWithData = self.mc.getBlockWithNBT
+                self.setBlockWithData = self.mc.setBlockWithNBT
+            else:
+                self.getBlockWithData = self.mc.getBlockWithData
+                self.setBlockWithData = self.mc.setBlock
         self.curVehicle = {}
         self.curRotation = 0
         self.curLocation = None
@@ -151,6 +153,135 @@ class Vehicle():
                 self.highWater = None
 
         self.curLocation = None
+        
+    def getMonochromaticMesh(self,includeLiquid=False):
+        """
+        Make a monochromatic triangular mesh.
+        List of (normal,triangle), where normal is a coordinate triple, and triangle is a triple of
+        of coordinate triples.
+        """
+        
+        mesh = []
+        
+        def includes(xyz):
+            xyz = tuple(xyz)
+            if xyz in self.baseVehicle:
+                type = self.baseVehicle[xyz].id
+                if type == AIR.id:
+                    return False
+                if not includeLiquid and type in Vehicle.LIQUIDS:
+                    return False
+                return True
+            return False
+        
+        def getParallelFaces(coordinate):
+            faceDict = {}
+            for xyz in self.baseVehicle:
+                if includes(xyz):
+                    for delta in (-1,1):
+                        neighbor = list(xyz)
+                        neighbor[coordinate] += delta
+                        if not includes(neighbor):
+                            planeCoordinate = xyz[coordinate] if delta < 0 else xyz[coordinate]+1
+                            if (delta,planeCoordinate) not in faceDict:
+                                faceDict[(delta,planeCoordinate)] = []
+                            otherCoordinates = []
+                            for i in range(3):
+                                if i != coordinate:
+                                    otherCoordinates.append(xyz[i])
+                            faceDict[(delta,planeCoordinate)].append(tuple(otherCoordinates))
+            return faceDict
+                            
+        def addPlane(coordinate, direction, planeCoordinate, faces):
+            """
+            Use a greedy optimization algorithm which looks for the largest
+            rectangle first.
+            """        
+        
+            if len(faces) == 0:
+                return
+                
+            topLeftU = min((f[0] for f in faces))    
+            topLeftV = min((f[1] for f in faces))    
+            bottomRightU = max((f[0] for f in faces))    
+            bottomRightV = max((f[1] for f in faces))    
+        
+            def makeXYZ(u,v):
+                if coordinate == 0:
+                    return (planeCoordinate, u, v)
+                elif coordinate == 1:
+                    return (u, planeCoordinate, v)
+                else:
+                    return (u, v, planeCoordinate)
+                    
+            def containsRectangle(u1,v1,u2,v2):
+                for u in range(u1,u2+1):
+                    for v in range(v1,v2+1):
+                        if (u,v) not in faces:
+                            return False
+                return True
+                    
+            def getLargestRectangleAtUV(u,v):
+                bestW = 1
+                bestH = 1
+                bestArea = 1
+                
+                for w in range(1,bottomRightU - u + 2):
+                    for h in range(1,bottomRightV - v + 2):
+                        if w*h > bestArea and containsRectangle(u,v,u+w-1,v+h-1):
+                            bestW = w
+                            bestH = h
+                            bestArea = w*h
+                return bestW,bestH
+                    
+            def popLargestRectangle():
+                largestArea = 0
+                largestStart = None
+                largestEnd = None
+                for u,v in faces:
+                    w,h = getLargestRectangleAtUV(u,v)
+                    if w*h > largestArea:
+                        largestArea = w*h
+                        largestStart = (u,v)
+                        largestEnd = (u+w-1,v+h-1)
+                for i in range(len(faces)-1,-1,-1):
+                    if (largestStart[0] <= faces[i][0] and faces[i][0] <= largestEnd[0] and
+                        largestStart[1] <= faces[i][1] and faces[i][1] <= largestEnd[1]):
+                            del faces[i]
+                return largestStart[0],largestStart[1],largestEnd[0],largestEnd[1]
+        
+            while faces:
+                u1,v1,u2,v2 = popLargestRectangle()
+                if coordinate == 0:
+                    normal = (direction, 0, 0)
+                elif coordinate == 1:
+                    normal = (0, direction, 0)
+                elif coordinate == 2:
+                    normal = (0, 0, direction)
+                if direction < 0:
+                    mesh.append((normal,(makeXYZ(u1, v1), makeXYZ(u1, v2+1), makeXYZ(u2+1, v1))))
+                    mesh.append((normal,(makeXYZ(u1, v2+1), makeXYZ(u2+1, v2+1), makeXYZ(u2+1, v1))))
+                else:
+                    mesh.append((normal,(makeXYZ(u2+1, v1), makeXYZ(u1, v2+1), makeXYZ(u1, v1))))
+                    mesh.append((normal,(makeXYZ(u2+1, v1), makeXYZ(u2+1, v2+1), makeXYZ(u1, v2+1))))
+        
+        for coordinate in range(3):
+            faceDict = getParallelFaces(coordinate)
+            for direction,planeCoordinate in faceDict:
+                addPlane(coordinate, direction, planeCoordinate, faceDict[(direction,planeCoordinate)])
+                
+        return mesh
+        
+    def saveMonochromaticSTL(self, filename, includeLiquid=False):
+        mesh = self.getMonochromaticMesh(includeLiquid=includeLiquid)
+        with open(filename, "wb") as f:
+            f.write(pack("80s","solid"))
+            f.write(pack("<I",len(mesh)))
+            for normal,triangle in mesh:
+                f.write(pack("<3f", normal[0], normal[1], normal[2]))
+                for vertex in triangle:
+                    f.write(pack("<3f", vertex[0], vertex[1], vertex[2]))
+                f.write(pack("<H", 0))            
 
     def safeSetBlockWithData(self,pos,b):
         """
