@@ -10,6 +10,7 @@ cp build/libs/RaspberryJamMod.jar build/out/1.8.8
 cp build/libs/RaspberryJamMod.jar build/out/1.8.9
 if [ "$1" != "noinstall" ]
 then
+    mkdir $APPDATA/.minecraft/mods  2> /dev/null
     mkdir $APPDATA/.minecraft/mods/1.8  2> /dev/null
     mkdir $APPDATA/.minecraft/mods/1.8.8  2> /dev/null
     mkdir $APPDATA/.minecraft/mods/1.8.9  2> /dev/null
