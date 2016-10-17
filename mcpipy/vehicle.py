@@ -153,9 +153,9 @@ class Vehicle():
             if self.highWater < -1000000:
                 self.highWater = None
 
-        self.curLocation = None
+        self.curLocation = None       
         
-    def getMonochromaticMesh(self,includeLiquid=False):
+    def getMonochromaticMesh(self,includeLiquid=False,_onlyBlock=None):
         """
         Make a monochromatic triangular mesh.
         List of (normal,triangle), where normal is a coordinate triple, and triangle is a triple of
@@ -178,7 +178,7 @@ class Vehicle():
         def getParallelFaces(coordinate):
             faceDict = {}
             for xyz in self.baseVehicle:
-                if includes(xyz):
+                if (_onlyBlock is None and includes(xyz)) or (_onlyBlock is not None and self.baseVehicle[xyz] == _onlyBlock):
                     for delta in (-1,1):
                         neighbor = list(xyz)
                         neighbor[coordinate] += delta
@@ -186,11 +186,8 @@ class Vehicle():
                             planeCoordinate = xyz[coordinate] if delta < 0 else xyz[coordinate]+1
                             if (delta,planeCoordinate) not in faceDict:
                                 faceDict[(delta,planeCoordinate)] = []
-                            otherCoordinates = []
-                            for i in range(3):
-                                if i != coordinate:
-                                    otherCoordinates.append(xyz[i])
-                            faceDict[(delta,planeCoordinate)].append(tuple(otherCoordinates))
+                            otherCoordinates = ( xyz[(coordinate+1)%3], xyz[(coordinate+2)%3] )
+                            faceDict[(delta,planeCoordinate)].append(otherCoordinates)
             return faceDict
                             
         def addPlane(coordinate, direction, planeCoordinate, faces):
@@ -211,7 +208,7 @@ class Vehicle():
                 if coordinate == 0:
                     return (planeCoordinate, u, v)
                 elif coordinate == 1:
-                    return (u, planeCoordinate, v)
+                    return (v, planeCoordinate, u)
                 else:
                     return (u, v, planeCoordinate)
                     
@@ -273,6 +270,12 @@ class Vehicle():
                 
         return mesh
         
+    def getColorMesh(self, includeLiquid=False):
+        mesh = []
+        for block in set((self.baseVehicle[xyz] for xyz in self.baseVehicle)):
+            mesh.append((block, self.getMonochromaticMesh(includeLiquid=includeLiquid, _onlyBlock=block)))
+        return mesh
+            
     def saveMonochromaticSTL(self, filename, includeLiquid=False):
         mesh = self.getMonochromaticMesh(includeLiquid=includeLiquid)
         minY = 10000
@@ -281,13 +284,35 @@ class Vehicle():
                 if vertex[1] < minY:
                     minY = vertex[1]
         with open(filename, "wb") as f:
-            f.write(pack("80s","solid"))
+            f.write(pack("80s",''))
             f.write(pack("<I",len(mesh)))
             for normal,triangle in mesh:
                 f.write(pack("<3f", normal[0], normal[1], normal[2]))
                 for vertex in triangle:
                     f.write(pack("<3f", vertex[0], vertex[1]-minY, vertex[2]))
                 f.write(pack("<H", 0))            
+
+    def saveColorSTL(self, filename, includeLiquid=False):
+        mesh = self.getColorMesh(includeLiquid=includeLiquid)
+        minY = 10000
+        numTriangles = 0
+        for block,monoMesh in mesh:
+            for normal,triangle in monoMesh:
+                numTriangles += 1
+                for vertex in triangle:
+                    if vertex[1] < minY:
+                        minY = vertex[1]
+        with open(filename, "wb") as f:
+            f.write(pack("80s",''))
+            f.write(pack("<I",numTriangles))
+            for block,monoMesh in mesh:
+                rgb = block.getRGBA()
+                color = 0x8000 | ( (rgb[0] >> 3) << 10 ) | ( (rgb[1] >> 3) << 5 ) | ( (rgb[2] >> 3) << 0 )
+                for normal,triangle in monoMesh:
+                    f.write(pack("<3f", normal[0], normal[1], normal[2]))
+                    for vertex in triangle:
+                        f.write(pack("<3f", vertex[0], vertex[1]-minY, vertex[2]))
+                    f.write(pack("<H", color))            
 
     def safeSetBlockWithData(self,pos,b):
         """
@@ -636,6 +661,11 @@ if __name__ == '__main__':
             elif x == 'm':
                 loadName = sys.argv[2] if len(sys.argv)>2 else None
                 doSTL = True
+                stlColor = False
+            elif x == 'M':
+                loadName = sys.argv[2] if len(sys.argv)>2 else None
+                doSTL = True
+                stlColor = True
             elif x == 'L':
                 loadName = sys.argv[2] if len(sys.argv)>2 else None
                 doLoad = True
@@ -650,7 +680,12 @@ if __name__ == '__main__':
         path = load(loadName)
         if path is not None:
             pre, ext = os.path.splitext(path)
-            vehicle.saveMonochromaticSTL(pre, ".stl")            
+            out = pre + ".stl"
+            print("Saving "+out)
+            if stlColor:
+                vehicle.saveColorSTL(out)
+            else:
+                vehicle.saveMonochromaticSTL(out)            
         exit()
 
     minecraft = Minecraft()
