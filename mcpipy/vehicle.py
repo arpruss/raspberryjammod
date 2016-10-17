@@ -634,6 +634,7 @@ if __name__ == '__main__':
     flash = True
     doLoad = False
     doSave = False
+    doSTL = False
     scanRectangularPrism = False
     exitAfterDraw = False
     noInitialRotate = False
