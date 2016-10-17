@@ -12,6 +12,7 @@
    q: don't want the vehicle to flash as it is scanned
    d: liquids don't count as terrain
    l: load vehicle from vehicles/name.py
+   m: transform vehicle from vehicles/name.py to vehicles/name.stl monochromatic mesh
    s: save vehicle to vehicles/name.py and quit
    r: scan a rectangular region, specified by right tapping with the sword on extrema
 
@@ -274,13 +275,18 @@ class Vehicle():
         
     def saveMonochromaticSTL(self, filename, includeLiquid=False):
         mesh = self.getMonochromaticMesh(includeLiquid=includeLiquid)
+        minY = 10000
+        for normal,triangle in mesh:
+            for vertex in triangle:
+                if vertex[1] < minY:
+                    minY = vertex[1]
         with open(filename, "wb") as f:
             f.write(pack("80s","solid"))
             f.write(pack("<I",len(mesh)))
             for normal,triangle in mesh:
                 f.write(pack("<3f", normal[0], normal[1], normal[2]))
                 for vertex in triangle:
-                    f.write(pack("<3f", vertex[0], vertex[1], vertex[2]))
+                    f.write(pack("<3f", vertex[0], vertex[1]-minY, vertex[2]))
                 f.write(pack("<H", 0))            
 
     def safeSetBlockWithData(self,pos,b):
@@ -544,10 +550,11 @@ if __name__ == '__main__':
             path = getLoadPath(directory, "py")
             if not path:
                 minecraft.postToChat('Canceled')
-                return
+                return None
 
         vehicle.load(path)
         minecraft.postToChat('Vehicle loaded from '+path)
+        return path
 
     def chatHelp():
         minecraft.postToChat("vlist: list vehicles")
@@ -626,12 +633,25 @@ if __name__ == '__main__':
             elif x == 'l':
                 loadName = sys.argv[2] if len(sys.argv)>2 else None
                 doLoad = True
+            elif x == 'm':
+                loadName = sys.argv[2] if len(sys.argv)>2 else None
+                doSTL = True
             elif x == 'L':
                 loadName = sys.argv[2] if len(sys.argv)>2 else None
                 doLoad = True
                 exitAfterDraw = True
             elif x == 'r':
                 scanRectangularPrism = True
+                
+    if doSTL:
+        minecraft = lambda: None
+        minecraft.postToChat = print
+        vehicle = Vehicle()
+        path = load(loadName)
+        if path is not None:
+            pre, ext = os.path.splitext(path)
+            vehicle.saveMonochromaticSTL(pre, ".stl")            
+        exit()
 
     minecraft = Minecraft()
 
