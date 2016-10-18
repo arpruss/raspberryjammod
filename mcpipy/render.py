@@ -116,7 +116,7 @@ class MeshSTLBinary(MeshFile):
 
         with myopen(filename, "rb") as f:
              header = f.read(80)
-             assert not header.startswith("solid")
+             assert not header.startswith(b"solid")
              assert len(header) == 80
              
              vertexCount = 0
