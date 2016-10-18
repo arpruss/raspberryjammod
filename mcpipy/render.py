@@ -41,6 +41,7 @@ import time
 #import datetime, to get the time!
 import datetime
 import gzip
+import colors
 from drawing import *
 
 import math
@@ -106,6 +107,7 @@ class MeshFile(object):
         self.vertices = []
         self.faces = []
         self.materialIndexDict = {None:0}
+        self.defaultMaterialBlockDict = {}
         self.materials = []
         self.objectData = {}
         self.objects = []
@@ -120,6 +122,11 @@ class MeshSTLBinary(MeshFile):
              assert len(header) == 80
              
              vertexCount = 0
+             lastAttribute = 0
+             curMaterial = 0
+             lastAttribute = None
+             materialCount = 1
+             self.materials.append("default")
              
              numTriangles = struct.unpack("<I", f.read(4))[0]
              
@@ -130,9 +137,26 @@ class MeshSTLBinary(MeshFile):
                     if swapYZ:
                         v = (v[0],v[2],-v[1])
                     self.vertices.append(V3(v))
-                self.faces.append((0,(vertexCount,vertexCount+1,vertexCount+2)))
+                attribute = struct.unpack("<H", f.read(2))[0]
+                if attribute is not lastAttribute:
+                    lastAttribute = attribute
+                    if attribute & 0x8000:
+                        r = int(( ( attribute >> 10 ) & 0x1F ) / 31. * 255)
+                        g = int((( attribute >> 5 ) & 0x1F ) / 31. * 255)
+                        b = int( ( attribute & 0x1F ) / 31. * 255)
+                        materialName = "stl_{:02X}{:02X}{:02X}".format(r,g,b)
+                    else:
+                        materialName = "default"
+                    if materialName not in self.materials:
+                        self.materials.append(materialName)
+                        curMaterial = materialCount
+                        materialCount += 1
+                        self.defaultMaterialBlockDict[materialName] = colors.rgbToBlock((r,g,b))[0]
+                    else:
+                        curMaterial = self.materials.index(materialName)
+                        
+                self.faces.append((curMaterial,(vertexCount,vertexCount+1,vertexCount+2)))
                 vertexCount += 3
-                assert len(f.read(2))==2 # skip attributes
 
         assert self.vertices
         assert self.faces
@@ -640,6 +664,8 @@ class Mesh(object):
         name,myopen,closeArchive = self.getFile()
         if self.credits:
             self.message("Credits: " + self.credits)
+            
+        mesh = None
 
         if name.endswith(".3ds") or name.endswith(".3ds.gz") or name.endswith(".ply") or name.endswith(".ply.gz") or name.endswith(".stl") or name.endswith(".stl.gz"):
             if name.endswith(".3ds") or name.endswith(".3ds.gz"):
@@ -655,9 +681,11 @@ class Mesh(object):
             self.materialOrders = []
             for name in mesh.materials:
                 self.materialOrders.append(self.materialOrderDict.get(name, 0))
-                self.materialBlocks.append(self.materialBlockDict.get(name, self.default))
-                if name not in self.materialBlockDict and name not in warned:
-                    self.message("Material " + name + " not defined")
+                self.materialBlocks.append(self.materialBlockDict.get(name, 
+                    mesh.defaultMaterialBlockDict.get(name, self.default)))
+                if name != "default" and name not in self.materialBlockDict and name not in warned:
+                    if name not in mesh.defaultMaterialBlockDict:
+                        self.message("Material " + name + " not defined")
                     warned.add(name)
             if len(self.materialBlocks) == 0:
                 self.materialBlocks.append(self.default)
@@ -713,7 +741,11 @@ class Mesh(object):
                     if not self.haveMaterialArea:
                         f.write('\nmaterials\n')
                     for material in warned:
-                        f.write(material + ' default\n')
+                        if mesh is None or material not in mesh.defaultMaterialBlockDict:
+                            f.write(material + ' default\n')
+                        else:
+                            block = mesh.defaultMaterialBlockDict[material]
+                            f.write(material + ' ' + str(block.id) + ' ' + str(block.data) + '\n')
                     f.write(''.join(self.controlFileLines[self.endLineIndex:]))
                 try:
                     os.unlink(self.controlFile + ".bak")
@@ -724,7 +756,8 @@ class Mesh(object):
                 except:
                     pass
                 os.rename(self.controlFile + ".tempFile", self.controlFile)
-            except:
+            except Exception as err:
+                self.message(str(err))
                 self.message("Couldn't rewrite control file")
 
     def scale(self, bottomCenter, matrix=None):

@@ -276,7 +276,7 @@ class Vehicle():
             mesh.append((block, self.getMonochromaticMesh(includeLiquid=includeLiquid, _onlyBlock=block)))
         return mesh
             
-    def saveMonochromaticSTL(self, filename, includeLiquid=False):
+    def saveMonochromaticSTL(self, filename, includeLiquid=False, swapYZ=False):
         mesh = self.getMonochromaticMesh(includeLiquid=includeLiquid)
         minY = 10000
         for normal,triangle in mesh:
@@ -287,12 +287,17 @@ class Vehicle():
             f.write(pack("80s",''))
             f.write(pack("<I",len(mesh)))
             for normal,triangle in mesh:
-                f.write(pack("<3f", normal[0], normal[1], normal[2]))
-                for vertex in triangle:
-                    f.write(pack("<3f", vertex[0], vertex[1]-minY, vertex[2]))
+                if swapYZ:
+                    f.write(pack("<3f", normal[0], -normal[2], normal[1]))
+                    for vertex in triangle:
+                        f.write(pack("<3f", vertex[0], -vertex[2], vertex[1]-minY))
+                else:
+                    f.write(pack("<3f", normal[0], normal[1], normal[2]))
+                    for vertex in triangle:
+                        f.write(pack("<3f", vertex[0], vertex[1]-minY, vertex[2]))
                 f.write(pack("<H", 0))            
 
-    def saveColorSTL(self, filename, includeLiquid=False):
+    def saveColorSTL(self, filename, includeLiquid=False, swapYZ=False):
         mesh = self.getColorMesh(includeLiquid=includeLiquid)
         minY = 10000
         numTriangles = 0
@@ -309,9 +314,14 @@ class Vehicle():
                 rgb = block.getRGBA()
                 color = 0x8000 | ( (rgb[0] >> 3) << 10 ) | ( (rgb[1] >> 3) << 5 ) | ( (rgb[2] >> 3) << 0 )
                 for normal,triangle in monoMesh:
-                    f.write(pack("<3f", normal[0], normal[1], normal[2]))
-                    for vertex in triangle:
-                        f.write(pack("<3f", vertex[0], vertex[1]-minY, vertex[2]))
+                    if swapYZ:
+                        f.write(pack("<3f", normal[0], -normal[2], normal[1]))
+                        for vertex in triangle:
+                            f.write(pack("<3f", vertex[0], -vertex[2], vertex[1]-minY))
+                    else:
+                        f.write(pack("<3f", normal[0], normal[1], normal[2]))
+                        for vertex in triangle:
+                            f.write(pack("<3f", vertex[0], vertex[1]-minY, vertex[2]))
                     f.write(pack("<H", color))            
 
     def safeSetBlockWithData(self,pos,b):
