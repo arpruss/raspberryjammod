@@ -466,7 +466,7 @@ class Mesh(object):
     UNSPECIFIED = None
     SUPPORTED_ARCHIVES = set(['gz','zip'])
 
-    def __init__(self,infile,minecraft=None,rewrite=True):
+    def __init__(self,infile,minecraft=None,rewrite=True,swapYZ=None):
          if minecraft is not None:
              self.setBlock = minecraft.setBlock
              self.message = minecraft.postToChat
@@ -483,7 +483,7 @@ class Mesh(object):
          self.url = None
          self.urlgz = None
          self.urlzip = None
-         self.swapYZ = None
+         self.swapYZ = swapYZ
          self.credits = None
          self.size = 100
          self.preYaw = 0
@@ -505,7 +505,7 @@ class Mesh(object):
          self.corner2 = None
          self.endLineIndex = None
          self.specifiedMeshName = None
-
+         
          base,ext = os.path.splitext(infile)
          if ext.lower() == '.obj' or ext.lower() == ".3ds" or ext.lower() == ".ply" or ext.lower() == ".stl":
              self.meshName = infile
@@ -587,7 +587,7 @@ class Mesh(object):
          elif rewrite:
              if not os.path.isfile(self.meshName):
                  raise IOError("Cannot find mesh file")
-             if self.meshName.lower().endswith(".3ds") or self.meshName.lower().endswith(".stl"):
+             if self.swapYZ is None and (self.meshName.lower().endswith(".3ds") or self.meshName.lower().endswith(".stl")):
                  self.swapYZ = True
              self.message("Creating a default control file")
              with open(self.controlFile,"w") as f:
@@ -817,16 +817,23 @@ def go(filename, args=[]):
 
     playerPos = mc.player.getPos()
 
-    mc.postToChat("Preparing")
-    mesh = Mesh(filename, minecraft=mc)
-    mc.postToChat("Reading")
-    mesh.read()
-    mc.postToChat("Scaling")
-
     opts = ""
 
     if args and (args[0] == '-' or re.match("^-?[a-zA-Z]", args[0])):
        opts = args.pop(0)
+       
+    meshArguments = {}
+    
+    if 'y' in opts:
+        meshArguments['swapYZ'] = False
+    elif 'Y' in opts:
+        meshArguments['swapYZ'] = True
+
+    mc.postToChat("Preparing")
+    mesh = Mesh(filename, minecraft=mc, **meshArguments)
+    mc.postToChat("Reading")
+    mesh.read()
+    mc.postToChat("Scaling")
 
     if args:
        s = args.pop(0)
@@ -892,13 +899,21 @@ if __name__ == "__main__":
             c = tkinter.Checkbutton(master, text="Clear area", variable = clearing)
             c.grid(row=4,column=0,columnspan=2)
             c.select()
+            swapYZ = tkinter.IntVar()
+            sw = tkinter.Checkbutton(master, text="Default swap YZ", variable = swapYZ)
+            sw.grid(row=5,column=0,columnspan=2)
+            sw.select()
 
             def selectFileAndGo():
                 name = askopenfilename(initialdir='models',filetypes=['controlfile {*.txt}', 'all {*}'])
                 if name:
                      options = '-'
-                     if not clearing:
+                     if not clearing.get():
                          options += 'n'
+                     if swapYZ.get():
+                         options += 'Y'
+                     else:
+                         options += 'y'
                      args = [options, size.get(), yaw.get(), pitch.get(), roll.get()]
                      master.destroy()
                      go(name, args)
@@ -906,7 +921,7 @@ if __name__ == "__main__":
                      master.destroy()
 
             b = tkinter.Button(master, text="Select file and go",command = selectFileAndGo)
-            b.grid(row=5,column=0,columnspan=2,rowspan=2)
+            b.grid(row=6,column=0,columnspan=2,rowspan=2)
 
             tkinter.mainloop()
     else:

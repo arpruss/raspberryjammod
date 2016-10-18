@@ -150,7 +150,7 @@ class Vehicle():
             literal_eval(result.group(1).replace("Block",""))
 
             self.baseAngle,self.highWater,self.baseVehicle = eval(result.group(1))
-            if self.highWater < -1000000:
+            if self.highWater is not None and self.highWater < -1000000:
                 self.highWater = None
 
         self.curLocation = None       
