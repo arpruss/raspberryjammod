@@ -212,56 +212,22 @@ class Vehicle():
                 else:
                     return (u, v, planeCoordinate)
                     
-            def containsRectangle(u1,v1,u2,v2):
-                for u in range(u1,u2+1):
-                    for v in range(v1,v2+1):
-                        if (u,v) not in faces:
-                            return False
-                return True
-                    
-            def getLargestRectangleAtUV(u,v):
-                bestW = 1
-                bestH = 1
-                bestArea = 1
-                
-                for w in range(1,bottomRightU - u + 2):
-                    for h in range(1,bottomRightV - v + 2):
-                        if w*h > bestArea and containsRectangle(u,v,u+w-1,v+h-1):
-                            bestW = w
-                            bestH = h
-                            bestArea = w*h
-                return bestW,bestH
-                    
-            def popLargestRectangle():
-                largestArea = 0
-                largestStart = None
-                largestEnd = None
-                for u,v in faces:
-                    w,h = getLargestRectangleAtUV(u,v)
-                    if w*h > largestArea:
-                        largestArea = w*h
-                        largestStart = (u,v)
-                        largestEnd = (u+w-1,v+h-1)
-                for i in range(len(faces)-1,-1,-1):
-                    if (largestStart[0] <= faces[i][0] and faces[i][0] <= largestEnd[0] and
-                        largestStart[1] <= faces[i][1] and faces[i][1] <= largestEnd[1]):
-                            del faces[i]
-                return largestStart[0],largestStart[1],largestEnd[0],largestEnd[1]
-        
+            if coordinate == 0:
+                normal = (direction, 0, 0)
+            elif coordinate == 1:
+                normal = (0, direction, 0)
+            elif coordinate == 2:
+                normal = (0, 0, direction)
+
             while faces:
-                u1,v1,u2,v2 = popLargestRectangle()
-                if coordinate == 0:
-                    normal = (direction, 0, 0)
-                elif coordinate == 1:
-                    normal = (0, direction, 0)
-                elif coordinate == 2:
-                    normal = (0, 0, direction)
+                u1,v1 = faces.pop()
+                u2,v2 = u1+1,v1+1
                 if direction < 0:
-                    mesh.append((normal,(makeXYZ(u1, v1), makeXYZ(u1, v2+1), makeXYZ(u2+1, v1))))
-                    mesh.append((normal,(makeXYZ(u1, v2+1), makeXYZ(u2+1, v2+1), makeXYZ(u2+1, v1))))
+                    mesh.append((normal,(makeXYZ(u1, v1), makeXYZ(u1, v2), makeXYZ(u2, v1))))
+                    mesh.append((normal,(makeXYZ(u1, v2), makeXYZ(u2, v2), makeXYZ(u2, v1))))
                 else:
-                    mesh.append((normal,(makeXYZ(u2+1, v1), makeXYZ(u1, v2+1), makeXYZ(u1, v1))))
-                    mesh.append((normal,(makeXYZ(u2+1, v1), makeXYZ(u2+1, v2+1), makeXYZ(u1, v2+1))))
+                    mesh.append((normal,(makeXYZ(u2, v1), makeXYZ(u1, v2), makeXYZ(u1, v1))))
+                    mesh.append((normal,(makeXYZ(u2, v1), makeXYZ(u2, v2), makeXYZ(u1, v2))))
         
         for coordinate in range(3):
             faceDict = getParallelFaces(coordinate)
