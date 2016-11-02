@@ -616,10 +616,9 @@ if __name__ == '__main__':
     noInitialRotate = False
 
     if len(sys.argv)>1:
-        m = re.match(".*m([0-9]+).*",sys.argv[1])
+        m = re.match(".*D([0-9]+).*",sys.argv[1])
         if m:
             Vehicle.MAX_DISTANCE = int(m.group(1))            
-            print(Vehicle.MAX_DISTANCE)
         for x in sys.argv[1]:
             if x == 'b':
                 bubble = True
