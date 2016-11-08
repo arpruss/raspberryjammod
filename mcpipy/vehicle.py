@@ -241,6 +241,27 @@ class Vehicle():
         for block in set((self.baseVehicle[xyz] for xyz in self.baseVehicle)):
             mesh.append((block, self.getMonochromaticMesh(includeLiquid=includeLiquid, _onlyBlock=block)))
         return mesh
+        
+    def saveOpenSCAD(self, filename, includeLiquid=False, swapYZ=False):
+        with open(filename, "w") as f:
+            f.write("sideLength = 1;\n");
+            f.write("sideOverlap = 0.2;\n");
+            f.write("""
+module block(x,y,z,r,g,b,a) {
+    color([r,g,b,a]) translate([x*sideLength,y*sideLength,z*sideLength]) scale(sideLength*(1+2*sideOverlap)) cube();
+}
+module object() {
+""")    
+            for xyz in self.baseVehicle:
+                block = self.baseVehicle[xyz]
+                if block.id != AIR.id and ( includeLiquid or not block.id in Vehicle.LIQUIDS ):
+                    rgba = block.getRGBA()
+                    f.write("block(%d,%d,%d,%f,%f,%f,%f);\n" %
+                        (xyz[0],xyz[1],xyz[2],rgba[0]/255.,rgba[1]/255.,rgba[2]/255.,rgba[3]/255.))
+            f.write("}\n")
+            if swapYZ:
+                f.write("rotate([0,-90,0]) ");
+            f.write("object();\n");
             
     def saveMonochromaticSTL(self, filename, includeLiquid=False, swapYZ=False):
         mesh = self.getMonochromaticMesh(includeLiquid=includeLiquid)
@@ -638,6 +659,9 @@ if __name__ == '__main__':
                 loadName = sys.argv[2] if len(sys.argv)>2 else None
                 doSTL = True
                 stlColor = False
+            elif x == 'o':
+                loadName = sys.argv[2] if len(sys.argv)>2 else None
+                doOpenSCAD = True
             elif x == 'M':
                 loadName = sys.argv[2] if len(sys.argv)>2 else None
                 doSTL = True
@@ -662,6 +686,18 @@ if __name__ == '__main__':
                 vehicle.saveColorSTL(out)
             else:
                 vehicle.saveMonochromaticSTL(out)            
+        exit()
+
+    if doOpenSCAD:
+        minecraft = lambda: None
+        minecraft.postToChat = print
+        vehicle = Vehicle()
+        path = load(loadName)
+        if path is not None:
+            pre, ext = os.path.splitext(path)
+            out = pre + ".scad"
+            print("Saving "+out)
+            vehicle.saveOpenSCAD(out)
         exit()
 
     minecraft = Minecraft()
