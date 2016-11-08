@@ -242,13 +242,14 @@ class Vehicle():
             mesh.append((block, self.getMonochromaticMesh(includeLiquid=includeLiquid, _onlyBlock=block)))
         return mesh
         
-    def saveOpenSCAD(self, filename, includeLiquid=False, swapYZ=False):
+    def saveOpenSCAD(self, filename, includeLiquid=False, swapYZ=True):
         with open(filename, "w") as f:
-            f.write("sideLength = 1;\n");
-            f.write("sideOverlap = 0.2;\n");
             f.write("""
+blockScale = 5;
+sideOverlap = 0.2;
+sideLength = blockScale * (1+2*sideOverlap);            
 module block(x,y,z,r,g,b,a) {
-    color([r,g,b,a]) translate([x*sideLength,y*sideLength,z*sideLength]) scale(sideLength*(1+2*sideOverlap)) cube();
+    color([r,g,b,a]) translate([x*blockScale,y*blockScale,z*blockScale]) cube(sideLength);
 }
 module object() {
 """)    
@@ -260,7 +261,7 @@ module object() {
                         (xyz[0],xyz[1],xyz[2],rgba[0]/255.,rgba[1]/255.,rgba[2]/255.,rgba[3]/255.))
             f.write("}\n")
             if swapYZ:
-                f.write("rotate([0,-90,0]) ");
+                f.write("rotate([90,0,0]) ");
             f.write("object();\n");
             
     def saveMonochromaticSTL(self, filename, includeLiquid=False, swapYZ=False):
