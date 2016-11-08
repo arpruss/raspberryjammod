@@ -257,7 +257,7 @@ module object() {
                 block = self.baseVehicle[xyz]
                 if block.id != AIR.id and ( includeLiquid or not block.id in Vehicle.LIQUIDS ):
                     rgba = block.getRGBA()
-                    f.write("block(%d,%d,%d,%f,%f,%f,%f);\n" %
+                    f.write("block(%d,%d,%d,%.6g,%.6g,%.6g,%.6g);\n" %
                         (xyz[0],xyz[1],xyz[2],rgba[0]/255.,rgba[1]/255.,rgba[2]/255.,rgba[3]/255.))
             f.write("}\n")
             if swapYZ:
