@@ -13,6 +13,7 @@ mv build/libs/Raspberr* build/libs/RaspberryJamMod.jar 2> /dev/null
 mkdir ../build/out 2> /dev/null
 mkdir ../build/out/1.10 2> /dev/null
 mkdir ../build/out/1.10.2 2> /dev/null
+cp build/libs/RaspberryJamMod.jar ../build/out/1.10/
 cp build/libs/RaspberryJamMod.jar ../build/out/1.10.2/
 if [ "$1" != "noinstall" ]
 then
