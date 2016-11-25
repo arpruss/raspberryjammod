@@ -16,8 +16,8 @@ cp build/libs/RaspberryJamMod.jar ../build/out/111/
 if [ "$1" != "noinstall" ]
 then
     mkdir $APPDATA/.minecraft/mods
-    mkdir $APPDATA/.minecraft/mods/111
-    cp build/libs/RaspberryJamMod.jar $APPDATA/.minecraft/mods/111/
+    mkdir $APPDATA/.minecraft/mods/1.11
+    cp build/libs/RaspberryJamMod.jar $APPDATA/.minecraft/mods/1.11/
 else
     echo Skipping mod installation.
 fi
