@@ -181,6 +181,59 @@ public class APIHandler {
 			 SETROTATION,
 			 CHAT
 	};
+    
+    protected static final String[][] ENTITY_RENAME_111 = {
+        {"areaeffectcloud", "area_effect_cloud"},
+        {"armorstand", "armor_stand"},
+        {"cauldron", "brewing_stand"},
+        {"cavespider", "cave_spider"},
+        {"minecartchest", "chest_minecart"},
+        {"control", "command_block"},
+        {"minecartcommandblock", "commandblock_minecart"},
+        {"dldetector", "daylight_detector"},
+        {"trap", "dispenser"},
+        {"dragonfireball", "dragon_fireball"},
+        {"thrownegg", "egg"},
+        {"enchanttable", "enchanting_table"},
+        {"endgateway", "end_gateway"},
+        {"airportal", "end_portal"},
+        {"enderchest", "ender_chest"},
+        {"endercrystal", "ender_crystal"},
+        {"enderdragon", "ender_dragon"},
+        {"thrownenderpearl", "ender_pearl"},
+        {"eyeofendersignal", "eye_of_ender_signal"},
+        {"fallingsand", "falling_block"},
+        {"fireworksrocketentity", "fireworks_rocket"},
+        {"flowerpot", "flower_pot"},
+        {"minecartfurnace", "furnace_minecart"},
+        {"minecarthopper", "hopper_minecart"},
+        {"entityhorse", "horse"},
+        {"itemframe", "item_frame"},
+        {"recordplayer", "jukebox"},
+        {"leashknot", "leash_knot"},
+        {"lightningbolt", "lightning_bolt"},
+        {"lavaslime", "magma_cube"},
+        {"minecartrideable", "minecart"},
+        {"mobspawner", "mob_spawner"},
+        {"mushroomcow", "mooshroom"},
+        {"music", "noteblock"},
+        {"ozelot", "ocelot"},
+        {"polarbear", "polar_bear"},
+        {"shulkerbullet", "shulker_bullet"},
+        {"smallfireball", "small_fireball"},
+        {"spectralarrow", "spectral_arrow"},
+        {"thrownpotion", "potion"},
+        {"minecartspawner", "spawner_minecart"},
+        {"structure", "structure_block"},
+        {"primedtnt", "tnt"},
+        {"minecarttnt", "tnt_minecart"},
+        {"villagergolem", "villager_golem"},
+        {"witherboss", "wither"},
+        {"witherskull", "wither_skull"},
+        {"thrownexpbottle", "xp_bottle"},
+        {"xporb", "xp_orb"},
+        {"pigzombie", "zombie_pigman"},
+    };
 	
 	protected static final float TOO_SMALL = (float) 1e-9;
 
@@ -832,9 +885,30 @@ public class APIHandler {
 		if (e != null)
 			e.getEntityWorld().removeEntity(e);
 	}
+    
+    protected String rename111(String entityId) {
+        if (entityId.startsWith("minecraft:"))
+            return entityId;
+        System.out.println("Searching for "+entityId);
+        String e = entityId.toLowerCase();
+        for (String[] data: ENTITY_RENAME_111) {
+            if (data[0].equals(e)) {
+                System.out.println("found minecraft:"+data[1]);
+                return "minecraft:" + data[1];
+            }
+        }
+        return "minecraft:" + entityId;
+    }
 
 	protected void spawnEntity(Scanner scan) {
 		String entityId = scan.next();
+        
+        System.out.println("Helo");
+        if (RaspberryJamMod.NOMINAL_VERSION >= 1011000) {
+            System.out.println("ren");
+            entityId = rename111(entityId);
+        }
+        
 		double x0 = scan.nextDouble();
 		double y0 = scan.nextDouble();
 		double z0 = scan.nextDouble();
@@ -846,32 +920,29 @@ public class APIHandler {
 			return;
 		
 		String tagString = getRest(scan);
+        if (tagString.length() == 0)
+            tagString = "{}";
 		Entity entity;
 		boolean fixGravity = false;
 		
 		try {
-			if (tagString.length() > 0) {
-				NBTTagCompound tags;
-				try {
-					tags = JsonToNBT.getTagFromJson(tagString);
-					if (tags.hasKey("NoAI")) {
-						fixGravity = tags.getBoolean("NoAI");
-					}
-				} catch (NBTException e) {
-					fail("Cannot parse tags");
-					return;
-				}
-				tags.setString("id", entityId);
-				entity = EntityList.createEntityFromNBT(tags, pos.world);
-				if (fixGravity && entity instanceof EntityLiving) {
-					System.out.println("fixGravity "+fixGravity);
-					((EntityLiving)entity).addPotionEffect(new PotionEffect(MobEffects.levitation, 
-							Integer.MAX_VALUE, -1));
-				}
-			}
-			else {
-				entity = EntityList.createEntityByName(entityId, pos.world);
-			}
+            NBTTagCompound tags;
+            try {
+                tags = JsonToNBT.getTagFromJson(tagString);
+                if (tags.hasKey("NoAI")) {
+                    fixGravity = tags.getBoolean("NoAI");
+                }
+            } catch (NBTException e) {
+                fail("Cannot parse tags");
+                return;
+            }
+            tags.setString("id", entityId);
+            entity = EntityList.createEntityFromNBT(tags, pos.world);
+            if (fixGravity && entity instanceof EntityLiving) {
+                System.out.println("fixGravity "+fixGravity);
+                ((EntityLiving)entity).addPotionEffect(new PotionEffect(MobEffects.levitation, 
+                        Integer.MAX_VALUE, -1));
+            }
 			
 			if (entity == null) {
 				throw new Exception();

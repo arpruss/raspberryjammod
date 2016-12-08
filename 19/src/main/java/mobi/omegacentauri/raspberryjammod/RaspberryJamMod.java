@@ -84,6 +84,7 @@ public class RaspberryJamMod
 	public static boolean noInWallDamage = false;
 	public static boolean globalImmutable = false;
 	public static volatile boolean noNameTags = false;
+    public static final int NOMINAL_VERSION = 1009000;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {

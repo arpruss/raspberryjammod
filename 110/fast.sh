@@ -6,7 +6,7 @@ for x in src/main/java/mobi/omegacentauri/raspberryjammod/*.java ; do
     sed -i -f fix.sed $x 
 done
 rm build/libs/Raspberr*.jar 2> /dev/null
-sh gradlew build
+sh gradlew -Dorg.gradle.jvmargs="-Xmx2g" build
 # --offline build
 rm build/libs/Raspberry*ources.jar 2> /dev/null
 mv build/libs/Raspberr* build/libs/RaspberryJamMod.jar 2> /dev/null

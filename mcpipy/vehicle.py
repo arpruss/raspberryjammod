@@ -633,6 +633,7 @@ if __name__ == '__main__':
     doLoad = False
     doSave = False
     doSTL = False
+    doOpenSCAD = False
     scanRectangularPrism = False
     exitAfterDraw = False
     noInitialRotate = False
