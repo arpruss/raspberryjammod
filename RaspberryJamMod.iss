@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RaspberryJamMod"
-#define MyAppVersion "0.82"
+#define MyAppVersion "0.85"
 #define MyAppPublisher "Omega Centauri Software"
 #define MyAppURL "http://github.com/arpruss/raspberryjammod"
 
@@ -63,6 +63,7 @@ Source: "19\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\
 Source: "194\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.9.4\"
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10\"
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10.2\"
+Source: "111\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.11\"
 Source: "py27\*"; Excludes: "py27\Lib\site-packages\pip\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python27\Interpreter
 Source: "py3\*"; Excludes: "py3\Lib\site-packages\pip\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python3\Interpreter
 Source: "config27\raspberryjammod.cfg"; DestDir: "{userappdata}\.minecraft\config"; Flags: confirmoverwrite; Components: Python\Python27\Interpreter\Config
@@ -87,9 +88,11 @@ Type: files; Name: "{userappdata}\.minecraft\mods\1.8.9\RaspberryJamMod*.jar"; C
 Type: files; Name: "{userappdata}\.minecraft\mods\1.9\RaspberryJamMod*.jar"; Components: Mod
 Type: files; Name: "{userappdata}\.minecraft\mods\1.9.4\RaspberryJamMod*.jar"; Components: Mod
 Type: files; Name: "{userappdata}\.minecraft\mods\1.10\RaspberryJamMod*.jar"; Components: Mod
+Type: files; Name: "{userappdata}\.minecraft\mods\1.10.2\RaspberryJamMod*.jar"; Components: Mod
+Type: files; Name: "{userappdata}\.minecraft\mods\1.11\RaspberryJamMod*.jar"; Components: Mod
 
 [Messages]
-WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT (versions 1.8-1.10.2 supported) ALREADY INSTALLED. Otherwise, this won't work.
+WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT (versions 1.8-1.11 supported) ALREADY INSTALLED. Otherwise, this won't work.
 ConfirmUninstall=Are you sure you want to completely remove %1 and all of its components? (Note that the scripts in the mcpipy folder of your Minecraft folder should NOT get deleted, however, in case you made changes.)
 
 [Icons]
