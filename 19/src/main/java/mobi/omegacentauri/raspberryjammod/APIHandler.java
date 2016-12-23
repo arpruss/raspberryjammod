@@ -324,13 +324,13 @@ public class APIHandler {
 		}
 	}
     
-    public void died(int entityId) {
+    synchronized public void died(int entityId) {
         if (entityId == playerId) {
             playerMP = null;
         }
     }
     
-    private void updatePlayerMP() {
+    synchronized private void updatePlayerMP() {
         if (playerMP != null)
             return;
         
