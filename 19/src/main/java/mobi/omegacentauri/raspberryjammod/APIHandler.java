@@ -323,6 +323,25 @@ public class APIHandler {
 			this.authenticated = true;
 		}
 	}
+    
+    public void died(int entityId) {
+        if (entityId == playerId) {
+            playerMP = null;
+        }
+    }
+    
+    private void updatePlayerMP() {
+        if (playerMP != null)
+            return;
+        
+        for (World w : serverWorlds) {
+            Entity e = w.getEntityByID(playerId);
+            if (e != null) {
+                playerMP = (EntityPlayerMP)e;
+                return;
+            }
+        }
+    }
 	
 	public static String tohex(byte[] array) {
 		StringBuilder s = new StringBuilder();
@@ -1023,6 +1042,9 @@ public class APIHandler {
 	protected void cameraCommand(String cmd, Scanner scan) {
 		if (! havePlayer)
 			fail("Do not have a player (yet?)");
+        updatePlayerMP();
+        if (playerMP == null)
+            fail("Player not found");
 		if (cmd.equals(GETENTITYID)) {
 			sendLine(playerMP.getSpectatingEntity().getEntityId());
 		}
@@ -1134,6 +1156,9 @@ public class APIHandler {
 	
 	protected void entityGetNameAndUUID(int id) {
 		Entity e = getServerEntityByID(id);
+        if (e == null) {
+            fail("Cannot find entity");
+        }
 		sendLine(e.getName()+","+e.getUniqueID());
 	}
 
@@ -1168,6 +1193,8 @@ public class APIHandler {
 		Entity e = getServerEntityByID(id);
 		if (e != null) 
 			eventHandler.queueServerAction(new SetDimension(e, dimension));
+        else
+            fail("Cannot find entity");
 	}
 
 	protected void entitySetDirection(Entity e, double x, double y, double z) {
@@ -1222,6 +1249,8 @@ public class APIHandler {
 		Entity e = getServerEntityByID(id);
 		if (e != null) 
 			sendLine(normalizeAngle(e.rotationYaw));
+        else
+            fail("Cannot find entity");
 	}
 
 	protected float normalizeAngle(float angle) {
@@ -1237,6 +1266,8 @@ public class APIHandler {
 		Entity e = getServerEntityByID(id);
 		if (e != null) 
 			sendLine(normalizeAngle(e.rotationPitch));
+        else
+            fail("Cannot find entity");
 	}
 
 	protected void entityGetDirection(int id) {
@@ -1250,6 +1281,8 @@ public class APIHandler {
 			double y = Math.sin(-pitch);
 			sendLine(new Vec3d(x,y,z));
 		}
+        else
+            fail("Cannot find entity");
 	}
 
 	protected void entitySetPos(int id, Scanner scan) {
@@ -1280,6 +1313,8 @@ public class APIHandler {
 				e.setRotationYawHead(serverYaw);
 			}
 		}
+        else
+            fail("Cannot find entity");
 	}
 
 	protected void entitySetTile(int id, Scanner scan) {
@@ -1306,6 +1341,8 @@ public class APIHandler {
 				e.setRotationYawHead(serverYaw);
 			}
 		}
+        else
+            fail("Cannot find entity");
 	}
 
 	protected static int trunc(double x) {
@@ -1330,6 +1367,8 @@ public class APIHandler {
 			Vec3d pos = Location.encodeVec3(serverWorlds, w, e.getPositionVector());
 			sendLine(""+trunc(pos.xCoord)+","+trunc(pos.yCoord)+","+trunc(pos.zCoord));
 		}
+        else
+            fail("Cannot find entity");
 	}
 
 	protected void sendLine(BlockPos pos) {
@@ -1353,6 +1392,8 @@ public class APIHandler {
 			Vec3d pos = Location.encodeVec3(serverWorlds, w, pos0);
 			sendLine(pos);
 		}
+        else
+            fail("Cannot find entity");
 	}
 
 	protected void sendLine(double x) {
@@ -1384,14 +1425,15 @@ public class APIHandler {
 	}
 
 	protected Entity getServerEntityByID(int id) {
-		if (id == playerId)
+		if (id == playerId) {
+            updatePlayerMP();
 			return playerMP;
+        }
 		for (World w : serverWorlds) {
 			Entity e = w.getEntityByID(id);
 			if (e != null)
 				return e;
 		}
-		fail("Cannot find entity "+id);
 		return null;
 	}
 

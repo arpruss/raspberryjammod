@@ -130,6 +130,25 @@ public class APIHandler {
 		eventHandler.registerAPIHandler(this);
 	}
 	
+    public void died(int entityId) {
+        if (entityId == playerId) {
+            playerMP = null;
+        }
+    }
+    
+    private void updatePlayerMP() {
+        if (playerMP != null)
+            return;
+        
+        for (World w : serverWorlds) {
+            Entity e = w.getEntityByID(playerId);
+            if (e != null) {
+                playerMP = (EntityPlayerMP)e;
+                return;
+            }
+        }
+    }
+	
 	protected boolean setup() {
 		serverWorlds = MinecraftServer.getServer().worldServers;
 		
@@ -533,6 +552,11 @@ public class APIHandler {
 	}
 	
 	protected void cameraCommand(String cmd, Scanner scan) {
+        updatePlayerMP();
+        if (playerMP == null) {
+            fail("No player found");
+            return;
+        }
 		if (cmd.equals(GETENTITYID)) {
 			sendLine(playerMP.getSpectatingEntity().getEntityId());
 		}
@@ -676,9 +700,7 @@ public class APIHandler {
 
 	protected void entityGetNameAndUUID(int id) {
 		Entity e = getServerEntityByID(id);
-        if (e == null)
-            fail("Unknown entity");
-        else
+        if (e != null)
             sendLine(e.getName()+","+e.getUniqueID());
 	}
 
@@ -896,8 +918,16 @@ public class APIHandler {
 	}
 
 	protected Entity getServerEntityByID(int id) {
-		if (id == playerId)
-			return playerMP;
+		if (id == playerId) {
+            updatePlayerMP();
+            if (playerMP != null)
+                return playerMP;
+            else {
+                fail("Cannot find player");
+                return null;
+            }
+                
+        }
 		for (World w : serverWorlds) {
 			Entity e = w.getEntityByID(id);
 			if (e != null)

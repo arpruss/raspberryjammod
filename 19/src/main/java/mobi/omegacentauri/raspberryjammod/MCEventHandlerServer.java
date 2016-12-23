@@ -6,6 +6,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
@@ -42,5 +43,12 @@ public class MCEventHandlerServer extends MCEventHandler {
 				event.getSource() == DamageSource.inWall))) {
 				event.setCanceled(true);
 		}
+	}
+
+	@SubscribeEvent
+	public void onLivingDeathEvent(LivingDeathEvent event) {
+		if (event.getEntity() instanceof EntityPlayer) 
+            for (APIHandler apiHandler : apiHandlers)
+                apiHandler.died(event.getEntity().getEntityId());		
 	}
 }
