@@ -6,6 +6,7 @@ import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraft.entity.player.EntityPlayer;
 
 public class MCEventHandlerServer extends MCEventHandler {
@@ -37,5 +38,12 @@ public class MCEventHandlerServer extends MCEventHandler {
 		if (event.entity instanceof EntityPlayer) 
             for (APIHandler apiHandler : apiHandlers)
                 apiHandler.died(event.entity.getEntityId());		
+	}
+    
+	@SubscribeEvent
+	public void onEntityJoinWorldEvent(EntityJoinWorldEvent event) {
+		if (event.entity instanceof EntityPlayer) 
+            for (APIHandler apiHandler : apiHandlers)
+                apiHandler.joined(event.entity.getEntityId());		
 	}
 }

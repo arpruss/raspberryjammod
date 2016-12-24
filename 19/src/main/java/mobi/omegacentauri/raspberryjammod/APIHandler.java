@@ -330,6 +330,12 @@ public class APIHandler {
         }
     }
     
+    synchronized public void joined(int entityId) {
+        if (entityId == playerId) {
+            playerMP = null;
+        }
+    }
+    
     synchronized private void updatePlayerMP() {
         if (playerMP != null)
             return;
