@@ -12,12 +12,16 @@ rm build/libs/Raspberry*ources.jar 2> /dev/null
 mv build/libs/Raspberr* build/libs/RaspberryJamMod.jar 2> /dev/null
 mkdir ../build/out 2> /dev/null
 mkdir ../build/out/111 2> /dev/null
+mkdir ../build/out/1112 2> /dev/null
 cp build/libs/RaspberryJamMod.jar ../build/out/111/
+cp build/libs/RaspberryJamMod.jar ../build/out/1112/
 if [ "$1" != "noinstall" ]
 then
     mkdir $APPDATA/.minecraft/mods
     mkdir $APPDATA/.minecraft/mods/1.11
+    mkdir $APPDATA/.minecraft/mods/1.11.2
     cp build/libs/RaspberryJamMod.jar $APPDATA/.minecraft/mods/1.11/
+    cp build/libs/RaspberryJamMod.jar $APPDATA/.minecraft/mods/1.11.2/
 else
     echo Skipping mod installation.
 fi
