@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RaspberryJamMod"
-#define MyAppVersion "0.87"
+#define MyAppVersion "0.88"
 #define MyAppPublisher "Omega Centauri Software"
 #define MyAppURL "http://github.com/arpruss/raspberryjammod"
 
@@ -64,7 +64,7 @@ Source: "194\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10\"
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10.2\"
 Source: "111\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.11\"
-Source: "1112\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.11.2\"
+Source: "111\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.11.2\"
 Source: "py27\*"; Excludes: "py27\Lib\site-packages\pip\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python27\Interpreter
 Source: "py3\*"; Excludes: "py3\Lib\site-packages\pip\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python3\Interpreter
 Source: "config27\raspberryjammod.cfg"; DestDir: "{userappdata}\.minecraft\config"; Flags: confirmoverwrite; Components: Python\Python27\Interpreter\Config
