@@ -112,13 +112,12 @@ class MeshFile(object):
         self.objectData = {}
         self.objects = []
 
-class MeshSTLBinary(MeshFile):
+class MeshSTL(MeshFile):
     def __init__(self, filename, myopen=open, swapYZ=False):
-        super(MeshSTLBinary,self).__init__()
+        super(MeshSTL,self).__init__()
 
         with myopen(filename, "rb") as f:
              header = f.read(80)
-             assert not header.startswith(b"solid")
              assert len(header) == 80
              
              vertexCount = 0
@@ -128,6 +127,33 @@ class MeshSTLBinary(MeshFile):
              materialCount = 1
              self.materials.append("default")
              
+             if header.startswith(b"solid"):
+                 vertexDict = {}
+                 triangle = None
+                 for line in f:
+                    line = line.strip()
+                    if line.startswith('endfacet'):
+                        if triangle is not None:
+                            self.faces.append((curMaterial, tuple(triangle)))
+                            triangle = None
+                    elif line.startswith('facet'):
+                        triangle = []
+                    elif triangle is not None and line.startswith('vertex'):
+                        v = tuple(float(x) for x in line.split()[1:4])
+                        if swapYZ:
+                            v = (v[0],v[2],-v[1])
+                        if v in vertexDict:
+                            triangle.append(vertexDict[v])
+                        else:
+                            n = len(vertexDict)
+                            vertexDict[v] = n
+                            triangle.append(n)
+                            self.vertices.append(V3(v))
+                 if self.faces:
+                    return
+                 else:
+                    f.seek(5)
+
              numTriangles = struct.unpack("<I", f.read(4))[0]
              
              for i in range(numTriangles):
@@ -673,7 +699,7 @@ class Mesh(object):
             elif name.endswith(".ply") or name.endswith(".ply.gz"):
                 MeshFormat = MeshPLY
             else:
-                MeshFormat = MeshSTLBinary
+                MeshFormat = MeshSTL
             mesh = MeshFormat(name,myopen=myopen,swapYZ=self.swapYZ)
             self.baseVertices = mesh.vertices
             self.faces = mesh.faces
