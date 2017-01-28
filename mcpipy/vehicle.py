@@ -272,7 +272,7 @@ module object() {
                 if vertex[1] < minY:
                     minY = vertex[1]
         with open(filename, "wb") as f:
-            f.write(pack("80s",''))
+            f.write(pack("80s",b''))
             f.write(pack("<I",len(mesh)))
             for normal,triangle in mesh:
                 if swapYZ:
