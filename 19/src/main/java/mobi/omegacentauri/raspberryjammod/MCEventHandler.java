@@ -1,54 +1,24 @@
 package mobi.omegacentauri.raspberryjammod;
 
-import java.beans.EventSetDescriptor;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.MouseEvent;
-import net.minecraftforge.event.CommandEvent;
-import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.terraingen.InitMapGenEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
 
 abstract public class MCEventHandler {
-	protected List<ServerAction> serverActionQueue = new ArrayList<ServerAction>();		
-	private static final int MAX_HITS = 512;
-	private volatile boolean restrictToSword = true;
-	private volatile boolean detectLeftClick = false;
+	protected List<ServerAction> serverActionQueue = new ArrayList<ServerAction>();
 	protected volatile boolean pause = false;
 	protected boolean doRemote;
 	protected List<APIHandler> apiHandlers = new ArrayList<APIHandler>();
 	
 	public MCEventHandler() {
-		detectLeftClick = RaspberryJamMod.leftClickToo;
+
 	}
 
 //	@SubscribeEvent
@@ -151,7 +121,7 @@ abstract public class MCEventHandler {
 		IBlockState state = pos.world.getBlockState(pos);
 		Block block = state.getBlock();
 		int meta = block.getMetaFromState(state);
-		String describe = ""+block.getIdFromBlock(block)+","+meta+",";
+		String describe = ""+Block.getIdFromBlock(block)+","+meta+",";
 
 		TileEntity tileEntity = pos.world.getTileEntity(pos);
 		if (tileEntity == null)

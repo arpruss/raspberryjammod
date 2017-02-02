@@ -1,51 +1,30 @@
 
 package mobi.omegacentauri.raspberryjammod;
 
-import ibxm.Player;
-
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 
-import scala.collection.script.Script;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.command.CommandHandler;
 import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.projectile.EntityFishHook;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
-import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
-import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
-import net.minecraftforge.fml.common.event.FMLStateEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -58,7 +37,6 @@ public class RaspberryJamMod
 	public static final String VERSION = "0.88";
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer fullAPIServer = null;
-	private PythonExternalCommand pythonExternalCommand = null;
 	private NightVisionExternalCommand nightVisionExternalCommand = null;
 	private CameraCommand cameraCommand = null;
 	public static List<ScriptExternalCommand> scriptExternalCommands = new ArrayList<ScriptExternalCommand>();
@@ -85,6 +63,8 @@ public class RaspberryJamMod
 	public static boolean globalImmutable = false;
 	public static volatile boolean noNameTags = false;
     public static final int NOMINAL_VERSION = 1009000;
+
+    public static final Logger LOGGER = LogManager.getLogger(RaspberryJamMod.MODID);
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -256,7 +236,7 @@ public class RaspberryJamMod
 
 	static public void unregisterCommand(CommandHandler ch, ICommand c) {
 		try {
-			Map commandMap = ch.getCommands();
+			Map<String, ICommand> commandMap = ch.getCommands();
 			for (String alias: (List<String>)c.getCommandAliases()) {
 				try {
 					commandMap.remove(alias);

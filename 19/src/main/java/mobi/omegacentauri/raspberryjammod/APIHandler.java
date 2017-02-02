@@ -3,34 +3,27 @@ package mobi.omegacentauri.raspberryjammod;
 // TODO: getHeight() should check block queue
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Set;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.main.GameConfiguration;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
@@ -44,7 +37,6 @@ import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.BlockPos;
@@ -53,12 +45,14 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 public class APIHandler {
+	protected static final String CLICKLEFT = "click.left";
+	protected static final String CLICKRIGHT = "click.right";
+	protected static final String POLLFISH = "poll.fish";
+
 	// world.checkpoint.save/restore, player.setting, world.setting(nametags_visible,*),
 	// camera.setFixed() unsupported
 	// camera.setNormal(id) and camera.setFollow(id) uses spectating, and so it moves the
@@ -252,7 +246,6 @@ public class APIHandler {
 	public static final String PASSWORD_DATA = "raspberryjammod_passwords.dat";
 	public static final String PERMISSION_DATA = "raspberryjammod_permissions.dat";
 	private String salt = null;
-	private boolean authenticationSetup;
 	private List<HitDescription> hits = new LinkedList<HitDescription>();
 	protected List<ChatDescription> chats = new LinkedList<ChatDescription>();
 	private boolean restrictToSword = true;
@@ -566,6 +559,8 @@ public class APIHandler {
 	protected void runCommand(String cmd, String args, Scanner scan) 
 			throws InputMismatchException, NoSuchElementException, IndexOutOfBoundsException {
 
+		RaspberryJamMod.LOGGER.info("Running command: "+cmd);
+
 		if (cmd.equals(SETBLOCK)) {
 			Location pos = getBlockLocation(scan);
 			
@@ -827,11 +822,55 @@ public class APIHandler {
 		else if (cmd.equals(APIVERSION)) {
 			sendLine(RaspberryJamMod.MODID+","+RaspberryJamMod.VERSION+","+"java"+","+mcVersion());
 		}
+		else if (cmd.equals(CLICKLEFT)) {
+			toggle(mc.gameSettings.keyBindAttack);
+		}
+		else if (cmd.equals(CLICKRIGHT)) {
+			toggle(mc.gameSettings.keyBindUseItem);
+		}
+		else if (cmd.equals(POLLFISH)) {
+			new Thread() {
+				public void run() {
+					float y = 0.0f;
+					int count = 0;
+					while (true) {
+						try {
+							Thread.sleep(100);
+							int new_y = Minecraft.getMinecraft().thePlayer.fishEntity.getPosition().getY();
+							float delta = new_y - y;
+							if (count > 5 && -0.99 > delta && delta > -1.01) {
+								sendLine("got.fish");
+								return;
+							}
+							y = new_y;
+							count++;
+						} catch (Throwable t) {
+							System.err.println("Error waiting for fish");
+							t.printStackTrace();
+						}
+					}
+				}
+			}.start();
+		}
 		else {
 			unknownCommand();
 		}
 	}
 	
+	private static void toggle(KeyBinding k) {
+		try {
+			// toggle key quickly
+			KeyBinding.setKeyBindState(k.getKeyCode(), true);
+			KeyBinding.onTick(k.getKeyCode());
+			try { Thread.sleep(32); } catch (InterruptedException e) {}
+			KeyBinding.setKeyBindState(k.getKeyCode(), false);
+			//KeyBinding.onTick(k.getKeyCode()); // this breaks fishing???
+		} catch (Exception e) {
+			RaspberryJamMod.LOGGER.error("Error toggling key "+k);
+			e.printStackTrace((PrintStream) RaspberryJamMod.LOGGER);
+		}
+	}
+
 	private boolean tooManyPlayerCommandArguments(String subcommand, String args) {
 		// check if there are more arguments than are needed; this detects if the
 		// script slipped in a username, for compatibility with RaspberryJuice
@@ -1359,7 +1398,6 @@ public class APIHandler {
 		Entity e = getServerEntityByID(id);
 		if (e != null) {
 			World w = e.getEntityWorld();
-			Vec3d pos0 = e.getPositionVector();
 
 			while (w != e.getEntityWorld()) {
 				// Rare concurrency issue: entity switched worlds between getting w and pos0.
@@ -1367,7 +1405,6 @@ public class APIHandler {
 				// everything again. 
 				try { Thread.sleep(50); } catch(Exception exc) {}
 				w = e.getEntityWorld();
-				pos0 = e.getPositionVector();
 			}
 			
 			Vec3d pos = Location.encodeVec3(serverWorlds, w, e.getPositionVector());
@@ -1492,7 +1529,6 @@ public class APIHandler {
 		String out = "";
 
 		synchronized(hits) {
-			int count = hits.size();
 			for (HitDescription e : hits) {
 				if (out.length() > 0)
 					out += "|";
@@ -1508,7 +1544,6 @@ public class APIHandler {
 		StringBuilder out = new StringBuilder();
 
 		synchronized(chats) {
-			int count = hits.size();
 			for (ChatDescription c : chats) {
 				if (out.length() > 0)
 					out.append("|");

@@ -6,27 +6,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ProcessBuilder;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 public abstract class ScriptExternalCommand implements ICommand {
 	abstract protected String getScriptProcessorCommand();
@@ -34,7 +29,6 @@ public abstract class ScriptExternalCommand implements ICommand {
 	abstract protected String[] getScriptPaths();
 	private List<Process> runningScripts;
 	final String scriptProcessorPath;
-	private World serverWorld;
 	protected boolean clientSide;
 
 	public ScriptExternalCommand(boolean clientSide) {
@@ -61,7 +55,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 	}
 
 	@Override
-	public List getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args,
+	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args,
 			BlockPos pos) {
 		
 		if (args.length == 0) {
@@ -114,7 +108,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 		return scripts;
 	}
 	@Override
-	public List getCommandAliases() {
+	public List<String> getCommandAliases() {
 		List<String> aliases = new ArrayList<String>();
 		aliases.add(getCommandName());
 		return aliases;

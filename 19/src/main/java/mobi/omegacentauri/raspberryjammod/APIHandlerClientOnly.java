@@ -1,6 +1,5 @@
 package mobi.omegacentauri.raspberryjammod;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Scanner;
@@ -8,10 +7,8 @@ import java.util.Scanner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 
 // This class is meant to provide most of the APIHandler facility while one is connected to a
 // server. Of course, any block changes won't get written back to the server.
@@ -74,7 +71,7 @@ public class APIHandlerClientOnly extends APIHandler {
 		double dx = scan.nextDouble();
 		double dy = scan.nextDouble();
 		double dz = scan.nextDouble();
-		double speed = scan.nextDouble();
+		/* speed */ scan.nextDouble();
 		int count = scan.nextInt();
 
 		int[] extras = null;
