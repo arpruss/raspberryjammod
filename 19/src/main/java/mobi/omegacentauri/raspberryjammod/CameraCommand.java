@@ -87,7 +87,7 @@ public class CameraCommand implements ICommand {
 			f.set(object, value);
 		}
 		catch (Exception e) {
-			System.out.println(""+e);
+			RaspberryJamMod.LOGGER.catching(e);
 		}
 	}
 

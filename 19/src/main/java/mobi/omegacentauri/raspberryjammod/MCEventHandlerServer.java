@@ -18,7 +18,7 @@ public class MCEventHandlerServer extends MCEventHandler {
 	
 	@SubscribeEvent
 	public void onChatEvent(ServerChatEvent event) {
-		System.out.println("onChatEvent "+event.getMessage());
+		RaspberryJamMod.LOGGER.info("onChatEvent "+event.getMessage());
 		APIHandler.ChatDescription cd = new APIHandler.ChatDescription(event.getPlayer().getEntityId(), event.getMessage());
 		for (APIHandler apiHandler : apiHandlers)
 			apiHandler.addChatDescription(cd);		

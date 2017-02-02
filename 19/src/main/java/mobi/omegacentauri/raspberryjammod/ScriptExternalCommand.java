@@ -266,7 +266,7 @@ public abstract class ScriptExternalCommand implements ICommand {
 		pb.command(cmd);
 
 		try {
-			System.out.println("Running "+script);
+			RaspberryJamMod.LOGGER.info("Running "+script);
 			Process runningScript = pb.start();
 			runningScripts.add(runningScript);
 			gobble(runningScript.getInputStream(), player, "");

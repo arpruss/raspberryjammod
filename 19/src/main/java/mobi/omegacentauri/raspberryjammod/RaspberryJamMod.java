@@ -1,4 +1,3 @@
-
 package mobi.omegacentauri.raspberryjammod;
 
 import java.io.IOException;
@@ -74,7 +73,7 @@ public class RaspberryJamMod
 
 		configFile = new Configuration(event.getSuggestedConfigurationFile());
 		configFile.load();
-		System.out.println("configFile = "+configFile.getConfigFile().getPath());
+		LOGGER.info("configFile = "+configFile.getConfigFile().getPath());
 		//		KeyBindings.init();
 
 		synchronizeConfig();
@@ -89,7 +88,7 @@ public class RaspberryJamMod
 	@Mod.EventHandler
 	@SideOnly(Side.CLIENT)
 	public void Init(FMLInitializationEvent event) {
-		System.out.println("FMLInitializationEvent");
+		LOGGER.info("FMLInitializationEvent");
 		clientEventHandler = new ClientEventHandler();
 		MinecraftForge.EVENT_BUS.register(clientEventHandler);
 		nightVisionExternalCommand = new NightVisionExternalCommand(clientEventHandler);
@@ -172,7 +171,7 @@ public class RaspberryJamMod
 			currentPortNumber = -1;
 			fullAPIServer = new APIServer(serverEventHandler, portNumber, searchForPort ? 65535 : portNumber, wsPort, false);
 			currentPortNumber = fullAPIServer.getPortNumber(); 
-			System.out.println("Current port number "+currentPortNumber);
+			LOGGER.info("Current port number "+currentPortNumber);
 
 			new Thread(new Runnable() {
 				@Override
@@ -180,10 +179,10 @@ public class RaspberryJamMod
 					try {
 						fullAPIServer.communicate();
 					} catch(IOException e) {
-						System.out.println("RaspberryJamMod error "+e);
+						LOGGER.catching(e);
 					}
 					finally {
-						System.out.println("Closing RaspberryJamMod");
+						LOGGER.info("Closing RaspberryJamMod");
 						if (fullAPIServer != null)
 							fullAPIServer.close();
 					}
@@ -191,7 +190,7 @@ public class RaspberryJamMod
 
 			}).start();
 		} catch (IOException e1) {
-			System.out.println("Threw "+e1);
+			LOGGER.catching(e1);
 		}
 
 		ScriptExternalCommand[] commands = new ScriptExternalCommand[] {
@@ -243,7 +242,7 @@ public class RaspberryJamMod
 
 			Field commandSetField = findFieldByType(ch.getClass(), "java.util.Set<net.minecraft.command.ICommand>");
 			
-			System.out.println("Found command set field "+commandSetField.getName());
+			LOGGER.info("Found command set field "+commandSetField.getName());
 			
 //			try {
 //				commandSetField = findField(ch.getClass(),"commandSet");
@@ -255,7 +254,7 @@ public class RaspberryJamMod
 			commandSet.remove(c);
 		}
 		catch (Exception e) {
-			System.err.println("Oops "+e);
+			LOGGER.catching(e);
 		}
 	}
 }

@@ -21,7 +21,7 @@ public class WSServer extends WebSocketServer {
 	
 	public WSServer( MCEventHandler eventHandler, int port, boolean clientSide ) throws UnknownHostException {
 		super( new InetSocketAddress( port ) );
-		System.out.println("Websocket server on "+port);
+		RaspberryJamMod.LOGGER.info("Websocket server on "+port);
 		controlServer = ! clientSide;
 		this.eventHandler = eventHandler;
 		handlers = new HashMap<WebSocket,APIHandler>();
@@ -40,7 +40,7 @@ public class WSServer extends WebSocketServer {
 	
 	@Override
 	public void onOpen( final WebSocket conn, ClientHandshake handshake ) {
-		System.out.println("websocket connect from "+conn.getRemoteSocketAddress().getHostName());
+		RaspberryJamMod.LOGGER.info("websocket connect from "+conn.getRemoteSocketAddress().getHostName());
 		if (!RaspberryJamMod.allowRemote && ! isLocal(conn.getRemoteSocketAddress().getAddress())) {
 			conn.closeConnection(1, "Remote connections disabled");
 			return;
@@ -70,7 +70,7 @@ public class WSServer extends WebSocketServer {
 
 	@Override
 	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
-		System.out.println("websocket closed for reason "+reason);
+		RaspberryJamMod.LOGGER.info("websocket closed for reason "+reason);
 		APIHandler apiHandler = handlers.get(conn);
 		if (apiHandler != null) {
 			apiHandler.writer.close();

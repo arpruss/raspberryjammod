@@ -86,7 +86,8 @@ public class Permission {
 				}
 			}
 			catch(Exception e) {
-				System.err.println("Cannot parse permission "+item);
+				RaspberryJamMod.LOGGER.error("Cannot parse permission "+item);
+				RaspberryJamMod.LOGGER.catching(e);
 				if (! permitted) {
 					add(null,ALL,ALL,ALL,ALL,false);
 				}

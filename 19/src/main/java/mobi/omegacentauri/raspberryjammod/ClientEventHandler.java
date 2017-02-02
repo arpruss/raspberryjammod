@@ -54,10 +54,10 @@ public class ClientEventHandler {
 			Object address = event.getManager().getRemoteAddress();
 			if (address instanceof InetSocketAddress) {
 				RaspberryJamMod.serverAddress = ((InetSocketAddress) address).getAddress().getHostAddress();
-				System.out.println("Server address "+RaspberryJamMod.serverAddress);
+				RaspberryJamMod.LOGGER.info("Server address "+RaspberryJamMod.serverAddress);
 			}
 			else {
-				System.out.println("No IP address");
+				RaspberryJamMod.LOGGER.info("No IP address");
 			}
 		} catch(Exception e) {
 			RaspberryJamMod.serverAddress = null;
@@ -71,7 +71,7 @@ public class ClientEventHandler {
 		if (! RaspberryJamMod.clientOnlyAPI)
 			return;
 
-		System.out.println("Closing world: "+event.getWorld());
+		RaspberryJamMod.LOGGER.info("Closing world: "+event.getWorld());
 		
 		closeAPI();
 	}	
@@ -93,7 +93,7 @@ public class ClientEventHandler {
 	@SubscribeEvent
 	public void onWorldLoaded(WorldEvent.Load event) {
 		RaspberryJamMod.synchronizeConfig();
-		System.out.println("Loading world: "+event.getWorld());
+		RaspberryJamMod.LOGGER.info("Loading world: "+event.getWorld());
 
 		if (RaspberryJamMod.clientOnlyAPI) {
 			registerCommand(new PythonExternalCommand(true));
@@ -115,7 +115,7 @@ public class ClientEventHandler {
 
         if (apiServer == null)
 			try {
-				System.out.println("RaspberryJamMod client only API");
+				RaspberryJamMod.LOGGER.info("RaspberryJamMod client only API");
 				RaspberryJamMod.apiActive = true;
 				if (apiServer == null) {
 					RaspberryJamMod.currentPortNumber = -1;
@@ -130,7 +130,7 @@ public class ClientEventHandler {
 							try {
 								apiServer.communicate();
 							} catch(IOException e) {
-								System.out.println("RaspberryJamMod error "+e);
+								RaspberryJamMod.LOGGER.catching(e);
 							}
 							finally {
 								closeAPI();
@@ -147,7 +147,7 @@ public class ClientEventHandler {
 		for (int i = RaspberryJamMod.scriptExternalCommands.size()-1; i>=0; i--) {
 			ScriptExternalCommand c = RaspberryJamMod.scriptExternalCommands.get(i);
 			if (c.clientSide) {
-				System.out.println("Unregistering "+c.getClass());
+				RaspberryJamMod.LOGGER.info("Unregistering "+c.getClass());
 				RaspberryJamMod.unregisterCommand(net.minecraftforge.client.ClientCommandHandler.instance,c);
 				RaspberryJamMod.scriptExternalCommands.remove(i);
 			}		

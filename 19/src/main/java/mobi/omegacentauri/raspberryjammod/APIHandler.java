@@ -448,7 +448,7 @@ public class APIHandler {
 				String dataDigest = tohex(md.digest());
 				
 				if (input.equals(dataDigest)) {
-                    System.out.println("Authenticated "+usernames.get(i));
+					RaspberryJamMod.LOGGER.info("Authenticated "+usernames.get(i));
                     authenticatedUsername = usernames.get(i);
 					authenticated = true;
 					return;
@@ -510,8 +510,7 @@ public class APIHandler {
 			scan = null;
 		}
 		catch(Exception e) {
-			System.out.println(""+e);
-			e.printStackTrace();
+			RaspberryJamMod.LOGGER.catching(e);
 		}
 		finally {
 			if (scan != null)
@@ -548,7 +547,8 @@ public class APIHandler {
 					permission = null;
 			}
 			catch (Exception e) {
-				System.err.println("Error in reading permissions file");
+				RaspberryJamMod.LOGGER.error("Error in reading permissions file");
+				RaspberryJamMod.LOGGER.catching(e);
 				permission = new Permission(serverWorlds);
 				permission.add(null, Permission.ALL, Permission.ALL, Permission.ALL, Permission.ALL, false);
 			}
@@ -577,7 +577,7 @@ public class APIHandler {
 					setState = new SetBlockNBT(pos, id, meta, 
 							JsonToNBT.getTagFromJson(tagString));
 				} catch (NBTException e) {
-					System.err.println("Cannot parse NBT");
+					RaspberryJamMod.LOGGER.warn("Cannot parse NBT");
 					setState = new SetBlockState(pos, id, meta);
 				}
 			}
@@ -835,17 +835,20 @@ public class APIHandler {
 					while (true) {
 						try {
 							Thread.sleep(100);
-							int new_y = Minecraft.getMinecraft().thePlayer.fishEntity.getPosition().getY();
-							float delta = new_y - y;
-							if (count > 5 && -0.99 > delta && delta > -1.01) {
-								sendLine("got.fish");
-								return;
+							Entity entity = Minecraft.getMinecraft().thePlayer.fishEntity;
+							if (entity != null) {
+								int new_y = entity.getPosition().getY();
+								float delta = new_y - y;
+								if (count > 5 && -0.99 > delta && delta > -1.01) {
+									sendLine("got.fish");
+									return;
+								}
+								y = new_y;
+								count++;
 							}
-							y = new_y;
-							count++;
 						} catch (Throwable t) {
-							System.err.println("Error waiting for fish");
-							t.printStackTrace();
+							RaspberryJamMod.LOGGER.error("Error waiting for fish");
+							RaspberryJamMod.LOGGER.catching(t);
 						}
 					}
 				}
@@ -952,11 +955,11 @@ public class APIHandler {
     protected String rename111(String entityId) {
         if (entityId.startsWith("minecraft:"))
             return entityId;
-        System.out.println("Searching for "+entityId);
+        RaspberryJamMod.LOGGER.info("Searching for "+entityId);
         String e = entityId.toLowerCase();
         for (String[] data: ENTITY_RENAME_111) {
             if (data[0].equals(e)) {
-                System.out.println("found minecraft:"+data[1]);
+                RaspberryJamMod.LOGGER.info("found minecraft:"+data[1]);
                 return "minecraft:" + data[1];
             }
         }
@@ -966,9 +969,9 @@ public class APIHandler {
 	protected void spawnEntity(Scanner scan) {
 		String entityId = scan.next();
         
-        System.out.println("Helo");
+		RaspberryJamMod.LOGGER.info("Helo");
         if (RaspberryJamMod.NOMINAL_VERSION >= 1011000) {
-            System.out.println("ren");
+            RaspberryJamMod.LOGGER.info("ren");
             entityId = rename111(entityId);
         }
         
@@ -1002,7 +1005,7 @@ public class APIHandler {
             tags.setString("id", entityId);
             entity = EntityList.createEntityFromNBT(tags, pos.world);
             if (fixGravity && entity instanceof EntityLiving) {
-                System.out.println("fixGravity "+fixGravity);
+                RaspberryJamMod.LOGGER.info("fixGravity "+fixGravity);
                 ((EntityLiving)entity).addPotionEffect(new PotionEffect(MobEffects.levitation, 
                         Integer.MAX_VALUE, -1));
             }
@@ -1135,7 +1138,7 @@ public class APIHandler {
 				f.set(mc.entityRenderer,d);
 			}
 			catch (Exception e) {
-				System.out.println(""+e);
+				RaspberryJamMod.LOGGER.catching(e);
 			}
 			try {
 				Field f = c.getDeclaredField("thirdPersonDistanceTemp");
@@ -1143,7 +1146,7 @@ public class APIHandler {
 				f.set(mc.entityRenderer,d);
 			}
 			catch (Exception e) {
-				System.out.println(""+e);
+				RaspberryJamMod.LOGGER.catching(e);
 			}
 		}
 		else {
@@ -1255,7 +1258,7 @@ public class APIHandler {
 	}
 
 	protected void fail(String string) {
-		System.err.println("Error: "+string);
+		RaspberryJamMod.LOGGER.error(string);
 		sendLine("Fail");
 	}
 	
@@ -1341,7 +1344,7 @@ public class APIHandler {
 			Vec3w pos = Location.decodeVec3w(serverWorlds, x, y, z);
 			if (pos.world != e.getEntityWorld()) {
 //				e.setWorld(pos.world);
-				System.out.println("World change unsupported");
+				RaspberryJamMod.LOGGER.warn("World change unsupported");
 				// TODO: implement moving between worlds
 				return;
 			}

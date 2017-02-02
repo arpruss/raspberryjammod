@@ -31,12 +31,12 @@ public class APIServer {
 		ws = null;
 		if (wsPort != 0) {
 			try {
-				System.out.println("Opening websocket server on "+wsPort);
+				RaspberryJamMod.LOGGER.info("Opening websocket server on "+wsPort);
 				ws = new WSServer(eventHandler, wsPort, clientSide);
 				ws.start();
 			}
 			catch (Exception e) {
-				System.out.println("Error "+e);
+				RaspberryJamMod.LOGGER.catching(e);
 				ws = null;
 			}
 		}
@@ -49,7 +49,7 @@ public class APIServer {
 				else {
 					serverSocket = new ServerSocket(portNumber, 50, InetAddress.getByName("127.0.0.1"));
 				}
-				System.out.println("RaspberryJamMod listening on port "+portNumber);
+				RaspberryJamMod.LOGGER.info("RaspberryJamMod listening on port "+portNumber);
 				return;
 			}
 			catch(IOException e) {
@@ -119,7 +119,7 @@ public class APIServer {
 				api.process(clientSentence);
 			}
 		} catch (Exception e) {
-			System.out.println(""+e);
+			RaspberryJamMod.LOGGER.catching(e);
 		}
 		finally {
 			if (api != null)
@@ -143,7 +143,7 @@ public class APIServer {
 	}
 
 	public void close() {
-		System.out.println("Closing sockets");
+		RaspberryJamMod.LOGGER.warn("Closing sockets");
 		listening = false;
 		synchronized(socketList) {
 			for (Socket s : socketList) {
