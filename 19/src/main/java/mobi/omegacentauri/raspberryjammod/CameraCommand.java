@@ -80,7 +80,7 @@ public class CameraCommand implements ICommand {
 				new TextComponentString(getCommandUsage(sender)));
 	}
 
-	static public void setField(Class c, String field, Object object, Object value) {
+	static public void setField(Class<?> c, String field, Object object, Object value) {
 		try {
 			Field f = c.getDeclaredField(field);
 			f.setAccessible(true);
@@ -92,7 +92,7 @@ public class CameraCommand implements ICommand {
 	}
 
 	private void setThirdPersonDistance(float x) {
-		Class c = net.minecraft.client.renderer.EntityRenderer.class;
+		Class<EntityRenderer> c = net.minecraft.client.renderer.EntityRenderer.class;
 		EntityRenderer r = Minecraft.getMinecraft().entityRenderer;
 		setField(c, "thirdPersonDistance",  r, x);
 		setField(c, "thirdPersonDistanceTemp", r, x);

@@ -79,7 +79,7 @@ public class ClientEventHandler {
 	
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void onSpecialsPre(RenderLivingEvent.Specials.Pre event) {
+	public void onSpecialsPre(RenderLivingEvent.Specials.Pre<?> event) {
 		if (RaspberryJamMod.noNameTags)
 			event.setCanceled(true);
 	}

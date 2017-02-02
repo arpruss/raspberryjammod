@@ -11,10 +11,8 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandHandler;
 import net.minecraft.command.ICommand;
-import net.minecraft.entity.projectile.EntityFishHook;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -24,7 +22,6 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -210,7 +207,7 @@ public class RaspberryJamMod
 		}
 	}
 
-	static public Field findField(Class c, String name) throws NoSuchFieldException {
+	static public Field findField(Class<?> c, String name) throws NoSuchFieldException {
 		do {
 			try {
 //				for (Field f : c.getDeclaredFields()) {
@@ -225,7 +222,7 @@ public class RaspberryJamMod
 		throw new NoSuchFieldException(name);
 	}
 
-	static public Field findFieldByType(Class c, String typeName) throws NoSuchFieldException {
+	static public Field findFieldByType(Class<?> c, String typeName) throws NoSuchFieldException {
 		do {
 			for (Field f : c.getDeclaredFields()) 
 				if (f.getGenericType().toString().equals(typeName))
@@ -257,7 +254,7 @@ public class RaspberryJamMod
 //				commandSetField = findField(ch.getClass(), "field_71561_b");
 //			}
 			commandSetField.setAccessible(true);
-			Set commandSet = (Set) commandSetField.get(ch);
+			Set<ICommand> commandSet = (Set<ICommand>) commandSetField.get(ch);
 			commandSet.remove(c);
 		}
 		catch (Exception e) {

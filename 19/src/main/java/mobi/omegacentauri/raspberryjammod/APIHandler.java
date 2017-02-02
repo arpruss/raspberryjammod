@@ -23,6 +23,7 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -522,8 +523,6 @@ public class APIHandler {
 	private void handlePermission() {
 		File perm = new File(PERMISSION_DATA); 
 		if (perm.exists()) {
-			String permissionString = "";
-			
 			try {
 				permission = new Permission(serverWorlds);
 				BufferedReader r = new BufferedReader(new FileReader(perm));
@@ -1129,7 +1128,7 @@ public class APIHandler {
 		}
 		else if (cmd.equals(SETDISTANCE)) {
 			Float d = scan.nextFloat();
-			Class c = net.minecraft.client.renderer.EntityRenderer.class;
+			Class<EntityRenderer> c = net.minecraft.client.renderer.EntityRenderer.class;
 			try {
 				Field f = c.getDeclaredField("thirdPersonDistance");
 				f.setAccessible(true);
