@@ -10,7 +10,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
@@ -111,7 +110,6 @@ public class ClientEventHandler {
 		
 		if (apiEventHandler == null) {
             apiEventHandler = new MCEventHandlerClientOnly();
-			FMLCommonHandler.instance().bus().register(apiEventHandler);
 			MinecraftForge.EVENT_BUS.register(apiEventHandler);
 		}
 
@@ -157,7 +155,6 @@ public class ClientEventHandler {
 		RaspberryJamMod.apiActive = false;
 		if (apiEventHandler != null) {
             MinecraftForge.EVENT_BUS.unregister(apiEventHandler);
-			FMLCommonHandler.instance().bus().unregister(apiEventHandler);
             apiEventHandler = null;
 		}
 		if (apiServer != null) {
