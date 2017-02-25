@@ -29,7 +29,7 @@ def deleteCubes(x0,y0,z0,length,colorIndex=None):
                                      posX+length-1,posY+length-1,posZ+length-1,RAINBOW[colorIndex])
                     else:
                         mc.setBlocks(posX,posY,posZ,
-                                 posX+length-1,posY+length-1,posZ+length-1,AIR)
+                                 posX+length-1,posY+length-1,posZ+length-1,block.AIR)
                 else:
                     deleteCubes(posX,posY,posZ,length,nextColorIndex)
 
@@ -38,7 +38,7 @@ def slice(x0,y0,z0,length):
         for y in range(0,length):
             for z in range(0,length):
                 if x+y+z >= 1.5*length:
-                    mc.setBlock(x0+x,y0+y,z0+z,AIR)
+                    mc.setBlock(x0+x,y0+y,z0+z,block.AIR)
 
 mc = Minecraft()
 playerPos = mc.player.getPos()
