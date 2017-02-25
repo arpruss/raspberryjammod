@@ -29,7 +29,7 @@ def deleteCubes(x0,y0,z0,length,colorIndex=None):
                                      posX+length-1,posY+length-1,posZ+length-1,RAINBOW[colorIndex])
                     else:
                         mc.setBlocks(posX,posY,posZ,
-                                 posX+length-1,posY+length-1,posZ+length-1,AIR)
+                                 posX+length-1,posY+length-1,posZ+length-1,block.AIR)
                 else:
                     deleteCubes(posX,posY,posZ,length,nextColorIndex)
 
