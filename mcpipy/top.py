@@ -1,3 +1,7 @@
+#
+# Code by Alexander Pruss and under the MIT license
+#
+
 from mine import *
 
 mc = Minecraft()
