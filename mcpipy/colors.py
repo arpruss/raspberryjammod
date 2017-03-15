@@ -1,3 +1,7 @@
+#
+# Code by Alexander Pruss and under the MIT license
+#
+
 import mcpi.block as block
 from random import uniform
 import math
