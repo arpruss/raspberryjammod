@@ -11,10 +11,10 @@ sh gradlew build
 rm build/libs/Raspberry*ources.jar 2> /dev/null
 mv build/libs/Raspberr* build/libs/RaspberryJamMod.jar 2> /dev/null
 mkdir ../build/out 2> /dev/null
-mkdir ../build/out/111 2> /dev/null
-mkdir ../build/out/1112 2> /dev/null
-cp build/libs/RaspberryJamMod.jar ../build/out/111/
-cp build/libs/RaspberryJamMod.jar ../build/out/1112/
+mkdir ../build/out/1.11 2> /dev/null
+mkdir ../build/out/1.11.2 2> /dev/null
+cp build/libs/RaspberryJamMod.jar ../build/out/1.11/
+cp build/libs/RaspberryJamMod.jar ../build/out/1.11.2/
 if [ "$1" != "noinstall" ]
 then
     mkdir $APPDATA/.minecraft/mods
