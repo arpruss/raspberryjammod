@@ -21,12 +21,16 @@ public class MCEventHandlerClientOnly extends MCEventHandler {
 		super();
 		doRemote = true;
 	}
+    
+    private static String fixMessage(String s) {
+        if (s.startsWith("<> ")) return s.substring(3); else return s;
+    }
 
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onChatEvent(ClientChatReceivedEvent event) {
 		APIHandler.ChatDescription cd = new APIHandler.ChatDescription(Minecraft.getMinecraft().thePlayer.getEntityId(), 
-				event.getMessage().toString());
+				fixMessage(event.getMessage().getUnformattedTextForChat()));
 		for (APIHandler apiHandler: apiHandlers)
 			apiHandler.addChatDescription(cd);
 	}
