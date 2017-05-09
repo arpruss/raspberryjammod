@@ -405,7 +405,7 @@ class Minecraft:
 
     @staticmethod
     def create(address = None, port = None, name = None):
-        return Minecraft(Connection(address, port), name = None)
+        return Minecraft(Connection(address, port), name = name)
         
 if 'VPYTHON_MCPI' in environ:
     from .vpython_minecraft import Minecraft
