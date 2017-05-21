@@ -5,7 +5,10 @@ from __future__ import print_function
 #
 #
 # To work, this needs sunfish.py:
-#   https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py
+#   The version used right now is:
+#       https://raw.githubusercontent.com/thomasahle/sunfish/ff164af4deb48b62fd63b509dc8e42a83cdfa7e7/sunfish.py
+#   The latest version is at:
+#       https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py
 #
 
 from collections import OrderedDict
@@ -28,7 +31,7 @@ except:
         import urllib2 as urllib_request
     import os.path
     import os
-    content = urllib_request.urlopen("https://raw.githubusercontent.com/thomasahle/sunfish/master/sunfish.py").read()
+    content = urllib_request.urlopen("https://raw.githubusercontent.com/thomasahle/sunfish/ff164af4deb48b62fd63b509dc8e42a83cdfa7e7/sunfish.py").read()
     filename = os.path.join(os.path.dirname(sys.argv[0]),"_sunfish.py")
     try:
         f=open(filename,"wb")
@@ -388,6 +391,7 @@ for row in range(8):
         v.blankBehind()
 
 playerMovesNext = not black
+searcher = sunfish.Searcher()
 
 while True:
     if playerMovesNext:
@@ -397,7 +401,7 @@ while True:
             mc.postToChat("White to move.")
         if demo:
             sunfish.tp = OrderedDict()
-            move,score = sunfish.search(pos)
+            move,score = searcher.search(pos, 2)
         else:
             moves = tuple(pos.gen_moves())
             move = None
@@ -412,14 +416,14 @@ while True:
         pos = pos.move(move)
     mc.postToChat("Thinking...")
     if demo: sunfish.tp = OrderedDict()
-    move,score = sunfish.search(pos)
-    if score <= -sunfish.MATE_VALUE:
+    move,score = searcher.search(pos, 2)
+    if score <= -sunfish.MATE_UPPER:
         mc.postToChat("I resign. You won the game.")
         break
     rowColMove = toRowColMove(move,not black)
     mc.postToChat("Computer: "+toAlgebraicMove(rowColMove))
     animateMove(rowColMove)
-    if sunfish.MATE_VALUE <= score:
+    if sunfish.MATE_UPPER <= score:
         mc.postToChat("You lost the game.")
         break
     pos = pos.move(move)
