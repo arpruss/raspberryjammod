@@ -42,7 +42,7 @@ except:
         os.remove(filename)
         print("Error creating _sunfish.py")
         sys.exit(0)
-            
+
 def getCoords(row,col):
     return (corner.x+8*row+4,corner.y,corner.z+8*col+4)
 
@@ -62,7 +62,7 @@ def toNumeric(rowCol,black):
         col = 7 - rowCol[1]
         row = 7 - rowCol[0]
     else:
-        row, col = rowCol 
+        row, col = rowCol
     return 20 + 10 * (7-row) + 1 + col
 
 def toNumericMove(rowColMove,black):
@@ -78,13 +78,13 @@ def drawSquare(row,col):
 
 def highlightSquare(row,col):
     mc.setBlocks(corner.x+row*8,corner.y-1,corner.z+col*8,
-                    corner.x+row*8+7,corner.y-1,corner.z+col*8,block.REDSTONE_BLOCK)
+                 corner.x+row*8+7,corner.y-1,corner.z+col*8,block.REDSTONE_BLOCK)
     mc.setBlocks(corner.x+row*8,corner.y-1,corner.z+col*8,
-                    corner.x+row*8,corner.y-1,corner.z+col*8+7,block.REDSTONE_BLOCK)
+                 corner.x+row*8,corner.y-1,corner.z+col*8+7,block.REDSTONE_BLOCK)
     mc.setBlocks(corner.x+row*8+7,corner.y-1,corner.z+col*8,
-                    corner.x+row*8+7,corner.y-1,corner.z+col*8+7,block.REDSTONE_BLOCK)
+                 corner.x+row*8+7,corner.y-1,corner.z+col*8+7,block.REDSTONE_BLOCK)
     mc.setBlocks(corner.x+row*8,corner.y-1,corner.z+col*8+7,
-                    corner.x+row*8+7,corner.y-1,corner.z+col*8+7,block.REDSTONE_BLOCK)
+                 corner.x+row*8+7,corner.y-1,corner.z+col*8+7,block.REDSTONE_BLOCK)
 
 def drawEmptyBoard():
     mc.setBlocks(corner.x,corner.y,corner.z,corner.x+63,corner.y+MAXHEIGHT,corner.z+63,0)
@@ -115,83 +115,83 @@ PAWN = (
      "xxxx"))
 
 KNIGHT = (
-   ("...xx.",
-    "..xxxx",
-    ".xxxxx",
-    "xxxx.x",
-    ".xxx..",
-    ".xxxx.",
-    "xxxxxx"),
-   ("...xx.",
-    "..xxxx",
-    ".xxxxx",
-    "xxxx.x",
-    ".xxx..",
-    ".xxxx.",
-    "xxxxxx")        
-    )
+    ("...xx.",
+     "..xxxx",
+     ".xxxxx",
+     "xxxx.x",
+     ".xxx..",
+     ".xxxx.",
+     "xxxxxx"),
+    ("...xx.",
+     "..xxxx",
+     ".xxxxx",
+     "xxxx.x",
+     ".xxx..",
+     ".xxxx.",
+     "xxxxxx")
+)
 
 BISHOP = (
-          (".xx.",
-           "xx.x",
-           "x.xx",
-           "xxxx",
-           ".xx.",
-           ".xx.",
-           "xxxx"),
-          (".xx.",
-           "xx.x",
-           "x.xx",
-           "xxxx",
-           ".xx.",
-           ".xx.",
-           "xxxx"))
+    (".xx.",
+     "xx.x",
+     "x.xx",
+     "xxxx",
+     ".xx.",
+     ".xx.",
+     "xxxx"),
+    (".xx.",
+     "xx.x",
+     "x.xx",
+     "xxxx",
+     ".xx.",
+     ".xx.",
+     "xxxx"))
 
 ROOK = (
-   ("x.xx.x",
-    "x.xx.x",
-    "xxxxxx",
-    ".xxxx.",
-    ".xxxx.",
-    "xxxxxx"),
-   ("x.xx.x",
-    "x.xx.x",
-    "xxxxxx",
-    ".xxxx.",
-    ".xxxx.",
-    "xxxxxx"))
+    ("x.xx.x",
+     "x.xx.x",
+     "xxxxxx",
+     ".xxxx.",
+     ".xxxx.",
+     "xxxxxx"),
+    ("x.xx.x",
+     "x.xx.x",
+     "xxxxxx",
+     ".xxxx.",
+     ".xxxx.",
+     "xxxxxx"))
 
 QUEEN = (
-   ("..xx..",
-    "x.xx.x",
-    "x.xx.x",
-    "xxxxxx",
-    "xxxxxx",
-    "xxxxxx",
-    "xxxxxx"),
-   ("..xx..",
-    "x.xx.x",
-    "x.xx.x",
-    "xxxxxx",
-    "xxxxxx",
-    "xxxxxx",
-    "xxxxxx"))
+    ("..xx..",
+     "x.xx.x",
+     "x.xx.x",
+     "xxxxxx",
+     "xxxxxx",
+     "xxxxxx",
+     "xxxxxx"),
+    ("..xx..",
+     "x.xx.x",
+     "x.xx.x",
+     "xxxxxx",
+     "xxxxxx",
+     "xxxxxx",
+     "xxxxxx"))
 
 KING = (
-   ("..xx..",
-    "xxxxxx",
-    "..xx..",
-    "xxxxxx",
-    "xxxxxx",
-    ".xxxx.",
-    "xxxxxx"),
-   ("..xx..",
-    "xxxxxx",
-    "..xx..",
-    "xxxxxx",
-    "xxxxxx",
-    ".xxxx.",
-    "xxxxxx"))
+    ("..xx..",
+     "xxxxxx",
+     "..xx..",
+     "xxxxxx",
+     "xxxxxx",
+     ".xxxx.",
+     "xxxxxx"),
+    ("..xx..",
+     "xxxxxx",
+     "..xx..",
+     "xxxxxx",
+     "xxxxxx",
+     ".xxxx.",
+     "xxxxxx"))
 
 BLACK = block.WOOL_GRAY
 WHITE = block.WOOL_WHITE
@@ -203,7 +203,7 @@ pieceBitmaps = {
     'R':ROOK,
     'Q':QUEEN,
     'K':KING
-    }
+}
 
 MAXHEIGHT = 8
 
@@ -257,7 +257,7 @@ def parse(message):
         return (row0,col0),(row1,col1)
     except:
         raise ValueError
-        
+
 def getPiece(row,col):
     try:
         return pieces[(row,col)].name
@@ -280,7 +280,7 @@ def inputMove():
         if len(hits) > 0:
             c = hits[0].pos
             if ( corner.x <= c.x and corner.y -1 <= c.y and corner.z <= c.z and
-                 c.x < corner.x + 64 and c.y < corner.y + MAXHEIGHT and c.z < corner.z + 64 ):
+                         c.x < corner.x + 64 and c.y < corner.y + MAXHEIGHT and c.z < corner.z + 64 ):
                 m = (c.x - corner.x) // 8, (c.z - corner.z) //8
                 if len(moves) == 0 or m[0] != moves[0][0] or m[1] != moves[0][1]:
                     highlightSquare(m[0],m[1])
@@ -379,8 +379,8 @@ for row in range(8):
         elif piece.capitalize() in pieceBitmaps:
             v = toVehicle(pieceBitmaps[piece.capitalize()], BLACK, piece)
         else:
-            continue 
-        #uncomment the following line to optimize speed
+            continue
+            #uncomment the following line to optimize speed
         v.getBlockWithData = myGetBlockWithData
         pieces[(row,col)] = v
         c = getCoords(row,col)
@@ -388,6 +388,7 @@ for row in range(8):
         v.blankBehind()
 
 playerMovesNext = not black
+searcher = sunfish.Searcher()
 
 while True:
     if playerMovesNext:
@@ -397,7 +398,7 @@ while True:
             mc.postToChat("White to move.")
         if demo:
             sunfish.tp = OrderedDict()
-            move,score = sunfish.search(pos)
+            move,score = searcher.search(pos, 2)
         else:
             moves = tuple(pos.gen_moves())
             move = None
@@ -412,14 +413,14 @@ while True:
         pos = pos.move(move)
     mc.postToChat("Thinking...")
     if demo: sunfish.tp = OrderedDict()
-    move,score = sunfish.search(pos)
-    if score <= -sunfish.MATE_VALUE:
+    move,score = searcher.search(pos, 2)
+    if score <= -sunfish.MATE_UPPER:
         mc.postToChat("I resign. You won the game.")
         break
     rowColMove = toRowColMove(move,not black)
     mc.postToChat("Computer: "+toAlgebraicMove(rowColMove))
     animateMove(rowColMove)
-    if sunfish.MATE_VALUE <= score:
+    if sunfish.MATE_UPPER <= score:
         mc.postToChat("You lost the game.")
         break
     pos = pos.move(move)
