@@ -8,7 +8,7 @@ from __future__ import print_function
 from platform import system
 
 if system() == 'Windows':
-    from ctypes import windll
+    from ctypes import windll, Structure, c_ulong, byref
 
     LBUTTON = 1
     RBUTTON = 2
@@ -135,6 +135,20 @@ if system() == 'Windows':
     def clearPressBuffer(key):
         while wasPressedSinceLast(key):
             pass
+
+    """            
+    class POINT(Structure):
+        _fields_ = [("x", c_ulong), ("y", c_ulong)]
+            
+    def getMousePosition():
+        pt = POINT()
+        windll.user32.GetCursorPos(byref(pt))
+        return (pt.x, windll.user32.GetSystemMetrics(1)-1-pt.y)
+        
+    def getScreenSize():
+        return (windll.user32.GetSystemMetrics(0), windll.user32.GetSystemMetrics(1))
+    """
+        
 else:
     raise Exception('Platform '+system()+' not supported.')
             
@@ -148,5 +162,6 @@ if __name__ == '__main__':
         now,last = getPressState(ord(' '))
         if now or last:
             print(now, last)
+        print(getMousePosition(), getScreenSize())
         sleep(0.01)
         
