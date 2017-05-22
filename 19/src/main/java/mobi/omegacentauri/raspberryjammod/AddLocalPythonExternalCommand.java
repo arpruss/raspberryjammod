@@ -3,8 +3,6 @@ package mobi.omegacentauri.raspberryjammod;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 
 public class AddLocalPythonExternalCommand extends PythonExternalCommand {
@@ -18,7 +16,7 @@ public class AddLocalPythonExternalCommand extends PythonExternalCommand {
 	}
 
 	@Override
-	public List getCommandAliases() {
+	public List<String> getCommandAliases() {
 		List<String> aliases = new ArrayList<String>();
 		aliases.add(getCommandName());
 		aliases.add("alpy");

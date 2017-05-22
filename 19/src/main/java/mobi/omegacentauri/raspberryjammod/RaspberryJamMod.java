@@ -1,51 +1,25 @@
-
 package mobi.omegacentauri.raspberryjammod;
 
-import ibxm.Player;
-
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 
-import scala.collection.script.Script;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.command.CommandHandler;
 import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
-import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
-import net.minecraftforge.fml.common.event.FMLStateEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -58,7 +32,6 @@ public class RaspberryJamMod
 	public static final String VERSION = "0.89";
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer fullAPIServer = null;
-	private PythonExternalCommand pythonExternalCommand = null;
 	private NightVisionExternalCommand nightVisionExternalCommand = null;
 	private CameraCommand cameraCommand = null;
 	public static List<ScriptExternalCommand> scriptExternalCommands = new ArrayList<ScriptExternalCommand>();
@@ -86,6 +59,8 @@ public class RaspberryJamMod
 	public static volatile boolean noNameTags = false;
     public static final int NOMINAL_VERSION = 1009000;
 
+    public static final Logger LOGGER = LogManager.getLogger(RaspberryJamMod.MODID);
+
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		integrated = true;
@@ -98,7 +73,7 @@ public class RaspberryJamMod
 
 		configFile = new Configuration(event.getSuggestedConfigurationFile());
 		configFile.load();
-		System.out.println("configFile = "+configFile.getConfigFile().getPath());
+		LOGGER.info("configFile = "+configFile.getConfigFile().getPath());
 		//		KeyBindings.init();
 
 		synchronizeConfig();
@@ -113,10 +88,9 @@ public class RaspberryJamMod
 	@Mod.EventHandler
 	@SideOnly(Side.CLIENT)
 	public void Init(FMLInitializationEvent event) {
-		System.out.println("FMLInitializationEvent");
+		LOGGER.info("FMLInitializationEvent");
 		clientEventHandler = new ClientEventHandler();
 		MinecraftForge.EVENT_BUS.register(clientEventHandler);
-		FMLCommonHandler.instance().bus().register(clientEventHandler);
 		nightVisionExternalCommand = new NightVisionExternalCommand(clientEventHandler);
 		net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(nightVisionExternalCommand);
 		cameraCommand = new CameraCommand();
@@ -159,7 +133,7 @@ public class RaspberryJamMod
 		apiActive = false;
 
 		if (serverEventHandler != null) {
-			FMLCommonHandler.instance().bus().unregister(serverEventHandler);
+			MinecraftForge.EVENT_BUS.unregister(serverEventHandler);
 			serverEventHandler = null;
 		}
 
@@ -192,13 +166,12 @@ public class RaspberryJamMod
 		apiActive = true;
 
 		serverEventHandler = new MCEventHandlerServer();
-		FMLCommonHandler.instance().bus().register(serverEventHandler);
 		MinecraftForge.EVENT_BUS.register(serverEventHandler);
 		try {
 			currentPortNumber = -1;
 			fullAPIServer = new APIServer(serverEventHandler, portNumber, searchForPort ? 65535 : portNumber, wsPort, false);
 			currentPortNumber = fullAPIServer.getPortNumber(); 
-			System.out.println("Current port number "+currentPortNumber);
+			LOGGER.info("Current port number "+currentPortNumber);
 
 			new Thread(new Runnable() {
 				@Override
@@ -206,10 +179,10 @@ public class RaspberryJamMod
 					try {
 						fullAPIServer.communicate();
 					} catch(IOException e) {
-						System.out.println("RaspberryJamMod error "+e);
+						LOGGER.catching(e);
 					}
 					finally {
-						System.out.println("Closing RaspberryJamMod");
+						LOGGER.info("Closing RaspberryJamMod");
 						if (fullAPIServer != null)
 							fullAPIServer.close();
 					}
@@ -217,7 +190,7 @@ public class RaspberryJamMod
 
 			}).start();
 		} catch (IOException e1) {
-			System.out.println("Threw "+e1);
+			LOGGER.catching(e1);
 		}
 
 		ScriptExternalCommand[] commands = new ScriptExternalCommand[] {
@@ -230,7 +203,7 @@ public class RaspberryJamMod
 		}
 	}
 
-	static public Field findField(Class c, String name) throws NoSuchFieldException {
+	static public Field findField(Class<?> c, String name) throws NoSuchFieldException {
 		do {
 			try {
 //				for (Field f : c.getDeclaredFields()) {
@@ -245,7 +218,7 @@ public class RaspberryJamMod
 		throw new NoSuchFieldException(name);
 	}
 
-	static public Field findFieldByType(Class c, String typeName) throws NoSuchFieldException {
+	static public Field findFieldByType(Class<?> c, String typeName) throws NoSuchFieldException {
 		do {
 			for (Field f : c.getDeclaredFields()) 
 				if (f.getGenericType().toString().equals(typeName))
@@ -256,7 +229,7 @@ public class RaspberryJamMod
 
 	static public void unregisterCommand(CommandHandler ch, ICommand c) {
 		try {
-			Map commandMap = ch.getCommands();
+			Map<String, ICommand> commandMap = ch.getCommands();
 			for (String alias: (List<String>)c.getCommandAliases()) {
 				try {
 					commandMap.remove(alias);
@@ -269,7 +242,7 @@ public class RaspberryJamMod
 
 			Field commandSetField = findFieldByType(ch.getClass(), "java.util.Set<net.minecraft.command.ICommand>");
 			
-			System.out.println("Found command set field "+commandSetField.getName());
+			LOGGER.info("Found command set field "+commandSetField.getName());
 			
 //			try {
 //				commandSetField = findField(ch.getClass(),"commandSet");
@@ -277,11 +250,11 @@ public class RaspberryJamMod
 //				commandSetField = findField(ch.getClass(), "field_71561_b");
 //			}
 			commandSetField.setAccessible(true);
-			Set commandSet = (Set) commandSetField.get(ch);
+			Set<ICommand> commandSet = (Set<ICommand>) commandSetField.get(ch);
 			commandSet.remove(c);
 		}
 		catch (Exception e) {
-			System.err.println("Oops "+e);
+			LOGGER.catching(e);
 		}
 	}
 }

@@ -168,6 +168,14 @@ class CmdPlayer(CmdPositioner):
         return CmdPositioner.getName(self, self.id)
     def getNameAndUUID(self):
         return CmdPositioner.getNameAndUUID(self, self.id)
+    def clickLeft(self):
+        """Click with the left button."""
+        self.conn.send("click.left")
+    def clickRight(self):
+        self.conn.send("click.right")
+    def pollFish(self):
+        """Wait until a fish appears. (right clicking afterwards will catch the fish)"""
+        self.conn.sendReceive("poll.fish")
 
 class CmdCamera:
     def __init__(self, connection):

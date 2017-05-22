@@ -1,12 +1,7 @@
 package mobi.omegacentauri.raspberryjammod;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.MinecraftForge;
 
 public class SetDimension extends ServerAction {
 	Entity entity;

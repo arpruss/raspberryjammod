@@ -3,40 +3,14 @@ package mobi.omegacentauri.raspberryjammod;
 // TODO: getHeight() should check block queue
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.InputMismatchException;
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
-
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldSettings;
-import net.minecraft.world.chunk.Chunk;
 
 public class APIServer {
 	private static final int MAX_CONNECTIONS = 64;
@@ -57,12 +31,12 @@ public class APIServer {
 		ws = null;
 		if (wsPort != 0) {
 			try {
-				System.out.println("Opening websocket server on "+wsPort);
+				RaspberryJamMod.LOGGER.info("Opening websocket server on "+wsPort);
 				ws = new WSServer(eventHandler, wsPort, clientSide);
 				ws.start();
 			}
 			catch (Exception e) {
-				System.out.println("Error "+e);
+				RaspberryJamMod.LOGGER.catching(e);
 				ws = null;
 			}
 		}
@@ -75,7 +49,7 @@ public class APIServer {
 				else {
 					serverSocket = new ServerSocket(portNumber, 50, InetAddress.getByName("127.0.0.1"));
 				}
-				System.out.println("RaspberryJamMod listening on port "+portNumber);
+				RaspberryJamMod.LOGGER.info("RaspberryJamMod listening on port "+portNumber);
 				return;
 			}
 			catch(IOException e) {
@@ -93,7 +67,6 @@ public class APIServer {
 
 	void communicate() throws IOException {
 		while(listening) {
-			Socket connectionSocket = null;
 			if (! RaspberryJamMod.concurrent) {
 				try {
 					socketCommunicate(serverSocket.accept());
@@ -146,7 +119,7 @@ public class APIServer {
 				api.process(clientSentence);
 			}
 		} catch (Exception e) {
-			System.out.println(""+e);
+			RaspberryJamMod.LOGGER.catching(e);
 		}
 		finally {
 			if (api != null)
@@ -170,7 +143,7 @@ public class APIServer {
 	}
 
 	public void close() {
-		System.out.println("Closing sockets");
+		RaspberryJamMod.LOGGER.warn("Closing sockets");
 		listening = false;
 		synchronized(socketList) {
 			for (Socket s : socketList) {

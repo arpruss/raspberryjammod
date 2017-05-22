@@ -1,28 +1,18 @@
 package mobi.omegacentauri.raspberryjammod;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketImpl;
-import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
-import org.omg.CORBA.Any;
-import org.omg.CORBA.DataOutputStream;
-import org.omg.CORBA.TypeCode;
 
 public class WSServer extends WebSocketServer {
 	Map<WebSocket, APIHandler> handlers;
@@ -31,7 +21,7 @@ public class WSServer extends WebSocketServer {
 	
 	public WSServer( MCEventHandler eventHandler, int port, boolean clientSide ) throws UnknownHostException {
 		super( new InetSocketAddress( port ) );
-		System.out.println("Websocket server on "+port);
+		RaspberryJamMod.LOGGER.info("Websocket server on "+port);
 		controlServer = ! clientSide;
 		this.eventHandler = eventHandler;
 		handlers = new HashMap<WebSocket,APIHandler>();
@@ -50,7 +40,7 @@ public class WSServer extends WebSocketServer {
 	
 	@Override
 	public void onOpen( final WebSocket conn, ClientHandshake handshake ) {
-		System.out.println("websocket connect from "+conn.getRemoteSocketAddress().getHostName());
+		RaspberryJamMod.LOGGER.info("websocket connect from "+conn.getRemoteSocketAddress().getHostName());
 		if (!RaspberryJamMod.allowRemote && ! isLocal(conn.getRemoteSocketAddress().getAddress())) {
 			conn.closeConnection(1, "Remote connections disabled");
 			return;
@@ -80,7 +70,7 @@ public class WSServer extends WebSocketServer {
 
 	@Override
 	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
-		System.out.println("websocket closed for reason "+reason);
+		RaspberryJamMod.LOGGER.info("websocket closed for reason "+reason);
 		APIHandler apiHandler = handlers.get(conn);
 		if (apiHandler != null) {
 			apiHandler.writer.close();

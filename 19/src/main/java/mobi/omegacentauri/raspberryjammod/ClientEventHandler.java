@@ -1,51 +1,16 @@
 package mobi.omegacentauri.raspberryjammod;
 
-import java.beans.EventSetDescriptor;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.command.ICommand;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.MobEffects;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.World;
-import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.CommandEvent;
-import net.minecraftforge.event.ServerChatEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -89,10 +54,10 @@ public class ClientEventHandler {
 			Object address = event.getManager().getRemoteAddress();
 			if (address instanceof InetSocketAddress) {
 				RaspberryJamMod.serverAddress = ((InetSocketAddress) address).getAddress().getHostAddress();
-				System.out.println("Server address "+RaspberryJamMod.serverAddress);
+				RaspberryJamMod.LOGGER.info("Server address "+RaspberryJamMod.serverAddress);
 			}
 			else {
-				System.out.println("No IP address");
+				RaspberryJamMod.LOGGER.info("No IP address");
 			}
 		} catch(Exception e) {
 			RaspberryJamMod.serverAddress = null;
@@ -106,14 +71,14 @@ public class ClientEventHandler {
 		if (! RaspberryJamMod.clientOnlyAPI)
 			return;
 
-		System.out.println("Closing world: "+event.getWorld());
+		RaspberryJamMod.LOGGER.info("Closing world: "+event.getWorld());
 		
 		closeAPI();
 	}	
 	
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void onSpecialsPre(RenderLivingEvent.Specials.Pre event) {
+	public void onSpecialsPre(RenderLivingEvent.Specials.Pre<?> event) {
 		if (RaspberryJamMod.noNameTags)
 			event.setCanceled(true);
 	}
@@ -128,7 +93,7 @@ public class ClientEventHandler {
 	@SubscribeEvent
 	public void onWorldLoaded(WorldEvent.Load event) {
 		RaspberryJamMod.synchronizeConfig();
-		System.out.println("Loading world: "+event.getWorld());
+		RaspberryJamMod.LOGGER.info("Loading world: "+event.getWorld());
 
 		if (RaspberryJamMod.clientOnlyAPI) {
 			registerCommand(new PythonExternalCommand(true));
@@ -145,13 +110,12 @@ public class ClientEventHandler {
 		
 		if (apiEventHandler == null) {
             apiEventHandler = new MCEventHandlerClientOnly();
-			FMLCommonHandler.instance().bus().register(apiEventHandler);
 			MinecraftForge.EVENT_BUS.register(apiEventHandler);
 		}
 
         if (apiServer == null)
 			try {
-				System.out.println("RaspberryJamMod client only API");
+				RaspberryJamMod.LOGGER.info("RaspberryJamMod client only API");
 				RaspberryJamMod.apiActive = true;
 				if (apiServer == null) {
 					RaspberryJamMod.currentPortNumber = -1;
@@ -166,7 +130,7 @@ public class ClientEventHandler {
 							try {
 								apiServer.communicate();
 							} catch(IOException e) {
-								System.out.println("RaspberryJamMod error "+e);
+								RaspberryJamMod.LOGGER.catching(e);
 							}
 							finally {
 								closeAPI();
@@ -183,7 +147,7 @@ public class ClientEventHandler {
 		for (int i = RaspberryJamMod.scriptExternalCommands.size()-1; i>=0; i--) {
 			ScriptExternalCommand c = RaspberryJamMod.scriptExternalCommands.get(i);
 			if (c.clientSide) {
-				System.out.println("Unregistering "+c.getClass());
+				RaspberryJamMod.LOGGER.info("Unregistering "+c.getClass());
 				RaspberryJamMod.unregisterCommand(net.minecraftforge.client.ClientCommandHandler.instance,c);
 				RaspberryJamMod.scriptExternalCommands.remove(i);
 			}		
@@ -191,7 +155,6 @@ public class ClientEventHandler {
 		RaspberryJamMod.apiActive = false;
 		if (apiEventHandler != null) {
             MinecraftForge.EVENT_BUS.unregister(apiEventHandler);
-			FMLCommonHandler.instance().bus().unregister(apiEventHandler);
             apiEventHandler = null;
 		}
 		if (apiServer != null) {

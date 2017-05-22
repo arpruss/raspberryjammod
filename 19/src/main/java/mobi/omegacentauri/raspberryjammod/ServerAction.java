@@ -1,7 +1,5 @@
 package mobi.omegacentauri.raspberryjammod;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.World;
 
 public abstract class ServerAction {

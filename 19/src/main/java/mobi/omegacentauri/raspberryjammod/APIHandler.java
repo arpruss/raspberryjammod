@@ -3,34 +3,28 @@ package mobi.omegacentauri.raspberryjammod;
 // TODO: getHeight() should check block queue
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Set;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.main.GameConfiguration;
+import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
@@ -44,7 +38,6 @@ import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.BlockPos;
@@ -53,12 +46,14 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 public class APIHandler {
+	protected static final String CLICKLEFT = "click.left";
+	protected static final String CLICKRIGHT = "click.right";
+	protected static final String POLLFISH = "poll.fish";
+
 	// world.checkpoint.save/restore, player.setting, world.setting(nametags_visible,*),
 	// camera.setFixed() unsupported
 	// camera.setNormal(id) and camera.setFollow(id) uses spectating, and so it moves the
@@ -252,7 +247,6 @@ public class APIHandler {
 	public static final String PASSWORD_DATA = "raspberryjammod_passwords.dat";
 	public static final String PERMISSION_DATA = "raspberryjammod_permissions.dat";
 	private String salt = null;
-	private boolean authenticationSetup;
 	private List<HitDescription> hits = new LinkedList<HitDescription>();
 	protected List<ChatDescription> chats = new LinkedList<ChatDescription>();
 	private boolean restrictToSword = true;
@@ -454,7 +448,7 @@ public class APIHandler {
 				String dataDigest = tohex(md.digest());
 				
 				if (input.equals(dataDigest)) {
-                    System.out.println("Authenticated "+usernames.get(i));
+					RaspberryJamMod.LOGGER.info("Authenticated "+usernames.get(i));
                     authenticatedUsername = usernames.get(i);
 					authenticated = true;
 					return;
@@ -516,8 +510,7 @@ public class APIHandler {
 			scan = null;
 		}
 		catch(Exception e) {
-			System.out.println(""+e);
-			e.printStackTrace();
+			RaspberryJamMod.LOGGER.catching(e);
 		}
 		finally {
 			if (scan != null)
@@ -529,8 +522,6 @@ public class APIHandler {
 	private void handlePermission() {
 		File perm = new File(PERMISSION_DATA); 
 		if (perm.exists()) {
-			String permissionString = "";
-			
 			try {
 				permission = new Permission(serverWorlds);
 				BufferedReader r = new BufferedReader(new FileReader(perm));
@@ -556,7 +547,8 @@ public class APIHandler {
 					permission = null;
 			}
 			catch (Exception e) {
-				System.err.println("Error in reading permissions file");
+				RaspberryJamMod.LOGGER.error("Error in reading permissions file");
+				RaspberryJamMod.LOGGER.catching(e);
 				permission = new Permission(serverWorlds);
 				permission.add(null, Permission.ALL, Permission.ALL, Permission.ALL, Permission.ALL, false);
 			}
@@ -565,6 +557,8 @@ public class APIHandler {
 
 	protected void runCommand(String cmd, String args, Scanner scan) 
 			throws InputMismatchException, NoSuchElementException, IndexOutOfBoundsException {
+
+		RaspberryJamMod.LOGGER.info("Running command: "+cmd);
 
 		if (cmd.equals(SETBLOCK)) {
 			Location pos = getBlockLocation(scan);
@@ -583,7 +577,7 @@ public class APIHandler {
 					setState = new SetBlockNBT(pos, id, meta, 
 							JsonToNBT.getTagFromJson(tagString));
 				} catch (NBTException e) {
-					System.err.println("Cannot parse NBT");
+					RaspberryJamMod.LOGGER.warn("Cannot parse NBT");
 					setState = new SetBlockState(pos, id, meta);
 				}
 			}
@@ -827,11 +821,58 @@ public class APIHandler {
 		else if (cmd.equals(APIVERSION)) {
 			sendLine(RaspberryJamMod.MODID+","+RaspberryJamMod.VERSION+","+"java"+","+mcVersion());
 		}
+		else if (cmd.equals(CLICKLEFT)) {
+			toggle(mc.gameSettings.keyBindAttack);
+		}
+		else if (cmd.equals(CLICKRIGHT)) {
+			toggle(mc.gameSettings.keyBindUseItem);
+		}
+		else if (cmd.equals(POLLFISH)) {
+			new Thread() {
+				public void run() {
+					float y = 0.0f;
+					int count = 0;
+					while (true) {
+						try {
+							Thread.sleep(100);
+							Entity entity = Minecraft.getMinecraft().thePlayer.fishEntity;
+							if (entity != null) {
+								int new_y = entity.getPosition().getY();
+								float delta = new_y - y;
+								if (count > 5 && -0.99 > delta && delta > -1.01) {
+									sendLine("got.fish");
+									return;
+								}
+								y = new_y;
+								count++;
+							}
+						} catch (Throwable t) {
+							RaspberryJamMod.LOGGER.error("Error waiting for fish");
+							RaspberryJamMod.LOGGER.catching(t);
+						}
+					}
+				}
+			}.start();
+		}
 		else {
 			unknownCommand();
 		}
 	}
 	
+	private static void toggle(KeyBinding k) {
+		try {
+			// toggle key quickly
+			KeyBinding.setKeyBindState(k.getKeyCode(), true);
+			KeyBinding.onTick(k.getKeyCode());
+			try { Thread.sleep(32); } catch (InterruptedException e) {}
+			KeyBinding.setKeyBindState(k.getKeyCode(), false);
+			//KeyBinding.onTick(k.getKeyCode()); // this breaks fishing???
+		} catch (Exception e) {
+			RaspberryJamMod.LOGGER.error("Error toggling key "+k);
+			e.printStackTrace((PrintStream) RaspberryJamMod.LOGGER);
+		}
+	}
+
 	private boolean tooManyPlayerCommandArguments(String subcommand, String args) {
 		// check if there are more arguments than are needed; this detects if the
 		// script slipped in a username, for compatibility with RaspberryJuice
@@ -914,11 +955,11 @@ public class APIHandler {
     protected String rename111(String entityId) {
         if (entityId.startsWith("minecraft:"))
             return entityId;
-        System.out.println("Searching for "+entityId);
+        RaspberryJamMod.LOGGER.info("Searching for "+entityId);
         String e = entityId.toLowerCase();
         for (String[] data: ENTITY_RENAME_111) {
             if (data[0].equals(e)) {
-                System.out.println("found minecraft:"+data[1]);
+                RaspberryJamMod.LOGGER.info("found minecraft:"+data[1]);
                 return "minecraft:" + data[1];
             }
         }
@@ -928,9 +969,9 @@ public class APIHandler {
 	protected void spawnEntity(Scanner scan) {
 		String entityId = scan.next();
         
-        System.out.println("Helo");
+		RaspberryJamMod.LOGGER.info("Helo");
         if (RaspberryJamMod.NOMINAL_VERSION >= 1011000) {
-            System.out.println("ren");
+            RaspberryJamMod.LOGGER.info("ren");
             entityId = rename111(entityId);
         }
         
@@ -964,7 +1005,7 @@ public class APIHandler {
             tags.setString("id", entityId);
             entity = EntityList.createEntityFromNBT(tags, pos.world);
             if (fixGravity && entity instanceof EntityLiving) {
-                System.out.println("fixGravity "+fixGravity);
+                RaspberryJamMod.LOGGER.info("fixGravity "+fixGravity);
                 ((EntityLiving)entity).addPotionEffect(new PotionEffect(MobEffects.levitation, 
                         Integer.MAX_VALUE, -1));
             }
@@ -1090,14 +1131,14 @@ public class APIHandler {
 		}
 		else if (cmd.equals(SETDISTANCE)) {
 			Float d = scan.nextFloat();
-			Class c = net.minecraft.client.renderer.EntityRenderer.class;
+			Class<EntityRenderer> c = net.minecraft.client.renderer.EntityRenderer.class;
 			try {
 				Field f = c.getDeclaredField("thirdPersonDistance");
 				f.setAccessible(true);
 				f.set(mc.entityRenderer,d);
 			}
 			catch (Exception e) {
-				System.out.println(""+e);
+				RaspberryJamMod.LOGGER.catching(e);
 			}
 			try {
 				Field f = c.getDeclaredField("thirdPersonDistanceTemp");
@@ -1105,7 +1146,7 @@ public class APIHandler {
 				f.set(mc.entityRenderer,d);
 			}
 			catch (Exception e) {
-				System.out.println(""+e);
+				RaspberryJamMod.LOGGER.catching(e);
 			}
 		}
 		else {
@@ -1217,7 +1258,7 @@ public class APIHandler {
 	}
 
 	protected void fail(String string) {
-		System.err.println("Error: "+string);
+		RaspberryJamMod.LOGGER.error(string);
 		sendLine("Fail");
 	}
 	
@@ -1303,7 +1344,7 @@ public class APIHandler {
 			Vec3w pos = Location.decodeVec3w(serverWorlds, x, y, z);
 			if (pos.world != e.getEntityWorld()) {
 //				e.setWorld(pos.world);
-				System.out.println("World change unsupported");
+				RaspberryJamMod.LOGGER.warn("World change unsupported");
 				// TODO: implement moving between worlds
 				return;
 			}
@@ -1359,7 +1400,6 @@ public class APIHandler {
 		Entity e = getServerEntityByID(id);
 		if (e != null) {
 			World w = e.getEntityWorld();
-			Vec3d pos0 = e.getPositionVector();
 
 			while (w != e.getEntityWorld()) {
 				// Rare concurrency issue: entity switched worlds between getting w and pos0.
@@ -1367,7 +1407,6 @@ public class APIHandler {
 				// everything again. 
 				try { Thread.sleep(50); } catch(Exception exc) {}
 				w = e.getEntityWorld();
-				pos0 = e.getPositionVector();
 			}
 			
 			Vec3d pos = Location.encodeVec3(serverWorlds, w, e.getPositionVector());
@@ -1492,7 +1531,6 @@ public class APIHandler {
 		String out = "";
 
 		synchronized(hits) {
-			int count = hits.size();
 			for (HitDescription e : hits) {
 				if (out.length() > 0)
 					out += "|";
@@ -1508,7 +1546,6 @@ public class APIHandler {
 		StringBuilder out = new StringBuilder();
 
 		synchronized(chats) {
-			int count = hits.size();
 			for (ChatDescription c : chats) {
 				if (out.length() > 0)
 					out.append("|");

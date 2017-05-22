@@ -17,7 +17,7 @@ public class LocalPythonExternalCommand extends PythonExternalCommand {
 	}
 	
 	@Override
-	public List getCommandAliases() {
+	public List<String> getCommandAliases() {
 		List<String> aliases = new ArrayList<String>();
 		aliases.add(getCommandName());
 		aliases.add("lpy");

@@ -1,15 +1,8 @@
 package mobi.omegacentauri.raspberryjammod;
 
-import java.util.Iterator;
-
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTUtil;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntitySign;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;
 
 public class SetBlockNBT extends SetBlockState {
 	NBTTagCompound nbt;

@@ -1,32 +1,16 @@
 package mobi.omegacentauri.raspberryjammod;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.Packet;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 
 public class CameraCommand implements ICommand {
@@ -34,7 +18,7 @@ public class CameraCommand implements ICommand {
 	}
 
 	@Override
-	public List getTabCompletionOptions(MinecraftServer server, 
+	public List<String> getTabCompletionOptions(MinecraftServer server,
 			ICommandSender sender, String[] args,
 			BlockPos pos) {
 
@@ -57,7 +41,7 @@ public class CameraCommand implements ICommand {
 	}
 
 	@Override
-	public List getCommandAliases() {
+	public List<String> getCommandAliases() {
 		List<String> aliases = new ArrayList<String>();
 		aliases.add(getCommandName());
 		return aliases;
@@ -96,19 +80,19 @@ public class CameraCommand implements ICommand {
 				new TextComponentString(getCommandUsage(sender)));
 	}
 
-	static public void setField(Class c, String field, Object object, Object value) {
+	static public void setField(Class<?> c, String field, Object object, Object value) {
 		try {
 			Field f = c.getDeclaredField(field);
 			f.setAccessible(true);
 			f.set(object, value);
 		}
 		catch (Exception e) {
-			System.out.println(""+e);
+			RaspberryJamMod.LOGGER.catching(e);
 		}
 	}
 
 	private void setThirdPersonDistance(float x) {
-		Class c = net.minecraft.client.renderer.EntityRenderer.class;
+		Class<EntityRenderer> c = net.minecraft.client.renderer.EntityRenderer.class;
 		EntityRenderer r = Minecraft.getMinecraft().entityRenderer;
 		setField(c, "thirdPersonDistance",  r, x);
 		setField(c, "thirdPersonDistanceTemp", r, x);
