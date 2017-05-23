@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Scanner;
+import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -12,6 +13,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.entity.player.EntityPlayer;
 
 // This class is meant to provide most of the APIHandler facility while one is connected to a
 // server. Of course, any block changes won't get written back to the server.
@@ -50,6 +52,22 @@ public class APIHandlerClientOnly extends APIHandler {
 		permission = null;
 		return true;
 	}
+
+	@Override
+	protected EntityPlayer getPlayerByNameOrUUID(String name) {
+		for (EntityPlayer p : (List<EntityPlayer>)mc.theWorld.playerEntities) {
+			if (p.getName().equals(name)) {
+				return p;
+			}
+		}
+		for (EntityPlayer p : (List<EntityPlayer>)mc.theWorld.playerEntities) {
+			if (p.getUniqueID().toString().equals(name)) {
+				return p;
+			}
+		}
+		return null;
+	}
+
 
 	@Override
 	protected Entity getServerEntityByID(int id) {

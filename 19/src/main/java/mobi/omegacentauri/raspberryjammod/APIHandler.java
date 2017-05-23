@@ -266,6 +266,7 @@ public class APIHandler {
 	private String authenticatedUsername = null;
 	private boolean stopChanges = false;
 	private boolean verifiedUser = false;
+	private Map<Integer,UUID> idToUUID = new HashMap<Integer,UUID>();
 
 	public APIHandler(MCEventHandler eventHandler, PrintWriter writer) throws IOException {
 		this(eventHandler, writer, true);
@@ -342,18 +343,7 @@ public class APIHandler {
         if (playerMP != null)
             return;
 
-		if (RaspberryJamMod.integrated) {
-			playerMP = mc.getIntegratedServer().getPlayerList().getPlayerByUUID(playerUniqueId);
-			playerId = playerMP.getEntityId();
-		}
-        
-        for (World w : serverWorlds) {
-            Entity e = w.getEntityByID(playerId);
-            if (e != null) {
-                playerMP = (EntityPlayerMP)e;
-                return;
-            }
-        }
+		playerMP = RaspberryJamMod.minecraftServer.getPlayerList().getPlayerByUUID(playerUniqueId);
     }
 	
 	public static String tohex(byte[] array) {
@@ -385,7 +375,7 @@ public class APIHandler {
 					return false;
 				}
 				playerUniqueId = mc.thePlayer.getUniqueID();
-				playerMP = mc.getIntegratedServer().getPlayerList().getPlayerByUUID(playerUniqueId);
+				playerMP = RaspberryJamMod.minecraftServer.getPlayerList().getPlayerByUUID(playerUniqueId);
 				playerId = playerMP.getEntityId();
 			}
 			else {
@@ -396,21 +386,22 @@ public class APIHandler {
 				
 				if (playerMP != null) {
 					verifiedUser = true;
-					playerId = playerMP.getEntityId();
 				}
 				else {
 					int firstId = 0;
 					
-					for (World w : serverWorlds) {
-						for (EntityPlayer p : w.playerEntities) {
-							int id = p.getEntityId();
-							if (playerMP == null || id < firstId) {
-								firstId = id;
-								playerMP = (EntityPlayerMP)p;
-								playerId = id;
-							}
+					for (EntityPlayer p : RaspberryJamMod.minecraftServer.getPlayerList().getPlayerList()) {
+						int id = p.getEntityId();
+						if (playerMP == null || id < firstId) {
+							firstId = id;
+							playerMP = (EntityPlayerMP)p;
 						}
 					}
+				}
+				
+				if (playerMP != null) {
+					playerId = playerMP.getEntityId();
+					playerUniqueId = playerMP.getUniqueID();
 				}
 			}
 			
@@ -885,18 +876,14 @@ public class APIHandler {
 	}
 
 	protected EntityPlayer getPlayerByNameOrUUID(String name) {
-		for (World w : serverWorlds) {
-			for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities) {
-				if (p.getName().equals(name)) {
-					return p;
-				}
+		for (EntityPlayer p : RaspberryJamMod.minecraftServer.getPlayerList().getPlayerList()) {
+			if (p.getName().equals(name)) {
+				return p;
 			}
 		}
-		for (World w : serverWorlds) {
-			for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities) {
-				if (p.getUniqueID().toString().equals(name)) {
-					return p;
-				}
+		for (EntityPlayer p : RaspberryJamMod.minecraftServer.getPlayerList().getPlayerList()) {
+			if (p.getUniqueID().toString().equals(name)) {
+				return p;
 			}
 		}		
 		return null;
@@ -1437,26 +1424,33 @@ public class APIHandler {
 
 	protected Entity getServerEntityByID(int id) {
 		if (id == playerId) {
-            //updatePlayerMP();
 			return playerMP;
         }
+
+		UUID uuid = idToUUID.get(id);
+
+		if (uuid != null) {
+			return RaspberryJamMod.minecraftServer.getPlayerList().getPlayerByUUID(uuid);
+		}
+
+		for (EntityPlayerMP player : RaspberryJamMod.minecraftServer.getPlayerList().getPlayerList()) 
+			if (player.getEntityId() == id) {
+				idToUUID.put(id, player.getUniqueID());
+				return player;
+			}
+
 		for (World w : serverWorlds) {
 			Entity e = w.getEntityByID(id);
 			if (e != null)
 				return e;
 		}
+
 		return null;
 	}
 
 	static void globalMessage(String message) {
-		Set<EntityPlayer> done = new HashSet<EntityPlayer>();
-		for (World w : RaspberryJamMod.minecraftServer.worldServers) {
-			for (EntityPlayer p : (List<EntityPlayer>)w.playerEntities ) {
-				if (!done.contains(p)) {
-					p.addChatComponentMessage(new TextComponentString(message));
-					done.add(p);
-				}
-			}
+		for (EntityPlayerMP player : RaspberryJamMod.minecraftServer.getPlayerList().getPlayerList())  {
+			player.addChatComponentMessage(new TextComponentString(message));
 		}
 	}
 
