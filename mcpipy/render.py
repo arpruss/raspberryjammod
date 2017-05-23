@@ -194,7 +194,7 @@ class MeshPLY(MeshFile):
     def __init__(self, filename, myopen=open, swapYZ=False):
         super(MeshPLY,self).__init__()
 
-        with myopen(filename, "r") as f:
+        with myopen(filename, "rt") as f:
              assert f.readline().strip() == "ply"
              assert f.readline().strip().startswith("format ascii")
              elementCounts = []
@@ -720,8 +720,8 @@ class Mesh(object):
             self.materialOrders = [0]
             materialIndexDict = { Mesh.UNSPECIFIED: 0 }
 
-            with myopen(name) as fh:
-                for line in fh :
+            with myopen(name, "rt") as fh:
+                for line in fh:
                     line = line.strip()
                     if len(line) == 0 or line[0] == '#' : continue
                     line = re.split('\s+', line)

@@ -40,7 +40,6 @@ class Board2D(object):
             mc.player.setPitch(10)
             mc.player.setTilePos(playerPos.x, playerPos.y+(distance if distance is not None else 0), playerPos.z)
 
-
         self.fakeMC = FakeMC(self)
 
     def setBlock(self, *args):
@@ -56,15 +55,15 @@ class Board2D(object):
         setBlock(self, x1, y1, x2, y2, block)
         """
         a = flatArgs(args)
-        x1, y1, x2, y2 = min(a[0],a[2],0), min(a[1],a[3],0), max(a[0],a[2],self.width-1), max(a[1],a[3],self.height-1)
+        x1, y1, x2, y2 = max(0,min(a[0],a[2])), max(0,min(a[1],a[3])), min(max(a[0],a[2]),self.width-1), min(max(a[1],a[3]),self.height-1)
         for x in range(x1,x2+1):
             for y in range(y1,y2+1):
                 self.board[x][y] = a[4:]
 
-    def fillBoard(self, block=block.AIR):
+    def fill(self, block=block.AIR):
         self.setBlocks(0, 0, self.width-1, self.height-1, block)
 
-    def drawBoard(self):
+    def draw(self):
         if self.horizontal:
             for x in range(self.width):
                 for y in range(self.height):
@@ -78,8 +77,44 @@ class Board2D(object):
                         self.mc.setBlock(self.left+x, self.bottom+y, self.plane, self.board[x][y])
                         self.shown[x][y] = self.board[x][y]
 
-    def drawText(self, x, y, s, foreground=block.WOOL_BLACK, background=block.AIR, font="metrix7pt", center=False):
-        text.drawText(self.fakeMC, FONTS[font], Vec3(x,0,y), Vec3(1,0,0), Vec3(0,0,1), s, foreground=foreground, background=None, 
+    def line(self, x1, y1, x2, y2, block):
+        x1 = int(floor(0.5+x1))
+        y1 = int(floor(0.5+y1))
+        x2 = int(floor(0.5+x2))
+        y2 = int(floor(0.5+y2))
+        point = [x1,y1]
+        dx = x2 - x1
+        dy = y2 - y1
+        x_inc = -1 if dx < 0 else 1
+        l = abs(dx)
+        y_inc = -1 if dy < 0 else 1
+        m = abs(dy)
+        dx2 = l << 1
+        dy2 = m << 1
+
+        if l >= m:
+            err_1 = dy2 - l
+            for i in range(0,l-1):
+                self.setBlock(point, block)
+                if err_1 > 0:
+                    point[1] += y_inc
+                    err_1 -= dx2
+                err_1 += dy2
+                point[0] += x_inc
+        elif m > l:
+            err_1 = dx2 - m;
+            for i in range(0,m-1):
+                self.setBlock(point, block)
+                if err_1 > 0:
+                    point[0] += x_inc
+                    err_1 -= dy2
+                err_1 += dx2
+                point[1] += y_inc
+        self.setBlock(point, block)
+        self.setBlock(x2, y2, block)
+
+    def text(self, x, y, s, foreground=block.WOOL_BLACK, background=block.AIR, font="metrix7pt", center=False):
+        text.drawText(self.fakeMC, FONTS[font], Vec3(x,0,y), Vec3(1,0,0), Vec3(0,0,1), s, foreground=foreground, background=background, 
             align=text.ALIGN_CENTER if center else text.ALIGN_LEFT)
 
     """
@@ -106,7 +141,7 @@ if __name__ == '__main__':
 
     mc = Minecraft()
     board = Board2D(mc, 30, 20, horizontal=True)
-    board.fillBoard(block.STAINED_GLASS_LIGHT_BLUE)
+    board.fill(block.STAINED_GLASS_LIGHT_BLUE)
     board.setBlock(0,0,block.STAINED_GLASS_MAGENTA)
-    board.drawText(15,5, "Hello!!!", center=True)
-    board.drawBoard()
+    board.text(15,5, "Hello!!!", center=True)
+    board.draw()
