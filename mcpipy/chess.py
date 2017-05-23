@@ -314,12 +314,13 @@ def animateMove(rowColMove):
             animateMovePiece((pos1[0],7),(pos1[0],pos2[1]-1))
         else:
             animateMovePiece((pos1[0],0),(pos1[0],pos2[1]+1))
-    elif piece.upper() == 'P' and abs(pos2[0]==7):
+    elif piece.upper() == 'P' and (pos2[0]==7 or pos2[0]==0):
         # promote to queen (all that's supported by the engine)
+        victim = pieces.get(pos2)
         animateMovePiece(pos1,pos2)
-        piece = pieces[pos2]
-        piece.erase()
-        if pos.board[move].islower():
+        if victim is not None:
+            victim.erase()
+        if piece == 'p':
             v = toVehicle(QUEEN, BLACK, 'q')
         else:
             v = toVehicle(QUEEN, WHITE, 'Q')
@@ -327,7 +328,6 @@ def animateMove(rowColMove):
         c = getCoords(pos2[0],pos2[1])
         v.draw(c[0],c[1],c[2])
         v.blankBehind()
-        return
     else:
         victim = None
         redrawPiece = False
