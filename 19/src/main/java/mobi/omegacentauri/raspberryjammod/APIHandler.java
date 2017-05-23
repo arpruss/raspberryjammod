@@ -416,12 +416,15 @@ public class APIHandler {
 				// This check could be removed, but a connection to a server while there is no
 				// player on the server is more likely to be a hacking attempt, and so we'll
 				// wait for a player.
-				fail("Player not found");
+				fail("Player not found (in setup)");
 				return false;
 			}
 			else {
 				havePlayer = true;
 			}
+		}
+		else {
+			updatePlayerMP();
 		}
 
 		return true;
@@ -722,7 +725,7 @@ public class APIHandler {
 					if (player != null) 
 						entityCommand(player.getEntityId(), subcommand, scan);
 					else
-						fail("Player not found");
+						fail("Player not found (in player.*)");
 					return;
 				}
 			}
@@ -1048,9 +1051,9 @@ public class APIHandler {
 	protected void cameraCommand(String cmd, Scanner scan) {
 		if (! havePlayer)
 			fail("Do not have a player (yet?)");
-        updatePlayerMP();
+        //updatePlayerMP();
         if (playerMP == null)
-            fail("Player not found");
+            fail("Player not found (in camera.*)");
 		if (cmd.equals(GETENTITYID)) {
 			sendLine(playerMP.getSpectatingEntity().getEntityId());
 		}
@@ -1432,7 +1435,7 @@ public class APIHandler {
 
 	protected Entity getServerEntityByID(int id) {
 		if (id == playerId) {
-            updatePlayerMP();
+            //updatePlayerMP();
 			return playerMP;
         }
 		for (World w : serverWorlds) {
