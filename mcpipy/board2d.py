@@ -16,13 +16,14 @@ class FakeMC(object):
         self.board.setBlock(a[0], a[2], a[3:])
 
 class Board2D(object):
-    def __init__(self, mc, width, height, distance=None, horizontal=False):
+    def __init__(self, mc, width, height, distance=None, horizontal=False, background=block.STAINED_GLASS_LIGHT_BLUE):
         self.width = width
         self.height = height
         self.board = tuple( [None for i in range(height)] for j in range(width) )
         self.shown = tuple( [None for i in range(height)] for j in range(width) )
         self.mc = mc
         self.horizontal = horizontal
+        self.entities = []
         playerPos = mc.player.getTilePos()
         mc.player.setRotation(180)
         if not horizontal:
@@ -33,14 +34,44 @@ class Board2D(object):
             self.bottom = playerPos.y + 1            
             mc.player.setPitch(-26)
             mc.player.setTilePos(playerPos.x, playerPos.y, playerPos.z)
+            if background is not None:
+                mc.setBlocks(self.left,self.bottom,self.plane-1,self.left+width-1,self.bottom+height-1,self.plane-1,background)
         else:
             self.left = playerPos.x - width // 2
             self.plane = playerPos.y - 1
             self.bottom = playerPos.z + 1
             mc.player.setPitch(10)
             mc.player.setTilePos(playerPos.x, playerPos.y+(distance if distance is not None else 0), playerPos.z)
+            if background is not None:
+                mc.setBlocks(self.left,self.plane-1,self.bottom,self.left+width-1,self.plane-1,self.bottom-(height-1))
 
         self.fakeMC = FakeMC(self)
+
+    def spawnEntity(self, entityName, *args):
+        a = flatArgs(args)
+        id = self.mc.spawnEntity(entityName, self._to3d(a[0], a[1]), "{NoAI:1,Time:-1,Silent:1,Invulnerable:1,NoGravity:1}")
+        self.entities.append(id)
+        return id
+
+    def entitySetPos(self, id, *args):
+        a = tuple(float(x) for x in flatten(args))
+        self.mc.entity.setPos(id, self._to3d(a[0], a[1]))
+
+    def deleteEntity(self, entity):
+        try:
+            index = self.entities.index(entity)
+            if index >= 0:
+                del self.entities[index]
+            self.mc.removeEntity(entity)
+        except:
+            pass
+
+    def stop(self):
+        for e in self.entities:
+            try:
+                self.mc.removeEntity(e)
+            except:
+                pass
 
     def setBlock(self, *args):
         """
@@ -49,6 +80,12 @@ class Board2D(object):
         a = flatArgs(args)
         if 0 <= a[0] < self.width and 0 <= a[1] < self.height:
             self.board[a[0]][a[1]] = a[2:]
+
+    def _to3d(self, x, y):
+        if self.horizontal:
+            return (self.left+x, self.plane, self.bottom-y)
+        else:
+            return (self.left+x, self.bottom+y, self.plane)
 
     def setBlocks(self, *args):
         """
@@ -68,13 +105,13 @@ class Board2D(object):
             for x in range(self.width):
                 for y in range(self.height):
                     if self.board[x][y] != self.shown[x][y]:
-                        self.mc.setBlock(self.left+x, self.plane, self.bottom-y, self.board[x][y])
+                        self.mc.setBlock(self._to3d(x,y), self.board[x][y])
                         self.shown[x][y] = self.board[x][y]
         else:
             for x in range(self.width):
                 for y in range(self.height):
                     if self.board[x][y] != self.shown[x][y]:
-                        self.mc.setBlock(self.left+x, self.bottom+y, self.plane, self.board[x][y])
+                        self.mc.setBlock(self._to3d(x,y), self.board[x][y])
                         self.shown[x][y] = self.board[x][y]
 
     def line(self, x1, y1, x2, y2, block):

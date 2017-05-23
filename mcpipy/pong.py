@@ -5,8 +5,8 @@ import input
 import random
 
 paddleHeight = 5
-width = 60
-statusY = 40
+width = 40
+statusY = 30
 statusSize = 11
 boardHeight = statusY + statusSize
 
@@ -21,23 +21,35 @@ leftScore = 0
 rightScore = 0
 
 mc = Minecraft()
-board = Board2D(mc, width, boardHeight, distance=30)
+board = Board2D(mc, width, boardHeight, distance=20)
 
 lastMove = -1
 redraw = True
 
+ballX = width // 2
+ballY = statusY // 2
+
+ball = board.spawnEntity("bat", ballX, ballY)
+
 while True:
+    board.setBlocks(1,1,width-2,statusY-1, block.AIR) 
     board.line(0, statusY, 0, 0, block.WOOL_BLACK)
     board.line(width-1, 0, width-1, statusY, block.WOOL_BLACK)
+    board.line(0, statusY, width-1, statusY, block.WOOL_BLACK)
+    board.line(0, 0, width-1, 0, block.WOOL_BLACK)
     board.text(width//4, statusY+2, str(leftScore), foreground=block.WOOL_BLACK, background=block.AIR, center=True)                
     board.text(width-width//4, statusY+2, str(rightScore), foreground=block.WOOL_BLACK, background=block.AIR, center=True)            
+    board.setBlocks(leftPaddleX, leftPaddleY-paddleHeight//2, leftPaddleX, leftPaddleY+paddleHeight//2, block.WOOL_WHITE)
+    board.setBlocks(rightPaddleX, rightPaddleY-paddleHeight//2, rightPaddleX, rightPaddleY+paddleHeight//2, block.WOOL_WHITE)
     ballX = width // 2
     ballY = statusY // 2
+    board.entitySetPos(ball, ballX, ballY)
     vX = 0.85 * random.choice([-1,1])
     vY = 0.85 * random.choice([-1,1])
     board.draw()
     if leftScore >= 2 or rightScore >= 2:
         break
+    sleep(2)
 
     while True:
         if input.isPressedNow(input.UP) and leftPaddleY < statusY-1:
@@ -54,19 +66,27 @@ while True:
                 elif rightPaddleY > predictY:
                     rightPaddleY -= maxRightSpeed
 
-        ballX = ballX + vX
-        ballY = ballY + vY
-        
-        if ballY <= 0.5:
+        leftPaddleY = min(max(leftPaddleY, 1+paddleHeight//2), statusY-1-paddleHeight//2)
+        rightPaddleY = min(max(rightPaddleY, 1+paddleHeight//2), statusY-1-paddleHeight//2)
+
+        if ballY <= 1.5:
             vY = abs(vY)
         elif ballY >= statusY-0.5:
             vY = -abs(vY)
-        board.setBlocks(1,1,width-2,statusY-1, block.STAINED_GLASS_LIGHT_BLUE) 
-        board.line(0, statusY, width-1, statusY, block.WOOL_BLACK)
-        board.line(0, 0, width-1, 0, block.WOOL_BLACK)
+            
+        ballX = ballX + vX
+        ballY = ballY + vY
+        #ballX = min(max(1.5, ballX), width-1-1.5)
+        #ballY = min(max(1.5, ballY), statusY-1.5)
+        
+        board.setBlocks(1,1,1,statusY-1, block.AIR) 
+        board.setBlocks(width-2,1,width-2,statusY-1, block.AIR) 
+        #board.line(0, statusY, width-1, statusY, block.WOOL_BLACK)
+        #board.line(0, 0, width-1, 0, block.WOOL_BLACK)
         board.setBlocks(leftPaddleX, leftPaddleY-paddleHeight//2, leftPaddleX, leftPaddleY+paddleHeight//2, block.WOOL_WHITE)
         board.setBlocks(rightPaddleX, rightPaddleY-paddleHeight//2, rightPaddleX, rightPaddleY+paddleHeight//2, block.WOOL_WHITE)
-        board.setBlock(ballX, ballY, block.PUMPKIN_ACTIVE)
+        #board.setBlock(ballX, ballY, block.PUMPKIN_ACTIVE)
+        board.entitySetPos(ball, ballX, ballY)
         board.draw()
         
         if ballX <= leftPaddleX + 0.5:
@@ -83,3 +103,5 @@ while True:
                 break
 
         sleep(.1)
+
+board.stop()
