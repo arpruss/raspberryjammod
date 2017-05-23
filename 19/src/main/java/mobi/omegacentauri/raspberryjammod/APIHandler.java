@@ -245,6 +245,7 @@ public class APIHandler {
 	protected boolean includeNBTWithData = false;
 	protected boolean havePlayer;
 	protected int playerId = 0;
+	protected UUID playerUniqueId;
 	protected EntityPlayerMP playerMP;
 	protected List<String> usernames = null;
 	protected List<String> passwords = null;
@@ -339,6 +340,11 @@ public class APIHandler {
     synchronized private void updatePlayerMP() {
         if (playerMP != null)
             return;
+
+		if (RaspberryJamMod.integrated) {
+			playerMP = mc.getIntegratedServer().getPlayerList().getPlayerByUUID(playerUniqueId);
+			playerId = playerMP.getEntityId();
+		}
         
         for (World w : serverWorlds) {
             Entity e = w.getEntityByID(playerId);
@@ -377,12 +383,31 @@ public class APIHandler {
 					fail("Client player not available");
 					return false;
 				}
-				playerId = mc.thePlayer.getEntityId();
+				playerUniqueId = mc.thePlayer.getUniqueID();
+				playerMP = mc.getIntegratedServer().getPlayerList().getPlayerByUUID(playerUniqueId);
+				playerId = playerMP.getEntityId();
+				/* System.err.println("Seeking player with id "+playerId);
+				for (Entity e : RaspberryJamMod.minecraftServer.getConfigurationManager().playerEntityList) {
+					if (e.getEntityId() == playerId) {
+						playerMP = (EntityPlayerMP)e;
+						break;
+					}
+				} */
+/*
 				for (World w : serverWorlds) {
 					Entity e = w.getEntityByID(playerId);
 					if (e != null) {
 						playerMP = (EntityPlayerMP)e;
 						break;
+					}
+				} */
+
+				if (playerMP == null) {
+					for (World w : serverWorlds) {
+						for (EntityPlayer p : w.playerEntities) {
+							int id = p.getEntityId();
+							System.err.println("Found "+id);
+						}
 					}
 				}
 			}
