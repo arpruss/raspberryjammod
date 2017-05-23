@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -386,30 +387,6 @@ public class APIHandler {
 				playerUniqueId = mc.thePlayer.getUniqueID();
 				playerMP = mc.getIntegratedServer().getPlayerList().getPlayerByUUID(playerUniqueId);
 				playerId = playerMP.getEntityId();
-				/* System.err.println("Seeking player with id "+playerId);
-				for (Entity e : RaspberryJamMod.minecraftServer.getConfigurationManager().playerEntityList) {
-					if (e.getEntityId() == playerId) {
-						playerMP = (EntityPlayerMP)e;
-						break;
-					}
-				} */
-/*
-				for (World w : serverWorlds) {
-					Entity e = w.getEntityByID(playerId);
-					if (e != null) {
-						playerMP = (EntityPlayerMP)e;
-						break;
-					}
-				} */
-
-				if (playerMP == null) {
-					for (World w : serverWorlds) {
-						for (EntityPlayer p : w.playerEntities) {
-							int id = p.getEntityId();
-							System.err.println("Found "+id);
-						}
-					}
-				}
 			}
 			else {
 				playerMP = null;
