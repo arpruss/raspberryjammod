@@ -178,7 +178,7 @@ def descend():
     return False
 
 def hide():
-    mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane, GLASS)
+    mc.setBlocks(left, bottom, plane, left+WIDTH-1, bottom+HEIGHT-1, plane, block.GLASS)
     text.drawText(mc, FONTS['nicefontbold'], 
                     Vec3(left+WIDTH//2,bottom+5,plane), 
                     Vec3(1,0,0), Vec3(0,1,0), 
