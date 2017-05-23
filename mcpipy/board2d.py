@@ -52,7 +52,7 @@ class Board2D(object):
 
     def setBlocks(self, *args):
         """
-        setBlock(self, x1, y1, x2, y2, block)
+        setBlocks(self, x1, y1, x2, y2, block)
         """
         a = flatArgs(args)
         x1, y1, x2, y2 = max(0,min(a[0],a[2])), max(0,min(a[1],a[3])), min(max(a[0],a[2]),self.width-1), min(max(a[1],a[3]),self.height-1)
@@ -102,7 +102,7 @@ class Board2D(object):
                 err_1 += dy2
                 point[0] += x_inc
         elif m > l:
-            err_1 = dx2 - m;
+            err_1 = dx2 - m
             for i in range(0,m-1):
                 self.setBlock(point, block)
                 if err_1 > 0:

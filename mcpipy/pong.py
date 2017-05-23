@@ -11,7 +11,7 @@ statusSize = 11
 boardHeight = statusY + statusSize
 
 maxLeftSpeed = 1
-maxRightSpeed = 0.5
+maxRightSpeed = 0.35
 
 leftPaddleY = statusY // 2
 rightPaddleY = statusY // 2
@@ -33,8 +33,8 @@ while True:
     board.text(width-width//4, statusY+2, str(rightScore), foreground=block.WOOL_BLACK, background=block.AIR, center=True)            
     ballX = width // 2
     ballY = statusY // 2
-    vX = 0.75 * random.choice([-1,1])
-    vY = 0.75 * random.choice([-1,1])
+    vX = 0.85 * random.choice([-1,1])
+    vY = 0.85 * random.choice([-1,1])
     board.draw()
     if leftScore >= 2 or rightScore >= 2:
         break
@@ -45,10 +45,14 @@ while True:
         if input.isPressedNow(input.DOWN) and leftPaddleY > 0:
             leftPaddleY -= maxLeftSpeed
         if vX > 0:
-            if rightPaddleY < ballY:
-                rightPaddleY += maxRightSpeed
-            elif rightPaddleY > ballY:
-                rightPaddleY -= maxRightSpeed
+            predictY = (ballY - 1 + vY/vX*(width-2-ballX)) % (2*(statusY-1)) + 1
+            if predictY > statusY-1:
+                predictY = 2*(statusY-1) - (predictY - 1) + 1
+            if abs(predictY-rightPaddleY) >= 1:
+                if rightPaddleY < predictY:
+                    rightPaddleY += maxRightSpeed
+                elif rightPaddleY > predictY:
+                    rightPaddleY -= maxRightSpeed
 
         ballX = ballX + vX
         ballY = ballY + vY
@@ -71,10 +75,9 @@ while True:
             else:
                 rightScore += 1
                 break
-
         if ballX >= rightPaddleX - 0.5:
             if abs(ballY-rightPaddleY) <= paddleHeight * 0.5:
-                vX = abs(vX)
+                vX = -abs(vX)
             else:
                 leftScore += 1
                 break
