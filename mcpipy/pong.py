@@ -29,7 +29,7 @@ redraw = True
 ballX = width // 2
 ballY = statusY // 2
 
-ball = board.spawnEntity("bat", ballX, ballY)
+ball = board.spawnEntity("chicken", ballX, ballY)
 
 while True:
     board.setBlocks(1,1,width-2,statusY-1, block.AIR) 
@@ -76,27 +76,22 @@ while True:
             
         ballX = ballX + vX
         ballY = ballY + vY
-        #ballX = min(max(1.5, ballX), width-1-1.5)
-        #ballY = min(max(1.5, ballY), statusY-1.5)
         
         board.setBlocks(1,1,1,statusY-1, block.AIR) 
         board.setBlocks(width-2,1,width-2,statusY-1, block.AIR) 
-        #board.line(0, statusY, width-1, statusY, block.WOOL_BLACK)
-        #board.line(0, 0, width-1, 0, block.WOOL_BLACK)
         board.setBlocks(leftPaddleX, leftPaddleY-paddleHeight//2, leftPaddleX, leftPaddleY+paddleHeight//2, block.WOOL_WHITE)
         board.setBlocks(rightPaddleX, rightPaddleY-paddleHeight//2, rightPaddleX, rightPaddleY+paddleHeight//2, block.WOOL_WHITE)
-        #board.setBlock(ballX, ballY, block.PUMPKIN_ACTIVE)
         board.entitySetPos(ball, ballX, ballY)
         board.draw()
         
         if ballX <= leftPaddleX + 0.5:
-            if abs(ballY-leftPaddleY) <= paddleHeight * 0.5:
+            if abs(ballY-floor(leftPaddleY)) <= paddleHeight * 0.5:
                 vX = abs(vX)
             else:
                 rightScore += 1
                 break
         if ballX >= rightPaddleX - 0.5:
-            if abs(ballY-rightPaddleY) <= paddleHeight * 0.5:
+            if abs(ballY-floor(rightPaddleY)) <= paddleHeight * 0.5:
                 vX = -abs(vX)
             else:
                 leftScore += 1
@@ -104,4 +99,7 @@ while True:
 
         sleep(.1)
 
+board.text(width//2, statusY//2, "Game", center=True)
+board.text(width//2, statusY//2-11, "Over", center=True)
+board.draw()
 board.stop()

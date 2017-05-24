@@ -101,18 +101,14 @@ class Board2D(object):
         self.setBlocks(0, 0, self.width-1, self.height-1, block)
 
     def draw(self):
-        if self.horizontal:
-            for x in range(self.width):
+        for x in range(self.width):
+            boardCol = self.board[x]
+            shownCol = self.shown[x]
+            if boardCol != shownCol:
                 for y in range(self.height):
-                    if self.board[x][y] != self.shown[x][y]:
-                        self.mc.setBlock(self._to3d(x,y), self.board[x][y])
-                        self.shown[x][y] = self.board[x][y]
-        else:
-            for x in range(self.width):
-                for y in range(self.height):
-                    if self.board[x][y] != self.shown[x][y]:
-                        self.mc.setBlock(self._to3d(x,y), self.board[x][y])
-                        self.shown[x][y] = self.board[x][y]
+                    if boardCol[y] != shownCol[y]:
+                        self.mc.setBlock(self._to3d(x,y), boardCol[y])
+                        shownCol[y] = boardCol[y]
 
     def line(self, x1, y1, x2, y2, block):
         x1 = int(floor(0.5+x1))
