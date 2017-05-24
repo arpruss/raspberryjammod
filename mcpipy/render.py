@@ -132,13 +132,13 @@ class MeshSTL(MeshFile):
                  triangle = None
                  for line in f:
                     line = line.strip()
-                    if line.startswith('endfacet'):
+                    if line.startswith(b'endfacet'):
                         if triangle is not None:
                             self.faces.append((curMaterial, tuple(triangle)))
                             triangle = None
-                    elif line.startswith('facet'):
+                    elif line.startswith(b'facet'):
                         triangle = []
-                    elif triangle is not None and line.startswith('vertex'):
+                    elif triangle is not None and line.startswith(b'vertex'):
                         v = tuple(float(x) for x in line.split()[1:4])
                         if swapYZ:
                             v = (v[0],v[2],-v[1])
@@ -304,7 +304,7 @@ class Mesh3DS(MeshFile):
                 if self.swapYZ:
                     self.vertices.append(V3(v[0],v[2],-v[1]))
                 else:
-                    self.vertices.append(v1)
+                    self.vertices.append(v)
 
             for (faceIndex,face) in enumerate(object_faces):
                 material = None
@@ -492,7 +492,7 @@ class Mesh(object):
     UNSPECIFIED = None
     SUPPORTED_ARCHIVES = set(['gz','zip'])
 
-    def __init__(self,infile,minecraft=None,rewrite=True,swapYZ=None):
+    def __init__(self,infile,minecraft=None,rewrite=True,swapYZ=None,defaultBlock=STONE):
          if minecraft is not None:
              self.setBlock = minecraft.setBlock
              self.message = minecraft.postToChat
@@ -516,7 +516,7 @@ class Mesh(object):
          self.prePitch = 0
          self.preRoll = 0
          self.archive = None
-         self.default = STONE
+         self.default = defaultBlock
          self.materialBlockDict = {}
          self.materialOrderDict = {}
          self.baseVertices = []
@@ -628,7 +628,7 @@ class Mesh(object):
                 self.controlFileLines.append("pitch 0\n")
                 self.controlFileLines.append("roll 0\n")
                 self.controlFileLines.append("size " + str(self.size) + "\n")
-                self.controlFileLines.append("default STONE\n")
+                self.controlFileLines.append("default "+str(defaultBlock).replace(" ","")+ "\n")
                 self.controlFileLines.append("#order material position\n")
                 self.controlFileLines.append("materials\n")
                 self.haveMaterialArea = True
@@ -838,7 +838,7 @@ class Mesh(object):
             faceVertices = [self.vertices[v] for v in face]
             self.drawVertices(getFace(faceVertices), material)
 
-def go(filename, args=[]):
+def go(filename, args=[], defaultBlock=STONE):
     mc = minecraft.Minecraft()
 
     playerPos = mc.player.getPos()
@@ -856,7 +856,7 @@ def go(filename, args=[]):
         meshArguments['swapYZ'] = True
 
     mc.postToChat("Preparing")
-    mesh = Mesh(filename, minecraft=mc, **meshArguments)
+    mesh = Mesh(filename, minecraft=mc, defaultBlock=defaultBlock, **meshArguments)
     mc.postToChat("Reading")
     mesh.read()
     mc.postToChat("Scaling")
@@ -921,17 +921,24 @@ if __name__ == "__main__":
             roll.grid(row=3,column=1)
             roll.delete(0,tkinter.END)
             roll.insert(0,"0")
+            tkinter.Label(master, text='Default block:').grid(row=4)
+            defaultBlock = tkinter.Entry(master)
+            defaultBlock.grid(row=3,column=1)
+            defaultBlock.delete(0,tkinter.END)
+            defaultBlock.insert(0,"STONE")
             clearing = tkinter.IntVar()
             c = tkinter.Checkbutton(master, text="Clear area", variable = clearing)
-            c.grid(row=4,column=0,columnspan=2)
+            c.grid(row=5,column=0,columnspan=2)
             c.select()
             swapYZ = tkinter.IntVar()
             sw = tkinter.Checkbutton(master, text="Default swap YZ", variable = swapYZ)
-            sw.grid(row=5,column=0,columnspan=2)
+            sw.grid(row=6,column=0,columnspan=2)
             sw.select()
 
             def selectFileAndGo():
-                name = askopenfilename(initialdir='models',filetypes=['controlfile {*.txt}', 'all {*}'])
+                name = askopenfilename(initialdir='models', filetypes=[
+                    ['Control and mesh files', ['.txt', '.ply', '.obj', '.stl', '.3ds']],
+                    ['All files', '*']])
                 if name:
                      options = '-'
                      if not clearing.get():
@@ -941,13 +948,14 @@ if __name__ == "__main__":
                      else:
                          options += 'y'
                      args = [options, size.get(), yaw.get(), pitch.get(), roll.get()]
+                     defaultBlockOpt = defaultBlock.get()
                      master.destroy()
-                     go(name, args)
+                     go(name, args, defaultBlock=Block.byName(defaultBlockOpt))
                 else:
                      master.destroy()
 
             b = tkinter.Button(master, text="Select file and go",command = selectFileAndGo)
-            b.grid(row=6,column=0,columnspan=2,rowspan=2)
+            b.grid(row=7,column=0,columnspan=2,rowspan=2)
 
             tkinter.mainloop()
     else:
