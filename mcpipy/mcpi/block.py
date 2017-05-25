@@ -69,9 +69,6 @@ class Block:
         else:
            return iter((self.id, self.data))
            
-    def __hash__(self):
-        return hash((self.id, self.data, self.nbt))
-
     def __repr__(self):
         if self.nbt is None:
             return "Block(%d, %d)"%(self.id, self.data)
