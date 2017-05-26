@@ -100,7 +100,7 @@ if __name__ == '__main__':
     mc = minecraft.Minecraft()
     pos = mc.player.getPos()
     forward = angleToTextDirection(mc.player.getRotation())
-    foreground = 169 # sea lantern
+    foreground = block.SEA_LANTERN
     background = block.OBSIDIAN
 
     if len(sys.argv) <= 1:
