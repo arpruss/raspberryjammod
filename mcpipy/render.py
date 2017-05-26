@@ -49,6 +49,7 @@ import os
 import re
 
 IDENTITY44 = ((1.,0.,0.,0.),(0.,1.,0.,0.),(0.,0.,1.,0.),(0.,0.,0.,1.))
+ZIP_READ_TEXT = "r" if sys.version_info[0] < 3 else "rt"
 
 def determinant44(m):
    inv00 = m[1][1] * m[2][2] * m[3][3] - m[1][1] * m[3][2] * m[2][3] - m[1][2] * m[2][1] * m[3][3] + m[1][2] * m[3][1] * m[2][3] + m[1][3] * m[2][1] * m[3][2] - m[1][3] * m[3][1] * m[2][2]
@@ -194,7 +195,7 @@ class MeshPLY(MeshFile):
     def __init__(self, filename, myopen=open, swapYZ=False):
         super(MeshPLY,self).__init__()
 
-        with myopen(filename, "rt") as f:
+        with myopen(filename, ZIP_READ_TEXT) as f:
              assert f.readline().strip() == "ply"
              assert f.readline().strip().startswith("format ascii")
              elementCounts = []
@@ -720,7 +721,7 @@ class Mesh(object):
             self.materialOrders = [0]
             materialIndexDict = { Mesh.UNSPECIFIED: 0 }
 
-            with myopen(name, "rt") as fh:
+            with myopen(name, ZIP_READ_TEXT) as fh:
                 for line in fh:
                     line = line.strip()
                     if len(line) == 0 or line[0] == '#' : continue
