@@ -35,6 +35,7 @@ class Block:
         h = (self.id << 8) + self.data
         if self.nbt is not None:
             h ^= hash(self.nbt)
+        return h
 
     def withData(self, data):
         return Block(self.id, data)
