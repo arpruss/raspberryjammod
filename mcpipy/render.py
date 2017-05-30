@@ -924,7 +924,7 @@ if __name__ == "__main__":
             roll.insert(0,"0")
             tkinter.Label(master, text='Default block:').grid(row=4)
             defaultBlock = tkinter.Entry(master)
-            defaultBlock.grid(row=3,column=1)
+            defaultBlock.grid(row=4,column=1)
             defaultBlock.delete(0,tkinter.END)
             defaultBlock.insert(0,"STONE")
             clearing = tkinter.IntVar()
