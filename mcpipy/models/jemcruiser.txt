@@ -6,16 +6,16 @@ yaw 180
 pitch 0
 roll 0
 size 100
-default WOOL_PURPLE
+default HARDENED_CLAY_STAINED_BLUE
 order jh-blue-glow 1
 order blue-glow 1
 order blue-glow-rear 1
 materials
 jem'hadar-black WOOL_BLACK
 jem'hadar-drk WOOL_GRAY
-jem'hadar-grey1 WOOL_GRAY
+jem'hadar-grey1 WOOL_LIGHT_GRAY
 jem'hadar1 default
-jem'hadar2 default
+jem'hadar2 HARDENED_CLAY_STAINED_CYAN
 jem'hadar3 default
 jh-blue-glow SEA_LANTERN
 blue-glow SEA_LANTERN

@@ -2,14 +2,14 @@ file ds9.obj
 urlgz https://raw.githubusercontent.com/arpruss/raspberryjammod/master/models/ds9.obj.gz
 swapyz 0
 size 200
-default STONE
+default HARDENED_CLAY_STAINED_CYAN
 credits Star Trek is copyright Paramount Pictures; mesh is by Joerg Gerlach
 
 materials
 Yellow_self_illum GLOWSTONE_BLOCK
 Lamps SEA_LANTERN
-Windows GLASS
-Phaser REDSTONE_BLOCK
+Windows STAINED_GLASS_WHITE
+Phaser default
 Antenna 173
 Round_Neck default
 Pylon_inside default

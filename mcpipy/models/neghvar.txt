@@ -20,18 +20,18 @@ negh'bar3 default
 negh'bar4 default
 negh'bar5 default
 negh'bar6 default
-dullred default
+dullred HARDENED_CLAY_STAINED_RED
 flat-black WOOL_BLACK
 flat-yelow WOOL_YELLOW
 grey1 IRON_BLOCK
-gun-metal IRON_BLOCK
+gun-metal HARDENED_CLAY_STAINED_CYAN
 main-hull default
-marker-light SEA_LANTERN
+marker-light GLOWSTONE_BLOCK
 metal3 IRON_BLOCK
 raised default
 red-glow STAINED_GLASS_RED
 warp-glow STAINED_GLASS_RED
-window SEA_LANTERN
+window GLOWSTONE_BLOCK
 end
 
 Mesh history:
