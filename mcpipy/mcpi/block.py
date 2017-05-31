@@ -15,18 +15,41 @@ class Block:
     MAX_MATERIAL = MATERIAL_ROUGH
     
     def __init__(self, id, data=0, nbt=None):
-        self.id = id
-        self.data = data
-        if nbt is not None and len(nbt)==0:
-            self.nbt = None
-        else:
-            self.nbt = nbt
+        try:
+            if len(id) >= 1:
+                self.id = id[0]
+            if len(id) >= 2:
+                self.data = id[1]
+            if len(id) >= 3:
+                self.nbt = nbt
+            else:
+                self.nbt = None
+        except TypeError:
+            self.id = id
+            self.data = data
+            if nbt is not None and len(nbt)==0:
+                self.nbt = None
+            else:
+                self.nbt = nbt
+
+    def __getitem__(self, index):
+        if index < 0:
+            index += 3
+        if index == 0:
+            return self.id
+        elif index == 1:
+            return self.data
+        elif index == 2:
+            return self.nbt
+
+    def __len__(self):
+        return 3
 
     def __eq__(self, rhs):
         try:
             return self.id == rhs.id and self.data == rhs.data and self.nbt == rhs.nbt
         except:
-            return self.data == 0 and self.nbt is None and self.id == rhs
+            return self == Block(rhs)
 
     def __ne__(self, rhs):
         return not self.__eq__(rhs)

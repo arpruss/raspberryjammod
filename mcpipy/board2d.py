@@ -81,6 +81,9 @@ class Board2D(object):
         if 0 <= a[0] < self.width and 0 <= a[1] < self.height:
             self.board[a[0]][a[1]] = a[2:]
 
+    def getBlock(self, x, y):
+        return Block(self.board[x][y])
+
     def _to3d(self, x, y):
         if self.horizontal:
             return (self.left+x, self.plane, self.bottom-y)
