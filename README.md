@@ -18,5 +18,12 @@ To install on a server:
     server version there.
  4. Put some sample scripts in a mcpipy/ subdirectory of the same folder as your minecraft server.
     Make sure to include all mcpipy/mcpi. 
- 5. Make a passwords.dat file if your server is open outside your LAN. (Documentation TODO.)
+ 5. If your server is open outside your LAN make a passwords.dat file and place it in your server directory, making sure
+    that the permissions allow the server to read it, but no one else. The simplest passwords.dat file has plain ASCII
+    text lines of the form `username password`, with neither the username nor the password having spaces. I strongly
+    recommend that the passwords be random alphanumeric strings rather than human-memorizable passwords, so that if the server
+    is compromised, the users' passwords on other services are not compromised. Each client should then have a security.py
+    file in their .minecraft/mcpipy/mcpi directory with the lines `AUTHENTICATION_USERNAME="username"` and 
+    `AUTHENTICATION_PASSWORD="password"`. For the username, you can use either the human-readable Minecraft username or,
+    better, the user's UUID.
  6. Instead of running minecraft_server_X.Y.jar to start the server, run the forge jar.
