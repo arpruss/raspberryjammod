@@ -11,6 +11,10 @@ try:
 except ImportError:
     AUTHENTICATION_USERNAME=None
     AUTHENTICATION_PASSWORD=None
+except Exception as e:
+    # Do NOT re-raise e as that could print secrets from security.py.
+    # instead, just print the name of the error.
+    raise Exception("Error importing security.py: "+type(e).__name__)
 
 """ Minecraft PI low level api v0.1_1
 
