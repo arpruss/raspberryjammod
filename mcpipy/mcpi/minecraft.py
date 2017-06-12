@@ -8,7 +8,7 @@ from os import environ
 from .util import flatten,floorFlatten
 try:
     from .security import AUTHENTICATION_PASSWORD,AUTHENTICATION_USERNAME
-except:
+except ImportError:
     AUTHENTICATION_USERNAME=None
     AUTHENTICATION_PASSWORD=None
 
