@@ -33,24 +33,24 @@ class Hand:
 
 radius = 20
 
-playerPos = d.mc.player.getPos();
+playerPos = d.mc.player.getPos()
 
 center = (playerPos.x, playerPos.y + radius, playerPos.z - radius)
 
 for x in range(-radius, radius+1):
     for y in range(-radius, radius+1):
         if x**2+y**2 <= radius**2:
-            d.point(center[0]+x, center[1]+y, center[2]-3, WOOL_BLACK)
+            d.point(center[0]+x, center[1]+y, center[2]-3, block.WOOL_BLACK)
 
 d.penwidth(1)
 for tick in range(0,12):
     d.line(center[0]+0.85*radius*cos(tick * 2 * pi / 12),center[1]+0.85*radius*sin(tick * 2 * pi / 12), center[2]-3,
            center[0]+radius*cos(tick * 2 * pi / 12),center[1]+radius*sin(tick * 2 * pi / 12), center[2]-3,
-           WOOL_BLUE)
+           block.WOOL_BLUE)
 
-hourHand = Hand(center, 12, radius * 0.5, 3, GOLD_BLOCK, AIR)
-minuteHand = Hand(center, 60, radius * 0.8, 2, GOLD_BLOCK, AIR)
-secondHand = Hand((center[0],center[1],center[2]+1), 60, radius * 0.8, 1, WOOL_RED, AIR) 
+hourHand = Hand(center, 12, radius * 0.5, 3, block.GOLD_BLOCK, block.AIR)
+minuteHand = Hand(center, 60, radius * 0.8, 2, block.GOLD_BLOCK, block.AIR)
+secondHand = Hand((center[0],center[1],center[2]+1), 60, radius * 0.8, 1, block.WOOL_RED, block.AIR) 
 
 while True:
     t = time.localtime()
