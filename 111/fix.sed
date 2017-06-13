@@ -14,7 +14,5 @@ s/getCommandUsage/getUsage/g
 s/spawnEntityInWorld/spawnEntity/g
 s/createEntityByName/createEntityByIDFromName/g
 s/worldServers/worlds/g
-s/DamageSource\.inWall/DamageSource.IN_WALL/g
-s/DamageSource\.fall/DamageSource.FALL/g
 s/getUnformattedTextForChat/getUnformattedComponentText/g
 s/getPlayerList()\.getPlayerList()/getPlayerList().getPlayers()/g
