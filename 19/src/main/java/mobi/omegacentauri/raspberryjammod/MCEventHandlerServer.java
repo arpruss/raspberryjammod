@@ -39,9 +39,9 @@ public class MCEventHandlerServer extends MCEventHandler {
 	public void onLivingHurtEvent(LivingHurtEvent event) {
 		if (event.getEntity() instanceof EntityPlayer &&
 				((RaspberryJamMod.noFallDamage && 
-				event.getSource() == DamageSource.fall) ||
+				event.getSource().damageType == "fall") ||
 				(RaspberryJamMod.noInWallDamage && 
-				event.getSource() == DamageSource.inWall))) {
+				event.getSource().damageType == "inWall"))) {
 				event.setCanceled(true);
 		}
 	}
