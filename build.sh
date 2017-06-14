@@ -21,6 +21,7 @@ done
 sh fast.sh $NOINSTALL
 sh zip-scripts.sh
 (cd build/out && zip -9r ../mods *)
+cp build/mods.zip .
 if [ "$NOINSTALLER" != "noinstaller" ]
 then
     ./makesetup.sh
