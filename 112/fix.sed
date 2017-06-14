@@ -16,3 +16,7 @@ s/createEntityByName/createEntityByIDFromName/g
 s/worldServers/worlds/g
 s/getUnformattedTextForChat/getUnformattedComponentText/g
 s/getPlayerList()\.getPlayerList()/getPlayerList().getPlayers()/g
+s/\.xCoord/.x/g
+s/\.yCoord/.y/g
+s/\.zCoord/.z/g
+s/worldServerForDimension/getWorld/g

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RaspberryJamMod"
-#define MyAppVersion "0.90"
+#define MyAppVersion "0.91"
 #define MyAppPublisher "Omega Centauri Software"
 #define MyAppURL "http://github.com/arpruss/raspberryjammod"
 
@@ -65,6 +65,7 @@ Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft
 Source: "110\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.10.2\"
 Source: "111\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.11\"
 Source: "111\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.11.2\"
+Source: "112\build\libs\RaspberryJamMod.jar"; DestDir: "{userappdata}\.minecraft\mods\1.12\"
 Source: "py27\*"; Excludes: "py27\Lib\site-packages\pip\*"; DestDir: "{userappdata}\.minecraft\python27"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python27\Interpreter
 Source: "py3\*"; Excludes: "py3\Lib\site-packages\pip\*"; DestDir: "{userappdata}\.minecraft\python3"; Flags: createallsubdirs recursesubdirs ignoreversion; Components: Python\Python3\Interpreter
 Source: "config27\raspberryjammod.cfg"; DestDir: "{userappdata}\.minecraft\config"; Flags: confirmoverwrite; Components: Python\Python27\Interpreter\Config
@@ -92,9 +93,10 @@ Type: files; Name: "{userappdata}\.minecraft\mods\1.10\RaspberryJamMod*.jar"; Co
 Type: files; Name: "{userappdata}\.minecraft\mods\1.10.2\RaspberryJamMod*.jar"; Components: Mod
 Type: files; Name: "{userappdata}\.minecraft\mods\1.11\RaspberryJamMod*.jar"; Components: Mod
 Type: files; Name: "{userappdata}\.minecraft\mods\1.11.2\RaspberryJamMod*.jar"; Components: Mod
+Type: files; Name: "{userappdata}\.minecraft\mods\1.12\RaspberryJamMod*.jar"; Components: Mod
 
 [Messages]
-WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT (versions 1.8-1.11.2 supported) ALREADY INSTALLED. Otherwise, this won't work.
+WelcomeLabel2=MAKE SURE YOU HAVE FORGE FOR MINECRAFT (versions 1.8-1.12 supported) ALREADY INSTALLED. Otherwise, this won't work.
 ConfirmUninstall=Are you sure you want to completely remove %1 and all of its components? (Note that the scripts in the mcpipy folder of your Minecraft folder should NOT get deleted, however, in case you made changes.)
 
 [Icons]
