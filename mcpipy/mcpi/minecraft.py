@@ -114,7 +114,7 @@ class CmdPositioner:
 
     def setTilePos(self, id, *args):
         """Set entity tile position (entityId:int) => Vec3"""
-        self.conn.send(self.pkg + ".setTile", id, floorFlatten(*args))
+        self.conn.send(self.pkg + ".setTile", id, floorFlatten(args))
 
     def setting(self, setting, status): 
         """Set a player setting (setting, status). keys: autojump"""
