@@ -28,7 +28,7 @@ public class GuiFactory implements IModGuiFactory {
 		return null;
 	}
     
-    public hasConfigGui() {
+    public boolean hasConfigGui() {
         return true;
     }
 
