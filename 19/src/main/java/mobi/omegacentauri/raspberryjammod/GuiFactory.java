@@ -27,5 +27,9 @@ public class GuiFactory implements IModGuiFactory {
 			RuntimeOptionCategoryElement element) {
 		return null;
 	}
+    
+    public hasConfigGui() {
+        return true;
+    }
 
 }

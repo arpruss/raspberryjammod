@@ -8,7 +8,7 @@ from __future__ import print_function
 from platform import system
 
 if system() == 'Windows':
-    from ctypes import windll, Structure, c_ulong, byref
+    from ctypes import windll, Structure, c_ulong, c_ushort, POINTER, Union, byref, c_int, sizeof, c_long
 
     LBUTTON = 1
     RBUTTON = 2
@@ -168,6 +168,43 @@ if system() == 'Windows':
     KEY_BACKSLASH = 0xDC
     KEY_CLOSE_BRACKET = 0xDD
     KEY_APOSTROPHE = 0xDE
+    
+    KEYEVENT_KEYUP = 0x0002
+        
+    class KeybdInputType(Structure):
+        _fields_ = [('wVk', c_ushort), 
+                    ('wScan', c_ushort),
+                    ('dwFlags', c_ulong),
+                    ('time', c_ulong),
+                    ('dwExtraInfo', POINTER(c_ulong))]
+                    
+    class HardwareInputType(Structure):
+        _fields_ = (('uMsg', c_ulong),
+                    ('wParamL', c_ushort),
+                    ('wParamH', c_ushort))
+
+    class MouseInputType(Structure):
+        _fields_ = (('dx', c_long),
+                    ('dy', c_long),
+                    ('mouseData', c_ulong),
+                    ('dwFlags', c_ulong),
+                    ('time', c_ulong),
+                    ('dwExtraInfo', POINTER(c_ulong)))
+                
+    class InputUnionType(Union):
+        _fields_ = [('mi', MouseInputType), ('ki', KeybdInputType), ('hi', HardwareInputType)]
+                    
+    class InputType(Structure):
+        _fields_ = [('type', c_ulong),
+                    ('union', InputUnionType)]
+                    
+    def pressKey(key):
+        data = (InputType*1)(InputType(1, InputUnionType(ki=KeybdInputType(key,key,0,0,None))))
+        windll.user32.SendInput(1, data, c_int(sizeof(data)))
+        
+    def releaseKey(key):
+        data = (InputType*1)(InputType(1, InputUnionType(ki=KeybdInputType(key,key,KEYEVENT_KEYUP,0,None))))
+        windll.user32.SendInput(1, data, c_int(sizeof(data)))
         
     def getPressState(key):
         v = windll.user32.GetAsyncKeyState(int(key))
@@ -209,6 +246,6 @@ if __name__ == '__main__':
         now,last = getPressState(ord(' '))
         if now or last:
             print(now, last)
-        print(getMousePosition(), getScreenSize())
+#        print(getMousePosition(), getScreenSize())
         sleep(0.01)
         
