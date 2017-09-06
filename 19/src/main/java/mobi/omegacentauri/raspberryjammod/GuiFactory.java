@@ -33,6 +33,6 @@ public class GuiFactory implements IModGuiFactory {
     }
 
     public GuiScreen createConfigGui(GuiScreen parent) {
-        return null;
+        return new Gui(parent);
     }
 }
