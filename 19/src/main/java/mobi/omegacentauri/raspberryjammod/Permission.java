@@ -1,5 +1,6 @@
 package mobi.omegacentauri.raspberryjammod;
 
+import net.minecraft.util.math.BlockPos;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,13 +71,15 @@ public class Permission {
 					if (relative) {
 						if (world == null) {
 							for (World w : worlds) {
-								add(w,x1+w.getSpawnPoint().getX(),z1+w.getSpawnPoint().getZ(),
-										x2+w.getSpawnPoint().getX(),z2+w.getSpawnPoint().getZ(), permitted);
+                                BlockPos origin = Location.getOrigin(w);
+								add(w,x1+origin.getX(),z1+origin.getZ(),
+										x2+origin.getX(),z2+origin.getZ(), permitted);
 							}
 						}
 						else {
-							add(world,x1+world.getSpawnPoint().getX(),z1+world.getSpawnPoint().getZ(),
-									x2+world.getSpawnPoint().getX(),z2+world.getSpawnPoint().getZ(), 
+                            BlockPos origin = Location.getOrigin(world);
+							add(world,x1+origin.getX(),z1+origin.getZ(),
+									x2+origin.getX(),z2+origin.getZ(), 
 									permitted);
 						}
 					}

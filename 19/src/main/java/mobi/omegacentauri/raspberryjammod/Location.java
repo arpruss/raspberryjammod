@@ -9,6 +9,7 @@ public class Location extends BlockPos {
 	World world;
 	static final int WORLD_SPACING = 2000;
 	static final int WORLD_SPACING_HALF = WORLD_SPACING/2;
+    static BlockPos zeroPoint = new BlockPos(0,0,0);
 	
 	// Altitudes for world number i are >-WORLD_SPACING_HALF-WORLD_SPACING*i and
 	// <= WORLD_SPACING_HALF-WORLD_SPACING*i, with altitude 0 being at -WORLD_SPACING*i.
@@ -53,25 +54,32 @@ public class Location extends BlockPos {
 		super(x,y,z);
 		this.world = world;
 	}
+    
+    public static BlockPos getOrigin(World w) {
+        if (RaspberryJamMod.absoluteCoordinates)
+            return zeroPoint;
+        else
+            return w.getSpawnPoint();
+    }
 
 	static Location decodeLocation(World[] serverWorlds, int x, int y, int z) {
 		World w = getWorldByEncodedAltitude(serverWorlds, y);
-		BlockPos spawnPos = w.getSpawnPoint();
-		return new Location(w, x+spawnPos.getX(), (int)decodeAltitude(y)+spawnPos.getY(), z+spawnPos.getZ());
+		BlockPos originPos = getOrigin(w);
+		return new Location(w, x+originPos.getX(), (int)decodeAltitude(y)+originPos.getY(), z+originPos.getZ());
 	}
 
 	static Vec3w decodeVec3w(World[] serverWorlds, double x, double y, double z) {
 		World w = getWorldByEncodedAltitude(serverWorlds, y);
-		BlockPos spawnPos = w.getSpawnPoint();
-		return new Vec3w(w, x+spawnPos.getX(), (int)decodeAltitude(y)+spawnPos.getY(), z+spawnPos.getZ());
+		BlockPos originPos = getOrigin(w);
+		return new Vec3w(w, x+originPos.getX(), (int)decodeAltitude(y)+originPos.getY(), z+originPos.getZ());
 	}
 
 	public static Vec3d encodeVec3(World[] serverWorlds, World w, Vec3d pos) {
 		for (int i = 0 ; i < serverWorlds.length ; i++) {
 			if (serverWorlds[i] == w) {
-				BlockPos spawnPos = w.getSpawnPoint();
-				return new Vec3d(pos.xCoord-spawnPos.getX(), encodeAltitude(i, pos.yCoord-spawnPos.getY()), 
-						pos.zCoord-spawnPos.getZ());
+				BlockPos originPos = getOrigin(w);
+				return new Vec3d(pos.xCoord-originPos.getX(), encodeAltitude(i, pos.yCoord-originPos.getY()), 
+						pos.zCoord-originPos.getZ());
 			}
 		}
 		return pos;
@@ -80,8 +88,8 @@ public class Location extends BlockPos {
 	public static Vec3i encodeVec3i(World[] serverWorlds, World w, int x, int y, int z) {
 		for (int i = 0 ; i < serverWorlds.length ; i++) {
 			if (serverWorlds[i] == w) {
-				BlockPos spawnPos = w.getSpawnPoint();
-				return new Vec3i(x-spawnPos.getX(), encodeAltitude(i, y-spawnPos.getY()), z-spawnPos.getZ());
+				BlockPos originPos = getOrigin(w);
+				return new Vec3i(x-originPos.getX(), encodeAltitude(i, y-originPos.getY()), z-originPos.getZ());
 			}
 		}
 		return new Vec3i(x,y,z);

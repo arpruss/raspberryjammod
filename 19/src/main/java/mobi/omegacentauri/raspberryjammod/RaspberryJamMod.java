@@ -55,7 +55,7 @@ acceptedMinecraftVersions="[1.9,1.9.4)")
 public class RaspberryJamMod
 {
 	public static final String MODID = "raspberryjammod";
-	public static final String VERSION = "0.92";
+	public static final String VERSION = "0.94";
 	public static final String NAME = "Raspberry Jam Mod";
 	private APIServer fullAPIServer = null;
 	private PythonExternalCommand pythonExternalCommand = null;
@@ -83,6 +83,7 @@ public class RaspberryJamMod
 	public static boolean noFallDamage = false;
 	public static boolean noInWallDamage = false;
 	public static boolean globalImmutable = false;
+	public static boolean absoluteCoordinates = false;
 	public static volatile boolean noNameTags = false;
     public static final int NOMINAL_VERSION = 1009000;
 
@@ -136,6 +137,7 @@ public class RaspberryJamMod
 		noFallDamage = configFile.getBoolean("Disable Fall Damage", Configuration.CATEGORY_GENERAL, false, "Disable fall damage");
 		noInWallDamage = configFile.getBoolean("Disable Stuck-In-Wall Damage", Configuration.CATEGORY_GENERAL, false, "Disable stuck-in-wall damage");
 		globalImmutable = configFile.getBoolean("Immutability Setting Is Global", Configuration.CATEGORY_GENERAL, false, "Immutability setting applies to all players");
+		absoluteCoordinates = configFile.getBoolean("Absolute Coordinates", Configuration.CATEGORY_GENERAL, false, "Use absolute coordinates in scripts");
 		//		clientOnlyPortNumber = configFile.getInt("Port Number for Client-Only API", Configuration.CATEGORY_GENERAL, 0, 0, 65535, "Client-only API port number (normally 0)");
 
 		if (configFile.hasChanged())

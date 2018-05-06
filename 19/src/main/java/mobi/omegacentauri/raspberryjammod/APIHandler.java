@@ -666,7 +666,7 @@ public class APIHandler {
 				}
 			}
 
-			h -= serverWorlds[0].getSpawnPoint().getY();
+			h -= Location.getOrigin(serverWorlds[0]).getY();
 
 			sendLine(h);
 		}
