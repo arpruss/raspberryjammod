@@ -76,6 +76,7 @@ mc = Minecraft()
 walls = generateMaze(xSize,ySize)
 pos = mc.player.getTilePos()
 
+pos.x += 1
 my = pos.y
 
 for x in range(xSize):
@@ -96,12 +97,7 @@ for x in range(xSize):
 
 mc.setBlock(pos.x-1,pos.y,pos.z,block.AIR)
 mc.setBlock(pos.x-1,pos.y+1,pos.z,block.AIR)
-mc.setBlock(pos.x+2*(xSize-1),pos.y-1,pos.z+2*(ySize-1),block.GOLD_BLOCK)
 mc.setBlock(pos.x+2*(xSize-1)+1,pos.y-1,pos.z+2*(ySize-1),block.GOLD_BLOCK)
 
-def makeSign(line1="",line2="",line3="",line4=""):
-    return Block(63, 15, '{Text4:"{\\"text\\":\\"%s\\"}",Text3:"{\\"text\\":\\"%s\\"}",Text2:"{\\"text\\":\\"%s\\"}",id:"minecraft:sign",Text1:"{\\"text\\":\\"%s\\"}"}'
-        % (line4,line3,line2,line1))
-
-mc.setBlockWithNBT(pos.x+2*(xSize-1)+1,pos.y,pos.z+2*(ySize-1),makeSign('EXIT'))
+mc.setBlockWithNBT(pos.x+2*(xSize-1)+1,pos.y,pos.z+2*(ySize-1),block.SIGN('EXIT',headingAngle=270))
 mc.setBlock(pos.x+2*(xSize-1)+1,pos.y+1,pos.z+2*(ySize-1),block.AIR)

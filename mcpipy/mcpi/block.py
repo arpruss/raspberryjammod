@@ -456,6 +456,15 @@ WHEAT = Block(59)
 STAIRS_SPRUCE = Block(134)
 STAIRS_BIRCH = Block(135)
 STAIRS_JUNGLE = Block(136)
+def SIGN(line1="",line2="",line3="",line4="",headingAngle=0):
+    """
+    headingAngle = 0 North, 90 East, 180 South, 270 West, with 4 bit resolution
+    """
+    dir = int( ( (headingAngle + 180) % 360 * 16 + 180 ) / 360 )
+    def c(text):
+        return text.replace('\\','\\\\\\\\').replace('"', '\\\\\\"')
+    return Block(63, dir, '{id:"minecraft:sign",Text1:"{\\"text\\":\\"%s\\"}",Text2:"{\\"text\\":\\"%s\\"}",Text3:"{\\"text\\":\\"%s\\"}",Text4:"{\\"text\\":\\"%s\\"}"}' %
+                (c(line1),c(line2),c(line3),c(line4)))
 
 # for 1.12
 GLAZED_TERRACOTTA_WHITE = Block(235)
