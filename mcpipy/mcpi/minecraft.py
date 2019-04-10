@@ -77,9 +77,9 @@ class CmdPositioner:
         
     def getName(self, id):
         """Get entity name (entityId:int) => string"""
-        s = self.conn.sendReceive(self.pkg + ".getNameAndUUID", id)
+        s = self.conn.sendReceive(self.pkg + ".getName", id)
         # just in case, allow name to have a comma; uuid can't
-        return s[:s.rindex(",")]
+        return s
 
     def getDirection(self, id):
         """Get entity direction (entityId:int) => Vec3"""
