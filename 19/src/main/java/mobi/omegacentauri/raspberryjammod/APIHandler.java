@@ -113,7 +113,8 @@ public class APIHandler {
 	protected static final String GETPOS = "getPos";
 	protected static final String GETROTATION = "getRotation";
 	protected static final String GETTILE = "getTile";
-	protected static final String GETNAME = "getNameAndUUID";
+	protected static final String GETNAMEUUID = "getNameAndUUID";
+	protected static final String GETNAME = "getName";
 	protected static final String SETDIMENSION = "setDimension"; // EXPERIMENTAL AND UNSUPPORTED
 	protected static final String SETDIRECTION = "setDirection";
 	protected static final String SETPITCH = "setPitch";
@@ -173,7 +174,8 @@ public class APIHandler {
 			 GETPOS,
 			 GETROTATION,
 			 GETTILE,
-			 GETNAME,
+			 GETNAMEUUID,
+             GETNAME,
 			 SETDIRECTION,
 			 SETTILE,
 			 SETPOS,
@@ -1182,19 +1184,28 @@ public class APIHandler {
 			entitySetDimension(id, scan.nextInt());
 		}
 		else if (cmd.equals(GETNAME)) {
-			entityGetNameAndUUID(id);
+			entityGetNameAndUUID(id, false);
 		}
+		else if (cmd.equals(GETNAMEUUID)) {
+			entityGetNameAndUUID(id, true);
+		}
+        else if (cmd.equals(CHAT)) {
+            chat(id, scan.next());
+        }
 		else {
 			unknownCommand();
 		}
 	}
 	
-	protected void entityGetNameAndUUID(int id) {
+	protected void entityGetNameAndUUID(int id, boolean includeUUID) {
 		Entity e = getServerEntityByID(id);
         if (e == null) {
             fail("Cannot find entity");
         }
-		sendLine(e.getName()+","+e.getUniqueID());
+        if (includeUUID)
+            sendLine(e.getName()+","+e.getUniqueID());
+        else
+            sendLine(e.getName());
 	}
 
 	protected void entitySetDirection(int id, Scanner scan) {
