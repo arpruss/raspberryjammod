@@ -918,8 +918,45 @@ public class APIHandler {
     }
 
 	protected void spawnEntity(Scanner scan) {
+		// detect RaspberryJamMod (type,x,y,z,tags) or RaspberryJuice (x,y,z,id) syntax
+		if (scan.hasNextDouble())
+			spawnEntityJuice(scan);
+		else
+			spawnEntityJam(scan);
+	}
+    
+	protected void spawnEntityJuice(Scanner scan) {
+		double x0 = scan.nextDouble();
+		double y0 = scan.nextDouble();
+		double z0 = scan.nextDouble();
+		Vec3w pos = Location.decodeVec3w(serverWorlds, x0, y0, z0);
+		
+		int entityID = scan.nextInt();
+		
+		// TODO? Could do damage by spawning dragons close to a forbidden zone; perhaps forbid that?
+		if (permission != null && ! permission.isPermitted(pos.world, 
+				(int)Math.floor(pos.xCoord),(int)Math.floor(pos.zCoord)))
+			return;
+
+		Entity entity;
+		try {
+			entity = EntityList.createEntityByID(entityID, pos.world);
+			if (entity == null) {
+				throw new Exception();
+			}
+		} catch(Exception e) {
+			fail("Cannot create entity");
+			return;
+		}
+		
+		entity.setPositionAndUpdate(pos.xCoord, pos.yCoord, pos.zCoord);
+		pos.world.spawnEntityInWorld(entity);
+		sendLine(entity.getEntityId());
+	}
+	
+	protected void spawnEntityJam(Scanner scan) {
 		String entityId = scan.next();
-        
+		
         System.out.println("Helo");
         if (RaspberryJamMod.NOMINAL_VERSION >= 1011000) {
             System.out.println("ren");
