@@ -20,3 +20,4 @@ s/\.xCoord/.x/g
 s/\.yCoord/.y/g
 s/\.zCoord/.z/g
 s/worldServerForDimension/getWorld/g
+s/getEntityID(e/getID(e.getClass()/g

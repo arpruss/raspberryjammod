@@ -25,7 +25,8 @@ group= "mobi.omegacentauri.raspberryjammod" // http://maven.apache.org/guides/mi
 archivesBaseName = "RaspberryJamMod"
 
 minecraft {
-    version = "1.10.2-12.18.2.2147"
+    //version = "1.10.2-12.18.2.2147"
+    version = "1.11-13.19.1.2199"
     runDir = "run"
     
     // the mappings can be changed at any time, and must be in the following format.

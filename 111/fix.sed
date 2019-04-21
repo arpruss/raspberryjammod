@@ -16,3 +16,4 @@ s/createEntityByName/createEntityByIDFromName/g
 s/worldServers/worlds/g
 s/getUnformattedTextForChat/getUnformattedComponentText/g
 s/getPlayerList()\.getPlayerList()/getPlayerList().getPlayers()/g
+s/getEntityID(e/getID(e.getClass()/g
