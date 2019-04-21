@@ -21,3 +21,6 @@ s/\.yCoord/.y/g
 s/\.zCoord/.z/g
 s/worldServerForDimension/getWorld/g
 s/getEntityID(e/getID(e.getClass()/g
+s/import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;//g
+s/@Override public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) {return null;}//g
+s/@Override public Class<? extends GuiScreen> mainConfigGuiClass() {return Gui.class;}//g

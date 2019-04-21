@@ -24,6 +24,12 @@ version = "0.94"
 group= "mobi.omegacentauri.raspberryjammod" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "RaspberryJamMod"
 
+sourceCompatibility = targetCompatibility = "1.7" // Need this here so eclipse task generates correctly.
+compileJava.options.bootClasspath = "$JDK7_HOME/jre/lib/rt.jar"
+compileJava {
+    sourceCompatibility = targetCompatibility = "1.7"
+}
+
 minecraft {
     version = "1.9-12.16.0.1864-1.9"
     runDir = "run"
