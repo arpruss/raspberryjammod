@@ -24,3 +24,4 @@ s/getEntityID(e/getID(e.getClass()/g
 s/import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;//g
 s/@Override public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) {return null;}//g
 s/@Override public Class<? extends GuiScreen> mainConfigGuiClass() {return Gui.class;}//g
+s/for (String entityTypeName : EntityList.getEntityNameList()) { if (EntityList.getIDFromString(entityTypeName) >= 0) { bdr.append(EntityList.getIDFromString(entityTypeName)); bdr.append(","); bdr.append(entityTypeName); bdr.append("|"); }/for (ResourceLocation rl: EntityList.getEntityNameList()) { if (EntityList.getClass(rl) != null) { bdr.append(EntityList.getID(EntityList.getClass(rl))); bdr.append(","); bdr.append(rl.getResourcePath()); bdr.append("|"); }/g

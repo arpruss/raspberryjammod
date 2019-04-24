@@ -25,7 +25,7 @@ group= "mobi.omegacentauri.raspberryjammod" // http://maven.apache.org/guides/mi
 archivesBaseName = "RaspberryJamMod"
 
 sourceCompatibility = targetCompatibility = "1.7" // Need this here so eclipse task generates correctly.
-compileJava.options.bootClasspath = "$JDK7_HOME/jre/lib/rt.jar"
+//compileJava.options.bootClasspath = "$JDK7_HOME/jre/lib/rt.jar"
 compileJava {
     sourceCompatibility = targetCompatibility = "1.7"
 }
