@@ -141,7 +141,7 @@ class CmdEntity(CmdPositioner):
     def removeEntityType(self, *args):
         """Remove entities all entities near player by type (playerEntityId:int, entityTypeId:int, [distanceFromPlayerInBlocks:int]) => (removedEntitiesCount:int)"""
         """If distanceFromPlayerInBlocks:int is not specified then default 10 blocks will be used"""
-        return self.conn.sendReceive("entity.removeEntityType", args) 
+        return int(self.conn.sendReceive("entity.removeEntityType", args)) 
 
 class CmdPlayer(CmdPositioner):
     """Methods for the host (Raspberry Pi) player"""
@@ -438,7 +438,7 @@ class Minecraft:
 
     def removeEntityType(self, entityTypeId):
         """Remove entities all currently loaded Entities by type (entityTypeId:int) => (removedEntitiesCount:int)"""
-        return self.conn.sendReceive("world.removeEntityType", int(entityTypeId))
+        return int(self.conn.sendReceive("world.removeEntityType", int(entityTypeId)))
 
     @staticmethod
     def create(address = None, port = None, name = None):
