@@ -71,22 +71,10 @@ class Vec3:
     
     #Python 3 Comparisons
     def __eq__(self, rhs):
-        dx = self.x - rhs.x
-        if dx != 0: return False
-        dy = self.y - rhs.y
-        if dy != 0: return False
-        dz = self.z - rhs.z
-        if dz != 0: return False
-        return True
+        return self.x == rhs.x and self.y == rhs.y and self.z == rhs.z
 
     def __ne__(self, rhs):
-        dx = self.x - rhs.x
-        if dx != 0: return True
-        dy = self.y - rhs.y
-        if dy != 0: return True
-        dz = self.z - rhs.z
-        if dz != 0: return True
-        return False
+        return self.x != rhs.x or self.y != rhs.y or self.z != rhs.z
 
     def iround(self): self._map(lambda v:int(v+0.5))
     def ifloor(self): self._map(int)
