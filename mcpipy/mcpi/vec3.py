@@ -68,6 +68,13 @@ class Vec3:
         dz = self.z - rhs.z
         if dz != 0: return dz
         return 0
+    
+    #Python 3 Comparisons
+    def __eq__(self, rhs):
+        return self.x == rhs.x and self.y == rhs.y and self.z == rhs.z
+
+    def __ne__(self, rhs):
+        return self.x != rhs.x or self.y != rhs.y or self.z != rhs.z
 
     def iround(self): self._map(lambda v:int(v+0.5))
     def ifloor(self): self._map(int)
