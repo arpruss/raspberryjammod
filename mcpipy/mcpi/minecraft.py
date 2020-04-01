@@ -5,6 +5,7 @@ from .event import BlockEvent,ChatEvent
 from .block import Block
 import math
 from os import environ
+from .entity import Entity
 from .util import flatten,floorFlatten
 try:
     from .security import AUTHENTICATION_PASSWORD,AUTHENTICATION_USERNAME
@@ -129,6 +130,18 @@ class CmdEntity(CmdPositioner):
         """Post a message to a particular player in game chat"""
         self.conn.send(self.pkg + ".chat.post", id,
             str(msg).replace("\r"," ").replace("\n"," "))
+
+    def getEntities(self, *args):
+        """Return a list of entities near player (playerEntityId:int, [distanceFromPlayerInBlocks:int]) => [[entityId:int,entityTypeId:int,entityTypeName:str,posX:float,posY:float,posZ:float]]"""
+        """If distanceFromPlayerInBlocks:int is not specified then default 10 blocks will be used"""
+        s = self.conn.sendReceive("entity.getEntities", args)
+        entities = [e for e in s.split("|") if e]
+        return [ [int(n.split(",")[0]), int(n.split(",")[1]), n.split(",")[2], float(n.split(",")[3]), float(n.split(",")[4]), float(n.split(",")[5])] for n in entities]
+
+    def removeEntityType(self, *args):
+        """Remove entities all entities near player by type (playerEntityId:int, entityTypeId:int, [distanceFromPlayerInBlocks:int]) => (removedEntitiesCount:int)"""
+        """If distanceFromPlayerInBlocks:int is not specified then default 10 blocks will be used"""
+        return int(self.conn.sendReceive("entity.removeEntityType", args)) 
 
 class CmdPlayer(CmdPositioner):
     """Methods for the host (Raspberry Pi) player"""
@@ -385,7 +398,11 @@ class Minecraft:
             return self.playerId
         else:
             return int(self.conn.sendReceive_flat("world.getPlayerId", flatten(args)))
-            
+
+    def getPlayerEntityId(self, *args):
+        """Get the id of the current player - RaspberryJuice syntax"""
+        return self.getPlayerId(args)
+
     def getPlayerEntityIds(self):
         """Get the entity ids of the connected players => [id:int]"""
         ids = self.conn.sendReceive("world.getPlayerIds")
@@ -406,6 +423,22 @@ class Minecraft:
     def setting(self, setting, status):
         """Set a world setting (setting, status). keys: world_immutable, nametags_visible"""
         self.conn.send("world.setting", setting, 1 if bool(status) else 0)
+
+    def getEntityTypes(self):
+        """Return a list of Entity objects representing all the entity types in Minecraft"""  
+        s = self.conn.sendReceive("world.getEntityTypes")
+        types = [t for t in s.split("|") if t]
+        return [Entity(int(e[:e.find(",")]), e[e.find(",") + 1:]) for e in types]
+
+    def getEntities(self):
+        """Return a list of all currently loaded entities () => [[entityId:int,entityTypeId:int,entityTypeName:str,posX:float,posY:float,posZ:float]]"""
+        s = self.conn.sendReceive("world.getEntities")
+        entities = [e for e in s.split("|") if e]
+        return [[int(n.split(",")[0]), int(n.split(",")[1]), n.split(",")[2], float(n.split(",")[3]), float(n.split(",")[4]), float(n.split(",")[5])] for n in entities]
+
+    def removeEntityType(self, entityTypeId):
+        """Remove entities all currently loaded Entities by type (entityTypeId:int) => (removedEntitiesCount:int)"""
+        return int(self.conn.sendReceive("world.removeEntityType", int(entityTypeId)))
 
     @staticmethod
     def create(address = None, port = None, name = None):

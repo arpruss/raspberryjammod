@@ -16,3 +16,5 @@ s/createEntityByName/createEntityByIDFromName/g
 s/worldServers/worlds/g
 s/getUnformattedTextForChat/getUnformattedComponentText/g
 s/getPlayerList()\.getPlayerList()/getPlayerList().getPlayers()/g
+s/getEntityID(e/getID(e.getClass()/g
+s/for (String entityTypeName : EntityList.getEntityNameList()) { if (EntityList.getIDFromString(entityTypeName) >= 0) { bdr.append(EntityList.getIDFromString(entityTypeName)); bdr.append(","); bdr.append(entityTypeName); bdr.append("|"); }/for (ResourceLocation rl: EntityList.getEntityNameList()) { if (EntityList.getClass(rl) != null) { bdr.append(EntityList.getID(EntityList.getClass(rl))); bdr.append(","); bdr.append(rl.getResourcePath()); bdr.append("|"); }/g
