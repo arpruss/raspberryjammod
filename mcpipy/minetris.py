@@ -95,10 +95,10 @@ def inputMoveRight():
     return input.wasPressedSinceLast(input.RIGHT)
 
 def inputRotateLeft():
-    return input.wasPressedSinceLast(input.PRIOR)
+    return input.wasPressedSinceLast(input.PRIOR) or input.wasPressedSinceLast(ord('Z'))
     
 def inputRotateRight():
-    return input.wasPressedSinceLast(input.NEXT) or input.wasPressedSinceLast(input.UP)
+    return input.wasPressedSinceLast(input.NEXT) or input.wasPressedSinceLast(input.UP) or input.wasPressedSinceLast(ord('X'))
                 
 def inputNext():
     return input.wasPressedSinceLast(ord('N'))
@@ -112,10 +112,12 @@ def inputPause():
 def answerYes():
     input.clearPressBuffer(ord('Y'))
     input.clearPressBuffer(ord('N'))
+    input.clearPressBuffer(ord('+'))
+    input.clearPressBuffer(ord('-'))
     while True:
-        if input.wasPressedSinceLast(ord('Y')):
+        if input.wasPressedSinceLast(ord('Y')) or input.wasPressedSinceLast(ord('+')):
             return True
-        if input.wasPressedSinceLast(ord('N')):
+        if input.wasPressedSinceLast(ord('N')) or input.wasPressedSinceLast(ord('-')):
             return False
         sleep(0.1)
 
