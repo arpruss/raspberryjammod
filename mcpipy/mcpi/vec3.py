@@ -2,7 +2,7 @@ import collections
 
 class Vec3:
     def __init__(self, x=0, y=0, z=0):
-        if isinstance(x, collections.Iterable):
+        if isinstance(x, collections.abc.Iterable):
             self.x, self.y, self.z = tuple(x)
         else:
             self.x = x
