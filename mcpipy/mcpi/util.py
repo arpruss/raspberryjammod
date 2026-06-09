@@ -6,6 +6,10 @@ try:
     basestring
 except NameError:
     basestring = str  # compatibility for Python 3
+try:
+    collections.Iterable
+except AttributeError:
+    collections.Iterable = collections.abc.Iterable
 
 def flatten(l):
     for e in l:
