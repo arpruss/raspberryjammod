@@ -23,6 +23,8 @@ root directory : version for Minecraft 1.8x
 19  : version for Minecraft 1.9
 194 : version for Minecraft 1.9.4
 110 : version for Minecraft 1.10
+111 : version for Minecraft 1.11
+112 : version for Minecraft 1.12
 
 The 194 and 110 versions do not contain source code. Instead, running fast.sh in those
 directories copies the source tree from the 19 directory, patches it up as needed, and

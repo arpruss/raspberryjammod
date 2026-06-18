@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -136,8 +137,8 @@ public class APIServer {
 		try {
 			String clientSentence;
 
-			reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-			writer = new PrintWriter(connectionSocket.getOutputStream());
+			reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream(), "UTF-8"));
+			writer = new PrintWriter(new OutputStreamWriter(connectionSocket.getOutputStream(), "UTF-8"));
 
 			api = controlServer ? new APIHandler(eventHandler, writer) : 
 				new APIHandlerClientOnly(eventHandler, writer);

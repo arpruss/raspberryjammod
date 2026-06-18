@@ -48,6 +48,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -75,6 +76,9 @@ public class APIHandler {
 	protected static final String GETBLOCKSWITHDATA = "world.getBlocksWithData";
 	protected static final String GETHEIGHT = "world.getHeight"; 
 	protected static final String WORLDSPAWNENTITY = "world.spawnEntity";
+	protected static final String WORLDGETENTITYTYPES = "world.getEntityTypes";
+	protected static final String WORLDGETENTITIES = "world.getEntities";
+	protected static final String WORLDREMOVEENTITYTYPE = "world.removeEntityType";
 	protected static final String WORLDSPAWNPARTICLE = "world.spawnParticle";
 	protected static final String WORLDDELETEENTITY = "world.removeEntity";
 	protected static final String WORLDGETPLAYERIDS = "world.getPlayerIds"; 	
@@ -122,6 +126,8 @@ public class APIHandler {
 	protected static final String SETROTATION = "setRotation";
 	protected static final String SETTILE = "setTile";
 	protected static final String CHAT = "chat.post";
+	protected static final String GETENTITIES = "getEntities";
+	protected static final String REMOVEENTITYTYPE = "removeEntityType";
 	
 	protected String[] fullCommands = {
 			 CHATGLOBAL,
@@ -136,6 +142,9 @@ public class APIHandler {
 			 GETBLOCKSWITHDATA,
 			 GETHEIGHT, 
 			 WORLDSPAWNENTITY,
+			 WORLDGETENTITYTYPES,
+			 WORLDGETENTITIES,
+			 WORLDREMOVEENTITYTYPE,
 			 WORLDSPAWNPARTICLE,
 			 WORLDDELETEENTITY,
 			 WORLDGETPLAYERIDS, 	
@@ -182,7 +191,9 @@ public class APIHandler {
 			 SETDIMENSION,
 			 SETPITCH,
 			 SETROTATION,
-			 CHAT
+			 CHAT,
+			 GETENTITIES,
+			 REMOVEENTITYTYPE
 	};
     
     protected static final String[][] ENTITY_RENAME_111 = {
@@ -780,6 +791,15 @@ public class APIHandler {
 		else if (cmd.equals(WORLDSPAWNENTITY)) {
 			spawnEntity(scan);
 		}
+		else if (cmd.equals(WORLDGETENTITYTYPES)) {
+			getEntityTypes(scan);
+		}
+		else if (cmd.equals(WORLDGETENTITIES)) {
+			getEntities(scan);
+		}
+		else if (cmd.equals(WORLDREMOVEENTITYTYPE)) {
+			removeEntityType(scan);
+		}
 		else if (cmd.equals(WORLDSPAWNPARTICLE)) {
 			spawnParticle(scan);
 		}
@@ -920,8 +940,45 @@ public class APIHandler {
     }
 
 	protected void spawnEntity(Scanner scan) {
+		// detect RaspberryJamMod (type,x,y,z,tags) or RaspberryJuice (x,y,z,id) syntax
+		if (scan.hasNextDouble())
+			spawnEntityJuice(scan);
+		else
+			spawnEntityJam(scan);
+	}
+    
+	protected void spawnEntityJuice(Scanner scan) {
+		double x0 = scan.nextDouble();
+		double y0 = scan.nextDouble();
+		double z0 = scan.nextDouble();
+		Vec3w pos = Location.decodeVec3w(serverWorlds, x0, y0, z0);
+		
+		int entityID = scan.nextInt();
+		
+		// TODO? Could do damage by spawning dragons close to a forbidden zone; perhaps forbid that?
+		if (permission != null && ! permission.isPermitted(pos.world, 
+				(int)Math.floor(pos.xCoord),(int)Math.floor(pos.zCoord)))
+			return;
+
+		Entity entity;
+		try {
+			entity = EntityList.createEntityByID(entityID, pos.world);
+			if (entity == null) {
+				throw new Exception();
+			}
+		} catch(Exception e) {
+			fail("Cannot create entity");
+			return;
+		}
+		
+		entity.setPositionAndUpdate(pos.xCoord, pos.yCoord, pos.zCoord);
+		pos.world.spawnEntityInWorld(entity);
+		sendLine(entity.getEntityId());
+	}
+	
+	protected void spawnEntityJam(Scanner scan) {
 		String entityId = scan.next();
-        
+		
         System.out.println("Helo");
         if (RaspberryJamMod.NOMINAL_VERSION >= 1011000) {
             System.out.println("ren");
@@ -978,6 +1035,52 @@ public class APIHandler {
 		//TODO: antigravity for NoAI:1
 	}
 
+	protected void getEntityTypes(Scanner scan) {
+		
+		StringBuilder bdr = new StringBuilder();
+		
+		for (String entityTypeName : EntityList.getEntityNameList()) { if (EntityList.getIDFromString(entityTypeName) >= 0) { bdr.append(EntityList.getIDFromString(entityTypeName)); bdr.append(","); bdr.append(entityTypeName); bdr.append("|"); }
+		//MC 1.11 and 1.12 replacement: for (ResourceLocation rl: EntityList.getEntityNameList()) { if (EntityList.getClass(rl) != null) { bdr.append(EntityList.getID(EntityList.getClass(rl))); bdr.append(","); bdr.append(rl.getResourcePath()); bdr.append("|"); }
+}
+		sendLine(bdr.toString());
+	}	
+	
+	protected void getEntities(Scanner scan) {
+		
+		StringBuilder bdr = new StringBuilder();				
+		for (Entity e : serverWorlds[0].loadedEntityList) {
+			if (EntityList.getEntityID(e) >= 0)
+			{
+				bdr.append(e.getEntityId());
+				bdr.append(",");
+				bdr.append(EntityList.getEntityID(e));
+				bdr.append(",");
+				bdr.append(EntityList.getEntityString(e));
+				bdr.append(",");
+				bdr.append(e.getPositionVector().xCoord);
+				bdr.append(",");
+				bdr.append(e.getPositionVector().yCoord);
+				bdr.append(",");
+				bdr.append(e.getPositionVector().zCoord);
+				bdr.append("|");
+			}
+		}
+		sendLine(bdr.toString());
+	}
+
+	protected void removeEntityType(Scanner scan) {
+		int entityTypeId = scan.nextInt();
+		int removedEntitiesCount = 0;
+		for (Entity e : serverWorlds[0].loadedEntityList) {
+			if (EntityList.getEntityID(e) == entityTypeId)
+			{
+				serverWorlds[0].removeEntity(e);
+				removedEntitiesCount++;
+			}
+		}
+		sendLine(removedEntitiesCount);
+	}
+	
 	protected void chat(int id, String msg) {
 		Entity e = getServerEntityByID(id);
 		if (e == null || ! (e instanceof EntityPlayer)) {
@@ -1155,6 +1258,12 @@ public class APIHandler {
         else if (cmd.equals(CHAT)) {
             chat(id, scan.next());
         }
+        else if (cmd.equals(GETENTITIES)) {
+            entityGetEntities(id, scan);
+        }
+        else if (cmd.equals(REMOVEENTITYTYPE)) {
+            entityRemoveEntityType(id, scan);
+        }
 		else {
 			unknownCommand();
 		}
@@ -1187,6 +1296,54 @@ public class APIHandler {
 			entitySetDirection(e, x, y, z);
 	}
 
+	protected void entityGetEntities(int id, Scanner scan) {
+		int distance = 10;
+		if (scan.hasNextInt())
+			distance = scan.nextInt();
+		Entity playerEntityId =  getServerEntityByID(id);
+		
+		StringBuilder bdr = new StringBuilder();				
+		for (Entity e : serverWorlds[0].loadedEntityList) {
+			if (EntityList.getEntityID(e) >= 0 && getDistance(playerEntityId, e) <= distance)
+			{
+				bdr.append(e.getEntityId());
+				bdr.append(",");
+				bdr.append(EntityList.getEntityID(e));
+				bdr.append(",");
+				bdr.append(EntityList.getEntityString(e));
+				bdr.append(",");
+				bdr.append(e.getPositionVector().xCoord);
+				bdr.append(",");
+				bdr.append(e.getPositionVector().yCoord);
+				bdr.append(",");
+				bdr.append(e.getPositionVector().zCoord);
+				bdr.append("|");
+			}
+		}
+		sendLine(bdr.toString());
+	}
+
+	protected void entityRemoveEntityType(int id, Scanner scan) {
+		int entityTypeId = scan.nextInt();
+		int removedEntitiesCount = 0;
+		int distance = 10;
+		if (scan.hasNextInt())
+			distance = scan.nextInt();
+		Entity playerEntityId =  getServerEntityByID(id);
+
+		for (Entity e : serverWorlds[0].loadedEntityList) {
+			if (EntityList.getEntityID(e) >= 0 && getDistance(playerEntityId, e) <= distance)
+			{
+				if (EntityList.getEntityID(e) == entityTypeId)
+				{
+					serverWorlds[0].removeEntity(e);
+					removedEntitiesCount++;
+				}
+			}
+		}
+		sendLine(removedEntitiesCount);
+	}
+	
 	static protected String getRest(Scanner scan) {
 		StringBuilder out = new StringBuilder();
 
@@ -1608,5 +1765,14 @@ public class APIHandler {
 		public String getDescription() {
 			return description;
 		}
+	}
+	
+	private int getDistance(Entity ent1, Entity ent2) {
+		if (ent1 == null || ent2 == null)
+			return -1;
+		double dx = ent2.getPositionVector().xCoord - ent1.getPositionVector().xCoord;
+		double dy = ent2.getPositionVector().yCoord - ent1.getPositionVector().yCoord;
+		double dz = ent2.getPositionVector().zCoord - ent1.getPositionVector().zCoord;
+		return (int)Math.sqrt(dx*dx + dy*dy + dz*dz);
 	}
 }

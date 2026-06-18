@@ -24,8 +24,14 @@ version = "0.94"
 group= "mobi.omegacentauri.raspberryjammod" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "RaspberryJamMod"
 
+sourceCompatibility = targetCompatibility = "1.7" // Need this here so eclipse task generates correctly.
+//compileJava.options.bootClasspath = "$JDK7_HOME/jre/lib/rt.jar"
+compileJava {
+    sourceCompatibility = targetCompatibility = "1.7"
+}
+
 minecraft {
-    version = "1.10.2-12.18.2.2147"
+    version = "1.10.2-12.18.3.2511"
     runDir = "run"
     
     // the mappings can be changed at any time, and must be in the following format.
@@ -33,7 +39,7 @@ minecraft {
     // stable_#            stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not allways work.
     // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "snapshot_20161116"
+    mappings = "snapshot_20161111"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 

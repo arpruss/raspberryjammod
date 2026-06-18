@@ -1,5 +1,6 @@
 rm build/libs/Raspberr*.jar  2> /dev/null
-./gradlew --offline build
+./gradlew build
+# --offline build
 mv build/libs/Raspberr* build/libs/RaspberryJamMod.jar
 mkdir build/out 2> /dev/null
 mkdir build/out/1.8  2> /dev/null
