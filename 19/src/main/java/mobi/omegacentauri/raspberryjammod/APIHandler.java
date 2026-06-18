@@ -906,7 +906,7 @@ public class APIHandler {
 	}
     
     protected String rename111(String entityId) {
-        if (entityId.startsWith("minecraft:"))
+        if (entityId.contains(":"))
             return entityId;
         System.out.println("Searching for "+entityId);
         String e = entityId.toLowerCase();
